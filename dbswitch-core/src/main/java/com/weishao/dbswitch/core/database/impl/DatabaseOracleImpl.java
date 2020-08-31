@@ -175,7 +175,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 				if (length == 1) {
 					retval.append("CHAR(1)");
 				} else if (length > 0) {
-					retval.append("VARCHAR2(").append(length).append(')');
+					retval.append("VARCHAR2(").append(4000).append(')');
 				} else {
 					retval.append("CLOB");// We don't know, so we just use the maximum...
 				}
