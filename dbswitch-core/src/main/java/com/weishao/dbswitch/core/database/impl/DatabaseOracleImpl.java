@@ -173,9 +173,10 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 				retval.append("CLOB");
 			} else {
 				if (length == 1) {
-					retval.append("CHAR(1)");
+					retval.append("NVARCHAR2(1)");
 				} else if (length > 0) {
-					retval.append("VARCHAR2(").append(4000).append(')');
+					// VARCHAR2(size)，size最大值为4000，单位是字节；而NVARCHAR2(size)，size最大值为2000，单位是字符
+					retval.append("NVARCHAR2(").append(length).append(')');
 				} else {
 					retval.append("CLOB");// We don't know, so we just use the maximum...
 				}
