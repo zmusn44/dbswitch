@@ -14,7 +14,7 @@
 
 基于JDBC的fetch-size参数分批次读取源端数据库数据，并基于insert/copy方式将数据分批次写入目的数据库。
 
-支持有主键且dbswitch迁移的表进行**增量变更（变化数据计算Change Data Calculate）**同步功能(千万级以上数据量慎用)
+支持有主键且dbswitch迁移的表进行 **增量变更** （变化数据计算Change Data Calculate）同步功能(千万级以上数据量慎用)
 
 ### 2、功能设计
 
