@@ -186,7 +186,7 @@ public class MainService {
 					} else {
 						List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(),
 								tableDescription.getTableName());
-						this.doIncreaseSynchronize(tableDescription, writer, fields, pks1);
+						this.doIncreaseSynchronize(tableDescription, writer, pks1, fields);
 					}
 				} else {
 					this.doFullCoverSynchronize(tableDescription, writer);
