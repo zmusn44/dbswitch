@@ -95,7 +95,8 @@ sh ./build.sh
 | source.datasource-source.includes | 来源端schema下的表中需要包含的表名称 | users1,orgs1 | 多个之间用英文逗号分隔 |
 | source.datasource-source.excludes | 来源端schema下的表中需要过滤的表名称 | users,orgs | 不包含的表名称，多个之间用英文逗号分隔 |
 | target.datasource-target.schema | 目的端的schema名称 | public | 无 |
-| target.datasource-target.drop | 是否执行先drop表然后create表命令 | true | 可选值为：true、false |
+| target.datasource-target.drop | 是否执行先drop表然后create表命令,当target.datasource-target.drop=true时有效 | true | 可选值为：true、false |
+| target.create-table.auto-increment | 是否执启用支持create表时主键自增 | true | 可选值为：true、false |
 | target.writer-engine.insert | 是否使用insert写入数据 | true | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
 | target.change-data-synch | target.datasource-target.drop为false时有效，是否启用增量变更同步，只针对有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
 

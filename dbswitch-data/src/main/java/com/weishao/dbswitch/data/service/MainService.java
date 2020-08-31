@@ -163,7 +163,7 @@ public class MainService {
 					properties.dbSourceUserName, properties.dbSourcePassword, tableDescription.getSchemaName(),
 					tableDescription.getTableName());
 			String sqlCreateTable = metaDataService.getDDLCreateTableSQL(targetDatabaseType, columnDescs, primaryKeys,
-					properties.dbTargetSchema, tableDescription.getTableName(), false);
+					properties.dbTargetSchema, tableDescription.getTableName(), properties.createSupportAutoIncr);
 			targetJdbcTemplate.execute(sqlCreateTable);
 			log.info("Execute SQL: \n{}", sqlCreateTable);
 

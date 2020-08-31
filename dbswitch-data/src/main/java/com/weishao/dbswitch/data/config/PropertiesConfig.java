@@ -103,7 +103,10 @@ public class PropertiesConfig {
 
 	@Value("${target.datasource-target.drop}")
 	public Boolean dropTargetTable;
-	
+
+	@Value("${target.create-table.auto-increment}")
+	public Boolean createSupportAutoIncr;
+
 	@Value("${target.writer-engine.insert}")
 	public Boolean engineInsert;
 
