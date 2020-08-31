@@ -59,6 +59,10 @@ public class GenerateSqlUtils {
 		}
 
 		retval.append(")").append(Const.CR);
+		if (DatabaseTypeEnum.MYSQL == type) {
+			retval.append("ENGINE=InnoDB DEFAULT CHARSET=utf8").append(Const.CR);
+		}
+
 		return db.formatSQL(retval.toString());
 	}
 }
