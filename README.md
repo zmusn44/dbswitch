@@ -4,7 +4,7 @@
 
 ### 1、功能描述
 
-一句话，dbswitch工具提供源端数据库向目的端数据的迁移功能。迁移包括：
+一句话，dbswitch工具提供源端数据库向目的端数据的迁移功能，包括全量和增量方式。迁移包括：
 
 - **结构迁移**
 
@@ -14,7 +14,7 @@
 
 基于JDBC的fetch-size参数分批次读取源端数据库数据，并基于insert/copy方式将数据分批次写入目的数据库。
 
-支持有主键且dbswitch迁移的表进行增量变更同步功能(千万级以上数据量慎用)
+支持有主键且dbswitch迁移的表进行 **增量变更** （变化数据计算Change Data Calculate）同步功能(千万级以上数据量慎用)
 
 ### 2、功能设计
 
@@ -97,7 +97,7 @@ sh ./build.sh
 | target.datasource-target.schema | 目的端的schema名称 | public | 无 |
 | target.datasource-target.drop | 是否执行先drop表然后create表命令 | true | 可选值为：true、false |
 | target.writer-engine.insert | 是否使用insert写入数据 | true | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
-| target.change-data-synch | 是否启用增量变更同步，只针对有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
+| target.change-data-synch | target.datasource-target.drop为false时有效，是否启用增量变更同步，只针对有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
 
 
  **注意:**
