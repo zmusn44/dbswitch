@@ -44,7 +44,26 @@
 
 ### 4、结构设计
   
+- 模块结构设计
+
   ![structure](images/stucture.PNG)
+  
+- 模块结构功能 
+
+```
+└── dbswitch
+    ├── dbswitch-common    // dbswitch通用定义模块
+    ├── dbswitch-pgwriter  // PostgreSQL的二进制写入封装模块
+    ├── dbswitch-dbwriter  // 数据库的通用批量Insert封装模块
+    ├── dbswitch-core      // 数据库元数据抽取与建表结构语句转换模块
+    ├── dbswitch-sql       // 基于calcite的DML语句转换与通用SQL拼接模块
+    ├── dbswitch-dbcommon  // 数据库操作通用封装模块
+    ├── dbswitch-dbchange  // 基于全量比对计算变更（变化量）数据模块
+    ├── dbswitch-dbsync    // 将dbchange模块计算的变更数据同步入库模块
+    ├── dbswitch-data      // 工具入口模块，读取配置文件中的参数执行异构迁移同步
+    ├── dbswitch-webapi    // dbswitch-core与dbswitch-sql的RESTful接口模块
+    ├── package-tool       // 基于maven-assembly-plugin插件的项目打包模块
+```
  
 ## 二、编译配置
 
