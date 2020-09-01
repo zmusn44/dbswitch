@@ -198,10 +198,13 @@ bin/startup.sh
 
 - 4、Oracle的表虽然设置了主键，如果**主键约束实际为DISABLED状态**，那在进行结构转换时会按照没有此主键处理。
 
-- 5、关于增量变更同步方式的使用场景
+- 5、关于增量变更同步方式的使用说明
 
-> 先通过设置target.datasource-target.drop=true，target.change-data-synch=false；启动程序进行表结构和数据的全量同步;
-> 然后设置target.datasource-target.drop=false，target.change-data-synch=true；再启动程序对（有主键表）数据进行增量变更同步。
+> 步骤A：先通过设置target.datasource-target.drop=true，target.change-data-synch=false；启动程序进行表结构和数据的全量同步;
+
+> 步骤B：然后设置target.datasource-target.drop=false，target.change-data-synch=true；再启动程序对（有主键表）数据进行增量变更同步。
+
+> 注：如果待同步的两端表结构已经一致或源端字段是目的端字段的子集，也可只用用步骤B配置进行变更同步
 
 ## 四、文档博客
 
