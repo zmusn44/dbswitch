@@ -115,10 +115,17 @@ public final class ChangeCaculatorService implements IDatabaseChangeCaculator {
 			throw new RuntimeException("两个表的主键不相同");
 		}
 
-		same = (fieldsAllColumnOld.containsAll(fieldsPrimaryKeyNew)
-				&& fieldsAllColumnNew.containsAll(fieldsAllColumnOld));
-		if (!same) {
-			throw new RuntimeException("两个表的字段不相同");
+		if (useOwnFieldsColumns) {
+			if (!fieldsAllColumnOld.containsAll(task.getFieldColumns())
+					|| !fieldsAllColumnNew.containsAll(task.getFieldColumns())) {
+				throw new RuntimeException("指定的字段列不完全在两个表中存在");
+			}
+		} else {
+			same = (fieldsAllColumnOld.containsAll(fieldsPrimaryKeyNew)
+					&& fieldsAllColumnNew.containsAll(fieldsAllColumnOld));
+			if (!same) {
+				throw new RuntimeException("两个表的字段不相同");
+			}
 		}
 
 		if (useOwnFieldsColumns) {

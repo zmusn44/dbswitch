@@ -138,6 +138,7 @@ public class MainService {
 	 * @param writer
 	 */
 	private void doDataMigration(TableDescription tableDescription, IDatabaseWriter writer) {
+		log.info("migration table for {} ", tableDescription.getTableName());
 		JdbcTemplate targetJdbcTemplate = new JdbcTemplate(this.targetDataSource);
 		DatabaseTypeEnum targetDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(this.targetDataSource);
 
