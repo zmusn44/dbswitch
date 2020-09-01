@@ -33,6 +33,13 @@
 			<artifactId>ojdbc8</artifactId>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.oracle.database.nls/orai18n -->
+		<dependency>
+			<groupId>com.oracle.database.nls</groupId>
+			<artifactId>orai18n</artifactId>
+			<version>19.7.0.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>sqljdbc4</artifactId>
