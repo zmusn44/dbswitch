@@ -14,7 +14,7 @@
 
 基于JDBC的fetch-size参数分批次读取源端数据库数据，并基于insert/copy方式将数据分批次写入目的数据库。
 
-支持有主键且dbswitch迁移的表进行 **增量变更** （变化数据计算Change Data Calculate）同步功能(千万级以上数据量慎用)
+支持有主键表的 **增量变更同步** （变化数据计算Change Data Calculate）功能(千万级以上数据量慎用)
 
 ### 2、功能设计
 
@@ -39,6 +39,8 @@
  ![To-Greenplum](images/to_postgresql.PNG)
  
 - 源端oracle/SqlServer/mysql/PostgreSQL向目的端为MySQL的迁移
+
+ ![To-MySQL](images/to_mysql.PNG)
 
 ### 4、结构设计
   
@@ -97,8 +99,8 @@ sh ./build.sh
 | target.datasource-target.schema | 目的端的schema名称 | public | 无 |
 | target.datasource-target.drop | 是否执行先drop表然后create表命令,当target.datasource-target.drop=true时有效 | true | 可选值为：true、false |
 | target.create-table.auto-increment | 是否执启用支持create表时主键自增 | true | 可选值为：true、false |
-| target.writer-engine.insert | 是否使用insert写入数据 | true | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
-| target.change-data-synch | target.datasource-target.drop为false时有效，是否启用增量变更同步，只针对有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
+| target.writer-engine.insert | 是否使用insert写入数据 | false | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
+| target.change-data-synch | 是否启用增量变更同步，target.datasource-target.drop为false时且表有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
 
 
  **注意:**
@@ -106,6 +108,8 @@ sh ./build.sh
 - *（1）如果source.datasource-source.includes不为空，则按照包含表的方式来执行；*
 
 - *（2）如果source.datasource-source.includes为空，则按照source.datasource-source.excludes排除表的方式来执行。*
+
+- *（3）如果target.datasource-target.drop=false，target.change-data-synch=true；时会对有主键表启用增量变更方式同步*
 
 - mysql的驱动配置样例
 
@@ -175,13 +179,20 @@ bin/startup.sh
 
 - 4、Oracle的表虽然设置了主键，如果**主键约束实际为DISABLED状态**，那在进行结构转换时会按照没有此主键处理。
 
+- 5、关于增量变更同步方式的使用场景
+
+> 先通过设置target.datasource-target.drop=true，target.change-data-synch=false；启动程序进行表结构和数据的全量同步;
+> 然后设置target.datasource-target.drop=false，target.change-data-synch=true；再启动程序对（有主键表）数据进行增量变更同步。
+
 ## 四、文档博客
 
 （1）https://blog.csdn.net/inrgihc/article/details/103739629
 
 （2）https://blog.csdn.net/inrgihc/article/details/104642238
 
-（3）https://blog.csdn.net/inrgihc/article/details/103738656
+（3）https://blog.csdn.net/inrgihc/article/details/103932231
+
+（4）https://blog.csdn.net/inrgihc/article/details/103738656
 
 ## 五、问题反馈
 
