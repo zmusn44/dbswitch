@@ -644,6 +644,8 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 			return in.toString();
 		} else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
 			return in.toString();
+		} else if (in instanceof byte[]) {
+			return new String((byte[]) in);
 		}
 
 		return null;
