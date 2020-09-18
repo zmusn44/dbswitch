@@ -60,7 +60,7 @@ public class MySqlDatabaseSynchImpl extends AbstractDatabaseSynchronize implemen
 		}
 
 		return String.format("UPDATE `%s`.`%s` SET %s WHERE %s", schemaName, tableName, StringUtils.join(uf, " , "),
-				StringUtils.join(uw, " , "));
+				StringUtils.join(uw, " AND "));
 	}
 
 	@Override
