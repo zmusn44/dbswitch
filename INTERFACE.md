@@ -1297,6 +1297,7 @@ CREATE TABLE "private"."t_test_postgres_table" (
 | Oracle | 文本 | LONG | LONG |
 | Oracle | 文本 | CLOB | CLOB |
 | Oracle | 二进制 | BLOB | BLOB |
+| Greenplum | 布尔 | BOOL | BOOL |
 | Greenplum | 数字 | SMALLINT | SMALLINT(2) |
 | Greenplum | 数字 | INT2 | INT2 |
 | Greenplum | 数字 | INTEGER | INTEGER |
