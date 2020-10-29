@@ -50,7 +50,10 @@ public enum GreenplumDataTypeEnum {
 	CHAR(21,Types.CHAR),
 	VARCHAR(22,Types.VARCHAR),
 	TEXT(23,Types.CLOB),
-	BYTEA(24,Types.BLOB);
+	BYTEA(24,Types.BLOB),
+
+	//~~~~~~~其他类型~~~~~~~~
+	BOOL(25,Types.BOOLEAN);
 	
 	private int index;
 	private int jdbctype;

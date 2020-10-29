@@ -185,8 +185,15 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 				} else if (length < 256) {
 					retval += "VARCHAR(" + length + ")";
 				}else if (null!=pks && pks.contains(fieldname)) {
-					//MySQL中varchar字段为主键时最大长度为254
-					retval += "VARCHAR(254)";
+					/*
+					 * MySQL5.6中varchar字段为主键时最大长度为254,例如如下的建表语句在MySQL5.7下能通过，但在MySQL5.6下无法通过：
+					 *	create table `t_test`(
+					 *	`key` varchar(1024) binary,
+					 *	`val` varchar(1024) binary,
+					 *	primary key(`key`)
+					 * );
+					 */
+					retval += "VARCHAR(254) BINARY";
 				} else if (length < 65536) {
 					retval += "TEXT";
 				} else if (length < 16777216) {

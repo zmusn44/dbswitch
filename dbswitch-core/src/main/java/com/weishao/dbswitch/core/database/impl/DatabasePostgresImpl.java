@@ -32,7 +32,7 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
 
 	@Override
 	public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
-		String querySQL = String.format(" %s LIMIT 1 OFFSET 0 ", sql.replace(";", ""));
+		String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
 		return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.POSTGRESQL);
 	}
 
