@@ -99,28 +99,33 @@ public class MainService {
 				log.info("!!!! Use source.datasource-source.includes to filter tables");
 			}
 
-			// 读取源库指定shema里所有的表
-			List<TableDescription> tableList = metaDataService.queryTableList(properties.dbSourceJdbcUrl,
-					properties.dbSourceUserName, properties.dbSourcePassword, properties.schemaNameSource);
-			if (tableList.isEmpty()) {
-				log.warn("### Find table list empty for shema={}", properties.schemaNameSource);
-			} else {
-				int finished = 0;
-				for (TableDescription td : tableList) {
-					String tableName = td.getTableName();
-					if (useExcludeTables) {
-						if (!filters.contains(tableName)) {
-							this.doDataMigration(td, writer);
+			List<String> schemas=properties.getSourceSchemaNames();
+			log.info("Source schema names is :{}", jackson.writeValueAsString(schemas));
+			for (String schema : schemas) {
+				// 读取源库指定shema里所有的表
+				List<TableDescription> tableList = metaDataService.queryTableList(properties.dbSourceJdbcUrl,
+						properties.dbSourceUserName, properties.dbSourcePassword, schema);
+				if (tableList.isEmpty()) {
+					log.warn("### Find table list empty for shema={}", schema);
+				} else {
+					int finished = 0;
+					for (TableDescription td : tableList) {
+						String tableName = td.getTableName();
+						if (useExcludeTables) {
+							if (!filters.contains(tableName)) {
+								this.doDataMigration(td, writer);
+							}
+						} else {
+							if (includes.contains(tableName)) {
+								this.doDataMigration(td, writer);
+							}
 						}
-					} else {
-						if (includes.contains(tableName)) {
-							this.doDataMigration(td, writer);
-						}
-					}
 
-					log.info("#### Complete data migration count is {},total is {}, process is {}%", ++finished,
-							tableList.size(), finished * 100.0 / tableList.size());
+						log.info("#### Complete data migration for schema [ {} ] count is {},total is {}, process is {}%",
+								schema, ++finished, tableList.size(), (float) (finished * 100.0 / tableList.size()));
+					}
 				}
+
 			}
 			log.info("service run success!");
 		} catch (Exception e) {

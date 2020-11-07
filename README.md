@@ -112,10 +112,10 @@ sh ./build.sh
 | target.datasource.username | 目的端连接帐号名 | study | 无 |
 | target.datasource.password | 目的端连接帐号密码 | 123456 | 无 |
 | source.datasource-fetch.size | 来源端数据库查询时的fetch_size设置 | 10000 | 需要大于100有效 |
-| source.datasource-source.schema | 来源端的schema名称 | ZFXFZB | 无 |
+| source.datasource-source.schema | 来源端的schema名称 | dbo,test | 多个之间用英文逗号分隔 |
 | source.datasource-source.includes | 来源端schema下的表中需要包含的表名称 | users1,orgs1 | 多个之间用英文逗号分隔 |
 | source.datasource-source.excludes | 来源端schema下的表中需要过滤的表名称 | users,orgs | 不包含的表名称，多个之间用英文逗号分隔 |
-| target.datasource-target.schema | 目的端的schema名称 | public | 无 |
+| target.datasource-target.schema | 目的端的schema名称 | public | 目的端的schema名称只能有且只有一个 |
 | target.datasource-target.drop | 是否执行先drop表然后create表命令,当target.datasource-target.drop=true时有效 | true | 可选值为：true、false |
 | target.create-table.auto-increment | 是否执启用支持create表时主键自增 | true | 可选值为：true、false |
 | target.writer-engine.insert | 是否使用insert写入数据 | false | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
