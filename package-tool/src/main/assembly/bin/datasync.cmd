@@ -20,12 +20,6 @@ set APP_BIN_PATH=%APP_HOME%\bin
 set APP_LIB_PATH=%APP_HOME%\lib
 set APP_CONF_PATH=%APP_HOME%\conf
 
-::classpath参数，包括指定conf目录下所有的配置
-set CLASSPATH=%APP_CONF_PATH%
-For /r "%APP_HOME%\lib" %%f in (*.jar) do (
-	set CLASSPATH=!CLASSPATH!;%%f
-)
-
 ::java虚拟机启动参数
 set JAVA_OPTS=-server -Xms1024m -Xmx1024m -Xmn512m -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Doracle.jdbc.J2EE13Compliant=true
 
@@ -37,7 +31,7 @@ echo OS=%OS%
 echo.
 echo APP_HOME=%APP_HOME%
 echo APP_MAINCLASS=%APP_MAINCLASS%
-echo CLASSPATH=%CLASSPATH%
+echo CLASSPATH=%APP_CONF_PATH%;%APP_LIB_PATH%\*
 echo CURRENT_DATE=%date% %time%:~0,8%
 echo ********************************************************
 
