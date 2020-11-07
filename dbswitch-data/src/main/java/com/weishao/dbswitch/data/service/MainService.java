@@ -158,7 +158,7 @@ public class MainService {
 						.createDatabaseOperator(this.targetDataSource);
 				targetOperator.dropTable(properties.dbTargetSchema, tableDescription.getTableName());
 			} catch (Exception e) {
-				log.info("Table {}.{} is not exits!", properties.dbTargetSchema, tableDescription.getTableName());
+				log.info("Target Table {}.{} is not exits!", properties.dbTargetSchema, tableDescription.getTableName());
 			}
 
 			// 然后create表
