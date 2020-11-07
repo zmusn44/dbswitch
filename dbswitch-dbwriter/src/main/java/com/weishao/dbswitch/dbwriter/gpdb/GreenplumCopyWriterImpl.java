@@ -645,16 +645,32 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 		} else if (in.getClass().getName().equals("oracle.sql.BFILE")) {
 			Class<?> clz = in.getClass();
 			try {
-				Method m = clz.getMethod("characterStreamValue");
-				java.io.Reader is = (java.io.Reader) m.invoke(in);
-				java.io.BufferedReader reader = new java.io.BufferedReader(is);
-				String line = reader.readLine();
-				StringBuilder sb = new StringBuilder();
-				while (line != null) {
-					sb.append(line);
-					line = reader.readLine();
+				Method methodFileExists = clz.getMethod("fileExists");
+				boolean exists=(boolean)methodFileExists.invoke(in);
+				if(!exists) {
+					return "";
 				}
-				return sb.toString();
+				
+				Method methodOpenFile = clz.getMethod("openFile");
+				methodOpenFile.invoke(in);
+
+				try {
+					Method methodCharacterStreamValue = clz.getMethod("getBinaryStream");
+					java.io.InputStream is = (java.io.InputStream) methodCharacterStreamValue.invoke(in);
+
+					String line;
+					StringBuilder sb = new StringBuilder();
+
+					java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is));
+					while ((line = br.readLine()) != null) {
+						sb.append(line);
+					}
+
+					return sb.toString();
+				} finally {
+					Method methodCloseFile = clz.getMethod("closeFile");
+					methodCloseFile.invoke(in);
+				}
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
