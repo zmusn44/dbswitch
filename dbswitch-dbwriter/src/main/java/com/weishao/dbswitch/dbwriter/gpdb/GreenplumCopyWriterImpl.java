@@ -642,6 +642,38 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 			return in.toString();
 		} else if (in.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
 			return in.toString();
+		} else if (in.getClass().getName().equals("oracle.sql.BFILE")) {
+			Class<?> clz = in.getClass();
+			try {
+				Method methodFileExists = clz.getMethod("fileExists");
+				boolean exists=(boolean)methodFileExists.invoke(in);
+				if(!exists) {
+					return "";
+				}
+				
+				Method methodOpenFile = clz.getMethod("openFile");
+				methodOpenFile.invoke(in);
+
+				try {
+					Method methodCharacterStreamValue = clz.getMethod("getBinaryStream");
+					java.io.InputStream is = (java.io.InputStream) methodCharacterStreamValue.invoke(in);
+
+					String line;
+					StringBuilder sb = new StringBuilder();
+
+					java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is));
+					while ((line = br.readLine()) != null) {
+						sb.append(line);
+					}
+
+					return sb.toString();
+				} finally {
+					Method methodCloseFile = clz.getMethod("closeFile");
+					methodCloseFile.invoke(in);
+				}
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		} else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
 			return in.toString();
 		} else if (in instanceof byte[]) {

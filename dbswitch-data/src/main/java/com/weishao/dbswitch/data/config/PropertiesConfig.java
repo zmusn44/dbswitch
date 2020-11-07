@@ -65,7 +65,18 @@ public class PropertiesConfig {
 	public int fetchSizeSource;
 
 	@Value("${source.datasource-source.schema}")
-	public String schemaNameSource;
+	private String schemaNameSource;
+	
+	public List<String> getSourceSchemaNames() {
+		if (!Strings.isEmpty(schemaNameSource)) {
+			String[] strs = schemaNameSource.split(",");
+			if (strs.length > 0) {
+				return new ArrayList<>(Arrays.asList(strs));
+			}
+		}
+
+		return new ArrayList<>();
+	}
 
 	@Value("${source.datasource-source.includes}")
 	private String tableNameIncludesSource;
@@ -84,7 +95,6 @@ public class PropertiesConfig {
 		return new ArrayList<>();
 	}
 
-	
 	public List<String> getSourceTableNameExcludes() {
 		if (!Strings.isEmpty(tableNameExcludesSource)) {
 			String[] strs = tableNameExcludesSource.split(",");
