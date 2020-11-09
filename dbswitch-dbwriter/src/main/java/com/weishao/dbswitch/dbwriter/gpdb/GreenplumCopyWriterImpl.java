@@ -646,11 +646,11 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 			Class<?> clz = in.getClass();
 			try {
 				Method methodFileExists = clz.getMethod("fileExists");
-				boolean exists=(boolean)methodFileExists.invoke(in);
-				if(!exists) {
+				boolean exists = (boolean) methodFileExists.invoke(in);
+				if (!exists) {
 					return "";
 				}
-				
+
 				Method methodOpenFile = clz.getMethod("openFile");
 				methodOpenFile.invoke(in);
 
@@ -671,6 +671,9 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 					Method methodCloseFile = clz.getMethod("closeFile");
 					methodCloseFile.invoke(in);
 				}
+			} catch (java.lang.reflect.InvocationTargetException ex) {
+				log.warn("Error for handle oracle.sql.BFILE: ", ex);
+				return "";
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
