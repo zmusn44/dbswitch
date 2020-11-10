@@ -119,6 +119,8 @@ public class PostgresDialectImpl extends AbstractDatabaseDialect {
 			} else if (Objects.nonNull(defaultValue) && !defaultValue.isEmpty()) {
 				if (defaultValue.equalsIgnoreCase("NULL")) {
 					sb.append(" DEFAULT NULL");
+				} else if ("now()".equalsIgnoreCase(defaultValue)) {
+					sb.append(" DEFAULT now() ");
 				} else {
 					sb.append(String.format(" DEFAULT '%s'", defaultValue));
 				}
