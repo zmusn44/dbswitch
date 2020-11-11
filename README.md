@@ -93,6 +93,14 @@ cd dbswitch/
 sh ./build.sh
 ```
 
+**(3) Docker下:**
+
+```
+git clone https://gitee.com/inrgihc/dbswitch.git
+cd dbswitch/
+sh ./docker-maven-build.sh
+```
+
 ### 2、安装部署
 
 当编译打包命令执行完成后，会在dbswitch/target/目录下生成dbswitch-relase-x.x.x.tar.gz的打包文件，将文件拷贝到已安装JRE的部署机器上解压即可。
