@@ -23,6 +23,7 @@ import com.weishao.dbswitch.core.util.JdbcUrlUtils;
 /**
  * 结构迁移转换实现类
  * 备注：字段信息、主键、生成建表的SQL语句
+ * 说明：不支持并发调用，调用方需要做并发一致性保证
  * 
  * @author tang
  *
