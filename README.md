@@ -8,7 +8,7 @@
 
 - **结构迁移**
 
-字段类型、主键信息、建表语句等的转换，具有类似kettle的表输出组件生成建表SQL功能。
+字段类型、主键信息、建表语句等的转换，并生成建表SQL语句。
 
 - **数据迁移**。
 
@@ -22,25 +22,23 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为Greenplum的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Greenplum的迁移
 
- ![To-Greenplum](images/to_greenplum.PNG)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为Oralce的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Oralce的迁移
 
- ![To-Greenplum](images/to_oracle.PNG)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为SQLServer的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为SQLServer的迁移
 
- ![To-Greenplum](images/to_sqlserver.PNG)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为PostgreSQL的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为PostgreSQL的迁移
 
- ![To-Greenplum](images/to_postgresql.PNG)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为MySQL的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为MySQL/MariaDB的迁移(测试中)
 
- ![To-MySQL](images/to_mysql.PNG)
+
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为DB2的迁移(测试中)
+
 
 ### 4、结构设计
   
@@ -138,11 +136,16 @@ sh ./docker-maven-build.sh
 
 - *（3）如果target.datasource-target.drop=false，target.change-data-synch=true；时会对有主键表启用增量变更方式同步*
 
-- mysql的驱动配置样例
+- mysql/mariadb的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
 jdbc驱动名称： com.mysql.cj.jdbc.Driver
+```
+
+```
+jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+jdbc驱动名称： com.mariadb.cj.jdbc.Driver
 ```
 
 - oracle的驱动配置样例
@@ -164,6 +167,13 @@ jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/study
 jdbc驱动名称：org.postgresql.Driver
+```
+
+- DB2的驱动配置样例
+
+```
+jdbc连接地址：jdbc:db2://172.17.203.91:50000/testdb
+jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
 启动执行命令如下：
