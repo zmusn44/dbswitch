@@ -9,29 +9,32 @@
 /////////////////////////////////////////////////////////////
 package com.weishao.dbswitch.webapi.controller;
 
-import java.util.Map;
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Strings;
 import com.weishao.dbswitch.common.constant.DatabaseTypeEnum;
 import com.weishao.dbswitch.core.model.ColumnDescription;
 import com.weishao.dbswitch.core.model.DatabaseDescription;
-import com.weishao.dbswitch.webapi.model.ResponseResult;
 import com.weishao.dbswitch.core.model.TableDescription;
 import com.weishao.dbswitch.core.service.IMigrationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import com.weishao.dbswitch.webapi.model.ResponseResult;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @Api(tags = { "表结构抽取转换接口" })
 @RestController
@@ -39,8 +42,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class StructureController {
 
 	@Autowired
-	@Qualifier("MigrationService")
-	private IMigrationService migrationService;
+	private ApplicationContext applicationContext;
+
+	private IMigrationService getMigrationService() {
+		return (IMigrationService) applicationContext.getBean("MigrationService");
+	}
 	
 	@RequestMapping(value = "/models_list", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "查询所有的模式(model/schema)", notes = "获取数据库中所有的模式(model/schema),，请求的示例包体格式为：\n"
@@ -99,6 +105,7 @@ public class StructureController {
 			}
 		}
 
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname, charset, user,passwd);
 		migrationService.setDatabaseConnection(databaseDesc);
 		return ResponseResult.success(migrationService.querySchemaList());
@@ -164,6 +171,7 @@ public class StructureController {
 			}
 		}
 		
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc=new DatabaseDescription(type, host, port, mode, dbname, charset, user, passwd);
 		migrationService.setDatabaseConnection(databaseDesc);
 		List<TableDescription> tables=migrationService.queryTableList(model);
@@ -244,7 +252,7 @@ public class StructureController {
 		}
 
 		Map<String, Object> ret = new HashMap<String, Object>();
-
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname, charset, user, passwd);
 		migrationService.setDatabaseConnection(databaseDesc);
 		List<ColumnDescription> columnDescs = migrationService.queryTableColumnMeta(model, src_table);
@@ -343,6 +351,7 @@ public class StructureController {
 			}
 		}
 		
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc=new DatabaseDescription(type, host, port, mode, dbname, charset, user, passwd);
 		migrationService.setDatabaseConnection(databaseDesc);
 		List<ColumnDescription> columnDescs=migrationService.querySqlColumnMeta(querysql);
@@ -443,6 +452,7 @@ public class StructureController {
 			}
 		}
 		
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc=new DatabaseDescription(type, host, port, mode, dbname, charset, user, passwd);
 		DatabaseTypeEnum taregetDabaseType=DatabaseTypeEnum.valueOf(target.toUpperCase());
 		migrationService.setDatabaseConnection(databaseDesc);
@@ -547,6 +557,7 @@ public class StructureController {
 			}
 		}
 		
+		IMigrationService migrationService=this.getMigrationService();
 		DatabaseDescription databaseDesc=new DatabaseDescription(type, host, port, mode, dbname, charset, user, passwd);
 		migrationService.setDatabaseConnection(databaseDesc);
 		migrationService.testQuerySQL(querysql);
