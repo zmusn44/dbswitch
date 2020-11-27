@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import com.weishao.dbswitch.dbcommon.util.DatabaseAwareUtils;
+import com.weishao.dbswitch.dbsynch.db2.DB2DatabaseSynchImpl;
 import com.weishao.dbswitch.dbsynch.mssql.SqlServerDatabaseSynchImpl;
 import com.weishao.dbswitch.dbsynch.mysql.MySqlDatabaseSynchImpl;
 import com.weishao.dbswitch.dbsynch.oracle.OracleDatabaseSynchImpl;
@@ -39,6 +40,7 @@ public final class DatabaseSynchronizeFactory {
 			put("SQLSERVER", SqlServerDatabaseSynchImpl.class.getName());
 			put("POSTGRESQL", PostgresqlDatabaseSynchImpl.class.getName());
 			put("GREENPLUM", GreenplumDatabaseSynchImpl.class.getName());
+			put("DB2",DB2DatabaseSynchImpl.class.getName());
 		}
 	};
 

@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
+import com.weishao.dbswitch.dbcommon.database.impl.DB2DatabaseOperator;
 import com.weishao.dbswitch.dbcommon.database.impl.GreenplumDatabaseOperator;
 import com.weishao.dbswitch.dbcommon.database.impl.MysqlDatabaseOperator;
 import com.weishao.dbswitch.dbcommon.database.impl.OracleDatabaseOperator;
@@ -40,6 +41,7 @@ public final class DatabaseOperatorFactory {
 			put("SQLSERVER", SqlServerDatabaseOperator.class.getName());
 			put("POSTGRESQL", PostgreSqlDatabaseOperator.class.getName());
 			put("GREENPLUM", GreenplumDatabaseOperator.class.getName());
+			put("DB2", DB2DatabaseOperator.class.getName());
 		}
 	};
 
@@ -71,7 +73,7 @@ public final class DatabaseOperatorFactory {
 	 * 根据DataSource获取数据库的类型
 	 * 
 	 * @param dataSource 数据库源
-	 * @return 数据库的类型：mysql/oracle/postgresql/sqlserver/greenplum
+	 * @return 数据库的类型：mysql/oracle/postgresql/sqlserver/greenplum/db2
 	 */
 	public static String getDatabaseNameByDataSource(DataSource dataSource) {
 		try {

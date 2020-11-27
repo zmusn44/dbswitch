@@ -35,6 +35,7 @@ public class DatabaseWriterFactory {
 			put("SQLSERVER", "com.weishao.dbswitch.dbwriter.mssql.SqlServerWriterImpl");
 			put("POSTGRESQL", "com.weishao.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl");
 			put("GREENPLUM", "com.weishao.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl");
+			put("DB2", "com.weishao.dbswitch.dbwriter.db2.DB2WriterImpl");
 		}
 	};
 

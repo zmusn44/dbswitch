@@ -38,6 +38,10 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 	public DatabaseMysqlImpl() {
 		super("com.mysql.cj.jdbc.Driver");
 	}
+	
+	public DatabaseMysqlImpl(String driverClassName) {
+		super(driverClassName);
+	}
 
 	@Override
 	public List<String> querySchemaList() {

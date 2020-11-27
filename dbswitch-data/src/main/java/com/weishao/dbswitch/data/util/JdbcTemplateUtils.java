@@ -45,6 +45,8 @@ public final class JdbcTemplateUtils {
 		String driverClassName = dataSource.getDriverClassName();
 		if (driverClassName.contains("mysql")) {
 			return DatabaseTypeEnum.MYSQL;
+		} else if (driverClassName.contains("mariadb")) {
+			return DatabaseTypeEnum.MYSQL;
 		} else if (driverClassName.contains("oracle")) {
 			return DatabaseTypeEnum.ORACLE;
 		} else if (driverClassName.contains("postgresql")) {
@@ -53,6 +55,8 @@ public final class JdbcTemplateUtils {
 			return DatabaseTypeEnum.GREENPLUM;
 		} else if (driverClassName.contains("sqlserver")) {
 			return DatabaseTypeEnum.SQLSERVER;
+		} else if (driverClassName.contains("db2")) {
+			return DatabaseTypeEnum.DB2;
 		} else {
 			throw new RuntimeException(
 					String.format("Unsupport database type by driver class name [%s]", driverClassName));
