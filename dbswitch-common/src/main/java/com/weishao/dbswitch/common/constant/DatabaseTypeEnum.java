@@ -49,7 +49,17 @@ public enum DatabaseTypeEnum {
 	/**
 	 * Greenplum数据库类型
 	 */
-	GREENPLUM(6);
+	GREENPLUM(6),
+	
+	/**
+	 * MariaDB数据库类型
+	 */
+	MARIADB(7),
+	
+	/**
+	 * DB2数据库类型
+	 */
+	DB2(8);
 
 	private int index;
 

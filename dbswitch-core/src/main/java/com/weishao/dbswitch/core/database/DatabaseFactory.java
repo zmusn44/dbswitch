@@ -12,7 +12,9 @@ package com.weishao.dbswitch.core.database;
 import java.util.HashMap;
 import java.util.Map;
 import com.weishao.dbswitch.common.constant.DatabaseTypeEnum;
+import com.weishao.dbswitch.core.database.impl.DatabaseDB2Impl;
 import com.weishao.dbswitch.core.database.impl.DatabaseGreenplumImpl;
+import com.weishao.dbswitch.core.database.impl.DatabaseMariaDBImpl;
 import com.weishao.dbswitch.core.database.impl.DatabaseMysqlImpl;
 import com.weishao.dbswitch.core.database.impl.DatabaseOracleImpl;
 import com.weishao.dbswitch.core.database.impl.DatabasePostgresImpl;
@@ -37,6 +39,8 @@ public final class DatabaseFactory {
 	      put(DatabaseTypeEnum.SQLSERVER,DatabaseSqlserverImpl.class.getName());
 	      put(DatabaseTypeEnum.POSTGRESQL,DatabasePostgresImpl.class.getName());
 	      put(DatabaseTypeEnum.GREENPLUM,DatabaseGreenplumImpl.class.getName());
+	      put(DatabaseTypeEnum.MARIADB,DatabaseMariaDBImpl.class.getName());
+	      put(DatabaseTypeEnum.DB2,DatabaseDB2Impl.class.getName());
 	}}; 
 	
 	public static AbstractDatabase getDatabaseInstance(DatabaseTypeEnum type) {
