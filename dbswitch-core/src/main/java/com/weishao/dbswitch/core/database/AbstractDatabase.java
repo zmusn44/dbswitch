@@ -10,6 +10,7 @@
 package com.weishao.dbswitch.core.database;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
+
 import com.weishao.dbswitch.common.constant.DatabaseTypeEnum;
 import com.weishao.dbswitch.core.model.ColumnDescription;
 import com.weishao.dbswitch.core.model.ColumnMetaData;
@@ -69,8 +71,13 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
 			// 设置最大时间
 			DriverManager.setLoginTimeout(15);
+			
 			this.connection = DriverManager.getConnection(jdbcUrl, props);
-			this.metaData = this.connection.getMetaData();
+			if (Objects.isNull(this.connection)) {
+				throw new RuntimeException("数据库连接失败，连接参数为：" + jdbcUrl);
+			}
+			
+			this.metaData = Objects.requireNonNull(this.connection.getMetaData());
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
