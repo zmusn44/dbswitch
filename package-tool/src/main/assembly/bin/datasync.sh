@@ -6,7 +6,7 @@
 #############################################
 # !!!!!! Modify here please
 
-APP_MAIN="com.weishao.dbswitch.data.DataSyncApplication"
+APP_MAIN="com.gitee.dbswitch.data.DataSyncApplication"
 
 #############################################
 
