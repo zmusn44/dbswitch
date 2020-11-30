@@ -172,7 +172,7 @@ jdbc驱动名称：org.postgresql.Driver
 - DB2的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:db2://172.17.203.91:50000/testdb
+jdbc连接地址：jdbc:db2://172.17.203.91:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
 jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
