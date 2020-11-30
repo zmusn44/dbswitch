@@ -34,10 +34,10 @@
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为PostgreSQL的迁移
 
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为MySQL/MariaDB的迁移(测试中)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为DB2的迁移(测试中)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
 
 ### 4、结构设计
@@ -54,7 +54,7 @@
     ├── dbswitch-pgwriter  // PostgreSQL的二进制写入封装模块
     ├── dbswitch-dbwriter  // 数据库的通用批量Insert封装模块
     ├── dbswitch-core      // 数据库元数据抽取与建表结构语句转换模块
-    ├── dbswitch-sql       // 基于calcite的DML语句转换与通用SQL拼接模块
+    ├── dbswitch-sql       // 基于calcite的DML语句转换与DDL拼接模块
     ├── dbswitch-dbcommon  // 数据库操作通用封装模块
     ├── dbswitch-dbchange  // 基于全量比对计算变更（变化量）数据模块
     ├── dbswitch-dbsync    // 将dbchange模块计算的变更数据同步入库模块
