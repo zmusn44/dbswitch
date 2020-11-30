@@ -10,8 +10,6 @@
 package com.weishao.dbswitch.core.database.impl;
 
 import java.util.List;
-import com.alibaba.druid.sql.SQLUtils;
-import com.alibaba.druid.util.JdbcConstants;
 import com.weishao.dbswitch.common.constant.DatabaseTypeEnum;
 import com.weishao.dbswitch.core.constant.Const;
 import com.weishao.dbswitch.core.database.AbstractDatabase;
@@ -49,7 +47,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 
 	@Override
 	public String formatSQL(String sql) {
-		return SQLUtils.format(sql, JdbcConstants.DB2);
+		return sql;
 	}
 
 	@Override
@@ -80,7 +78,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 				if (useAutoInc) {
 					retval += "BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 0, INCREMENT BY 1, NOCACHE)";
 				} else {
-					retval += "BIGINT";
+					retval += "BIGINT NOT NULL";
 				}
 			} else {
 				if (length > 0) {
@@ -96,18 +94,22 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 			break;
 		case ColumnMetaData.TYPE_INTEGER:
 			if (null != pks && pks.contains(fieldname)) {
-				retval += "INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 0, INCREMENT BY 1, NOCACHE)";
+				if (useAutoInc) {
+					retval += "INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 0, INCREMENT BY 1, NOCACHE)";
+				} else {
+					retval += "INTEGER NOT NULL";
+				}
 			} else {
 				retval += "INTEGER";
 			}
 			break;
 		case ColumnMetaData.TYPE_STRING:
-			if (length > 32672 || length >= AbstractDatabase.CLOB_LENGTH) {
+			if (length*3 > 32672) {
 				retval += "CLOB";
 			} else {
 				retval += "VARCHAR";
 				if (length > 0) {
-					retval += "(" + length;
+					retval += "(" + length*3;
 				} else {
 					retval += "(";
 				}
@@ -121,7 +123,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 			
 			break;
 		case ColumnMetaData.TYPE_BINARY:
-			if (length > 32672 || length >= AbstractDatabase.CLOB_LENGTH) {
+			if (length > 32672) {
 				retval += "BLOB(" + length + ")";
 			} else {
 				if (length > 0) {

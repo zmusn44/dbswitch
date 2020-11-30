@@ -148,6 +148,7 @@ public class JdbcUrlUtils {
 					"jdbc:mariadb://%s:%d/%s?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=%s&nullCatalogMeansCurrent=true&connectTimeout=%d",
 					db.getHost(), db.getPort(), db.getDbname(), charsets, connectTimeout * 1000);
 		case DB2:
+			System.setProperty("db2.jcc.charsetdecoderencoder", "3");
 			return String.format("jdbc:db2://%s:%d/%s", db.getHost(), db.getPort(), db.getDbname());
 		default:
 			throw new RuntimeException(String.format("Unkown database type (%s)", db.getType().name()));
