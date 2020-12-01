@@ -22,20 +22,13 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Greenplum的迁移
-
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Greenplum/PostgreSQL的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Oralce的迁移
-
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为SQLServer的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
- 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为PostgreSQL的迁移
-
- 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
-
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
@@ -109,11 +102,11 @@ sh ./docker-maven-build.sh
 
 | 配置参数 | 配置说明 | 示例 | 备注 |
 | :------| :------ | :------ | :------ |
-| source.datasource.url | 来源端JDBC连接的URL | jdbc:oracle:thin:@10.17.1.158:1521:ORCL | 可为：oracle/mysql/sqlserver/postgresql |
+| source.datasource.url | 来源端JDBC连接的URL | jdbc:oracle:thin:@10.17.1.158:1521:ORCL | 可为：oracle/mysql/mariadb/sqlserver/postgresql/db2 |
 | source.datasource.driver-class-name | 来源端数据库的驱动类名称 | oracle.jdbc.driver.OracleDriver | 对应数据库的驱动类 |
 | source.datasource.username | 来源端连接帐号名 | tangyibo | 无 |
 | source.datasource.password | 来源端连接帐号密码 | tangyibo | 无 |
-| target.datasource.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum |
+| target.datasource.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum,mysql/mariadb/db2也支持，但字段类型兼容性问题比较多 |
 | target.datasource.driver-class-name |目的端 数据库的驱动类名称 | org.postgresql.Driver | 对应数据库的驱动类 |
 | target.datasource.username | 目的端连接帐号名 | study | 无 |
 | target.datasource.password | 目的端连接帐号密码 | 123456 | 无 |
@@ -155,7 +148,7 @@ jdbc连接地址：jdbc:oracle:thin:@172.17.2.58:1521:ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
-- SqlServer的驱动配置样例
+- SqlServer(>=2005)的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:sqlserver://172.16.2.66:1433;DatabaseName=hqtest
