@@ -37,9 +37,10 @@
 ## 二、数据库结构转换的兼容性问题
 
  - oracle中 VARCHAR2(4000) 类型可以作为主键，在MySQL中varchar做主键最大长度为255 ;
- - 在MySQL(某些版本)数据库中text、varchar(>255)、blob等类型不允许做主键 ;
+ - 在MySQL(某些版本)数据库中text、blob等类型不允许做主键 ;
  - 在Greenplum中分布式键不允许修改；
  - 在MySQL数据库中varchar类型的总长度不应大于65535
+ - 在MySQL数据库中varchar类型做主键，5.6版本varchar(>255)不能做主键，但在5.7版本中varchar(>1024)不能做主键
  - 整理中....
 
 ## 三、错误异常返回
