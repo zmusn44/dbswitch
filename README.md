@@ -8,7 +8,7 @@
 
 - **结构迁移**
 
-字段类型、主键信息、建表语句等的转换，具有类似kettle的表输出组件生成建表SQL功能。
+字段类型、主键信息、建表语句等的转换，并生成建表SQL语句。
 
 - **数据迁移**。
 
@@ -22,25 +22,16 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为Greenplum的迁移
-
- ![To-Greenplum](images/to_greenplum.PNG)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Greenplum/PostgreSQL的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为Oralce的迁移
-
- ![To-Greenplum](images/to_oracle.PNG)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为SQLServer的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
- ![To-Greenplum](images/to_sqlserver.PNG)
- 
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为PostgreSQL的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
- ![To-Greenplum](images/to_postgresql.PNG)
- 
-- 源端oracle/SqlServer/mysql/PostgreSQL向目的端为MySQL的迁移
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
- ![To-MySQL](images/to_mysql.PNG)
 
 ### 4、结构设计
   
@@ -56,7 +47,7 @@
     ├── dbswitch-pgwriter  // PostgreSQL的二进制写入封装模块
     ├── dbswitch-dbwriter  // 数据库的通用批量Insert封装模块
     ├── dbswitch-core      // 数据库元数据抽取与建表结构语句转换模块
-    ├── dbswitch-sql       // 基于calcite的DML语句转换与通用SQL拼接模块
+    ├── dbswitch-sql       // 基于calcite的DML语句转换与DDL拼接模块
     ├── dbswitch-dbcommon  // 数据库操作通用封装模块
     ├── dbswitch-dbchange  // 基于全量比对计算变更（变化量）数据模块
     ├── dbswitch-dbsync    // 将dbchange模块计算的变更数据同步入库模块
@@ -111,11 +102,11 @@ sh ./docker-maven-build.sh
 
 | 配置参数 | 配置说明 | 示例 | 备注 |
 | :------| :------ | :------ | :------ |
-| source.datasource.url | 来源端JDBC连接的URL | jdbc:oracle:thin:@10.17.1.158:1521:ORCL | 可为：oracle/mysql/sqlserver/postgresql |
+| source.datasource.url | 来源端JDBC连接的URL | jdbc:oracle:thin:@10.17.1.158:1521:ORCL | 可为：oracle/mysql/mariadb/sqlserver/postgresql/db2 |
 | source.datasource.driver-class-name | 来源端数据库的驱动类名称 | oracle.jdbc.driver.OracleDriver | 对应数据库的驱动类 |
 | source.datasource.username | 来源端连接帐号名 | tangyibo | 无 |
 | source.datasource.password | 来源端连接帐号密码 | tangyibo | 无 |
-| target.datasource.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum |
+| target.datasource.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum,mysql/mariadb/db2也支持，但字段类型兼容性问题比较多 |
 | target.datasource.driver-class-name |目的端 数据库的驱动类名称 | org.postgresql.Driver | 对应数据库的驱动类 |
 | target.datasource.username | 目的端连接帐号名 | study | 无 |
 | target.datasource.password | 目的端连接帐号密码 | 123456 | 无 |
@@ -138,11 +129,16 @@ sh ./docker-maven-build.sh
 
 - *（3）如果target.datasource-target.drop=false，target.change-data-synch=true；时会对有主键表启用增量变更方式同步*
 
-- mysql的驱动配置样例
+- mysql/mariadb的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
 jdbc驱动名称： com.mysql.cj.jdbc.Driver
+```
+
+```
+jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
 - oracle的驱动配置样例
@@ -152,7 +148,7 @@ jdbc连接地址：jdbc:oracle:thin:@172.17.2.58:1521:ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
-- SqlServer的驱动配置样例
+- SqlServer(>=2005)的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:sqlserver://172.16.2.66:1433;DatabaseName=hqtest
@@ -164,6 +160,13 @@ jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/study
 jdbc驱动名称：org.postgresql.Driver
+```
+
+- DB2的驱动配置样例
+
+```
+jdbc连接地址：jdbc:db2://172.17.203.91:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
+jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
 启动执行命令如下：

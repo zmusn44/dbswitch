@@ -8,7 +8,7 @@ setlocal enabledelayedexpansion
 cls
 
 ::需要启动的Java类
-set APP_MAINCLASS=com.weishao.dbswitch.data.DataSyncApplication
+set APP_MAINCLASS=com.gitee.dbswitch.data.DataSyncApplication
 
 ::Java应用根目录
 set APP_HOME=%~dp0
