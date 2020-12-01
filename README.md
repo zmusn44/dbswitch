@@ -145,7 +145,7 @@ jdbc驱动名称： com.mysql.cj.jdbc.Driver
 
 ```
 jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
-jdbc驱动名称： com.mariadb.cj.jdbc.Driver
+jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
 - oracle的驱动配置样例
