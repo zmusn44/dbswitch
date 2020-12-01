@@ -422,7 +422,7 @@ public class StructureController {
 			}
 			
 			if (Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(src_model) || Strings.isNullOrEmpty(src_table)
-					|| Objects.isNull(port) || Strings.isNullOrEmpty(dest_model) || Strings.isNullOrEmpty(dest_table)
+					|| Strings.isNullOrEmpty(dest_model) || Strings.isNullOrEmpty(dest_table)
 					|| Strings.isNullOrEmpty(target)) {
 				throw new RuntimeException("Invalid input parameter");
 			}
