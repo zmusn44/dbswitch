@@ -7,7 +7,7 @@
 // Data : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
-package com.weishao.dbswitch.webapi;
+package com.gitee.dbswitch.webapi;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,19 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
  * 	  标识符如果不加双引号，默认是按大写执行
  * 	  标识符如果加引号，则是按原始大小写执行
  * （2）支持在JDBC中常用带占位符的预编译读取和写入
- * 
- * 当前存在的问题：
- * （1）[已解决]select的分页查询问题，MySQL不支持offset fetch方式分页
- * （2）[已解决]insert的row问题
- * （3）create table的自增字段问题
- *    各个数据库的实现参考：https://www.w3school.com.cn/sql/sql_autoincrement.asp
- * （4）各个数据库间的字段类型定义差异
- * （5）各个数据库的特殊函数问题：SELECT ProductName, UnitPrice, Now() as PerDate FROM Products
- * 
- * @author tang
  *
- *
- *@RunWith作用:
+ * @RunWith作用:
  *
  *	@RunWith 就是一个运行器
  *	@RunWith(JUnit4.class) 就是指用JUnit4来运行
@@ -55,6 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
  *	@RunWith(Suite.class) 的话就是一套测试集合，
  *	@ContextConfiguration Spring整合JUnit4测试时，使用注解引入多个配置文件
  *
+ * @author tang
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
