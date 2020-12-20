@@ -146,28 +146,28 @@ jdbc驱动名称： org.mariadb.jdbc.Driver
 - oracle的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:oracle:thin:@172.17.2.58:1521:ORCL
+jdbc连接地址：jdbc:oracle:thin:@172.17.20.58:1521:ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
 - SqlServer(>=2005)的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:sqlserver://172.16.2.66:1433;DatabaseName=hqtest
+jdbc连接地址：jdbc:sqlserver://172.16.20.66:1433;DatabaseName=hqtest
 jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 
 - PostgreSQL的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/study
+jdbc连接地址：jdbc:postgresql://172.17.20.10:5432/study
 jdbc驱动名称：org.postgresql.Driver
 ```
 
 - DB2的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:db2://172.17.203.91:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
+jdbc连接地址：jdbc:db2://172.17.20.91:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
 jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
