@@ -123,7 +123,7 @@ sh ./docker-maven-build.sh
 
  **注意:**
  
-- *（1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数; *
+- *（1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数；*
  
 - *（2）如果dbswitch.source[i].source-includes不为空，则按照包含表的方式来执行；*
 
