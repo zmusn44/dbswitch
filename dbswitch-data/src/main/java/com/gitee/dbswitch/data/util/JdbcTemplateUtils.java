@@ -16,11 +16,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.dbcp2.BasicDataSource;
+import javax.sql.DataSource;
+import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.support.MetaDataAccessException;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 
 /**
@@ -41,25 +43,32 @@ public final class JdbcTemplateUtils {
 	 * @param dataSource 数据源
 	 * @return DatabaseType 数据库类型
 	 */
-	public static DatabaseTypeEnum getDatabaseProduceName(BasicDataSource dataSource) {
-		String driverClassName = dataSource.getDriverClassName();
-		if (driverClassName.contains("mysql")) {
-			return DatabaseTypeEnum.MYSQL;
-		} else if (driverClassName.contains("mariadb")) {
-			return DatabaseTypeEnum.MYSQL;
-		} else if (driverClassName.contains("oracle")) {
-			return DatabaseTypeEnum.ORACLE;
-		} else if (driverClassName.contains("postgresql")) {
-			return DatabaseTypeEnum.POSTGRESQL;
-		} else if (driverClassName.contains("Greenplum")) {
-			return DatabaseTypeEnum.GREENPLUM;
-		} else if (driverClassName.contains("sqlserver")) {
-			return DatabaseTypeEnum.SQLSERVER;
-		} else if (driverClassName.contains("db2")) {
-			return DatabaseTypeEnum.DB2;
-		} else {
-			throw new RuntimeException(
-					String.format("Unsupport database type by driver class name [%s]", driverClassName));
+	public static DatabaseTypeEnum getDatabaseProduceName(DataSource dataSource) {
+		try {
+			String productName = JdbcUtils.commonDatabaseName(
+					JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName").toString());
+			if (productName.equalsIgnoreCase("Greenplum")) {
+				return DatabaseTypeEnum.GREENPLUM;
+			} else if (productName.equalsIgnoreCase("Microsoft SQL Server")) {
+				return DatabaseTypeEnum.SQLSERVER;
+			}
+
+			DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
+			if (DatabaseDriver.MARIADB == databaseDriver) {
+				return DatabaseTypeEnum.MARIADB;
+			} else if (DatabaseDriver.MYSQL == databaseDriver) {
+				return DatabaseTypeEnum.MYSQL;
+			} else if (DatabaseDriver.ORACLE == databaseDriver) {
+				return DatabaseTypeEnum.ORACLE;
+			} else if (DatabaseDriver.POSTGRESQL == databaseDriver) {
+				return DatabaseTypeEnum.POSTGRESQL;
+			} else if (DatabaseDriver.DB2 == databaseDriver) {
+				return DatabaseTypeEnum.DB2;
+			} else {
+				throw new RuntimeException(String.format("Unsupport database type by product name [%s]", productName));
+			}
+		} catch (MetaDataAccessException ex) {
+			throw new IllegalStateException("Unable to detect database type", ex);
 		}
 
 	}
