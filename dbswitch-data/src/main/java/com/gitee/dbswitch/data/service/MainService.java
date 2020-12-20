@@ -482,7 +482,7 @@ public class MainService {
 			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 			String versionString = jdbcTemplate.queryForObject("SELECT version()", String.class);
 			if (Objects.nonNull(versionString) && versionString.contains("Greenplum")) {
-				log.info("#### 目的端的数据库为Greenplum，配置连接池关闭会话的优化器: set optimizer to 'off' ");
+				log.info("#### Target database is Greenplum Cluster，close optimizer now: set optimizer to 'off' ");
 				ds.setConnectionInitSql("set optimizer to 'off'");
 			}
 		}
