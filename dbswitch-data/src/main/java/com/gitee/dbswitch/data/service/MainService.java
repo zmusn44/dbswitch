@@ -68,24 +68,26 @@ public class MainService {
 	 * 执行主逻辑
 	 */
 	public void run() {
-		HikariDataSource targetDataSource = this.createTargetDataSource(properties.getTarget());
-
-		DatabaseTypeEnum sourceDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(targetDataSource);
-		metaDataService.setDatabaseConnection(sourceDatabaseType);
-
-		IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(targetDataSource,
-				properties.getTarget().getWriterEngineInsert().booleanValue());
-
 		StopWatch watch = new StopWatch();
 		watch.start();
 
 		try {
+			HikariDataSource targetDataSource = this.createTargetDataSource(properties.getTarget());
+
+			IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(targetDataSource,
+					properties.getTarget().getWriterEngineInsert().booleanValue());
+			
 			log.info("service is running....");
+			//log.info("Application properties configuration :{}", jackson.writeValueAsString(this.properties));
+			
 			List<DbswichProperties.SourceDataSourceProperties> sources = properties.getSource();
 
 			for (DbswichProperties.SourceDataSourceProperties source : sources) {
 				HikariDataSource sourceDataSource = this.createSourceDataSource(source);
 
+				DatabaseTypeEnum sourceDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource);
+				metaDataService.setDatabaseConnection(sourceDatabaseType);
+				
 				// 判断处理的策略：是排除还是包含
 				List<String> includes = stringToList(source.getSourceIncludes());
 				log.info("Includes tables is :{}", jackson.writeValueAsString(includes));
@@ -128,6 +130,12 @@ public class MainService {
 						}
 					}
 
+				}
+				
+				try {
+					sourceDataSource.close();
+				} catch (Exception e) {
+					log.warn("Close data source error:",e);
 				}
 			}
 			log.info("service run success!");
