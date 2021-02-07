@@ -112,7 +112,11 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
 			if (length < 1 || length >= AbstractDatabase.CLOB_LENGTH) {
 				retval += "TEXT";
 			} else {
-				retval += "VARCHAR(" + length + ")";
+				if (null != pks && pks.contains(fieldname)) {
+					retval += "VARCHAR(" + length + ")";
+				} else {
+					retval += "TEXT";
+				}
 			}
 			break;
 		case ColumnMetaData.TYPE_BINARY:
