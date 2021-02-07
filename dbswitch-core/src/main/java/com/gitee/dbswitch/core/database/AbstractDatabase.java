@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -217,8 +218,8 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 	@Override
 	public void testQuerySQL(String sql) {
 		String wrapperSql = this.getTestQuerySQL(sql);
-		try(PreparedStatement pstmt = this.connection.prepareStatement(wrapperSql);) {
-			pstmt.executeQuery();
+		try (Statement statement = this.connection.createStatement();) {
+			statement.execute(wrapperSql);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
