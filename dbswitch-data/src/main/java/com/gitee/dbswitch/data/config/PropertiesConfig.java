@@ -15,7 +15,7 @@ import com.gitee.dbswitch.core.service.IMetaDataService;
 import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
 
 /**
- * 注册所有映射属性类 { }中用逗号分隔即可注册多个属性类
+ * 配置类
  * 
  * @author tang
  *

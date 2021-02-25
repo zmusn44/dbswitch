@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gitee</groupId>
 		<artifactId>dbswitch</artifactId>
-		<version>1.5.2</version>
+		<version>1.5.3</version>
 	</parent>
 
 	<artifactId>dbswitch-dbwriter</artifactId>
@@ -18,6 +18,11 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
+		</dependency>
+				<dependency>
+			<groupId>com.gitee</groupId>
+			<artifactId>dbswitch-dbcommon</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gitee</groupId>
