@@ -22,19 +22,19 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase向目的端为Greenplum/PostgreSQL的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8向目的端为Greenplum/PostgreSQL的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为DM的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为DM的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase向目的端为Kingbase的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8向目的端为Kingbase8的迁移(**字段类型兼容测试中...**)
 
 ### 4、结构设计
   
@@ -181,10 +181,10 @@ jdbc连接地址：jdbc:dm://172.17.20.91:5236
 jdbc驱动名称：dm.jdbc.driver.DmDriver
 ```
 
-- Kingbase的驱动配置样例
+- Kingbase8的驱动配置样例
 
 ```
-jdbc连接地址：jdbc:kingbase8://172.17.20.91:54321/TEMPLATE2
+jdbc连接地址：jdbc:kingbase8://172.17.20.91:54321/MYTEST
 jdbc驱动名称：com.kingbase8.Driver
 ```
 
