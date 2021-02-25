@@ -22,8 +22,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.jdbc.support.MetaDataAccessException;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
 
 /**
  * JdbcTemplate包制使用工具类型
@@ -44,15 +44,16 @@ public final class JdbcTemplateUtils {
 	 * @return DatabaseType 数据库类型
 	 */
 	public static DatabaseTypeEnum getDatabaseProduceName(DataSource dataSource) {
-		try {
-			String productName = JdbcUtils.commonDatabaseName(
-					JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName").toString());
-			if (productName.equalsIgnoreCase("Greenplum")) {
-				return DatabaseTypeEnum.GREENPLUM;
-			} else if (productName.equalsIgnoreCase("Microsoft SQL Server")) {
-				return DatabaseTypeEnum.SQLSERVER;
-			}
-
+		String productName = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource);
+		if (productName.equalsIgnoreCase("Greenplum")) {
+			return DatabaseTypeEnum.GREENPLUM;
+		} else if (productName.equalsIgnoreCase("SQLServer")) {
+			return DatabaseTypeEnum.SQLSERVER;
+		} else if (productName.equalsIgnoreCase("DM")) {
+			return DatabaseTypeEnum.DM;
+		} else if (productName.equalsIgnoreCase("Kingbase")) {
+			return DatabaseTypeEnum.KINGBASE;
+		} else {
 			DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
 			if (DatabaseDriver.MARIADB == databaseDriver) {
 				return DatabaseTypeEnum.MARIADB;
@@ -67,8 +68,6 @@ public final class JdbcTemplateUtils {
 			} else {
 				throw new RuntimeException(String.format("Unsupport database type by product name [%s]", productName));
 			}
-		} catch (MetaDataAccessException ex) {
-			throw new IllegalStateException("Unable to detect database type", ex);
 		}
 
 	}

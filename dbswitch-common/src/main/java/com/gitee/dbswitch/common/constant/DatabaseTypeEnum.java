@@ -59,7 +59,17 @@ public enum DatabaseTypeEnum {
 	/**
 	 * DB2数据库类型
 	 */
-	DB2(8);
+	DB2(8),
+	
+	/**
+	 * DM数据库类型
+	 */
+	DM(9),
+	
+	/**
+	 * Kingbase数据库类型
+	 */
+	KINGBASE(10);
 
 	private int index;
 

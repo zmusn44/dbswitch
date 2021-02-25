@@ -71,9 +71,6 @@ public class GreenplumInsertWriterImpl extends AbstractDatabaseWriter implements
 
 			recordValues.clear();
 			transactionManager.commit(status);
-			if (log.isDebugEnabled()) {
-				log.debug("Greenplum insert data  affect count:{}", affectCount);
-			}
 			return affectCount;
 		} catch (TransactionException e) {
 			transactionManager.rollback(status);
