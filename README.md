@@ -24,17 +24,17 @@
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Greenplum/PostgreSQL//HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为DM的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为DM的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2DM/Kingbase8/HighGo向目的端为Kingbase8的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Kingbase8的迁移(**字段类型兼容测试中...**)
 
 ### 4、结构设计
   
@@ -174,21 +174,21 @@ jdbc连接地址：jdbc:db2://172.17.20.91:50000/testdb:driverType=4;fullyMateri
 jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
-- DM的驱动配置样例
+- 达梦DM的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:dm://172.17.20.91:5236
 jdbc驱动名称：dm.jdbc.driver.DmDriver
 ```
 
-- Kingbase8的驱动配置样例
+- 人大金仓Kingbase8的驱动配置样例
 
 ```
 jdbc连接地址：jdbc:kingbase8://172.17.20.91:54321/MYTEST
 jdbc驱动名称：com.kingbase8.Driver
 ```
 
-- HighGo数据库(可按PostgreSQL使用)
+- 翰高HighGo数据库(可按PostgreSQL使用)
 
 ```
 jdbc连接地址：jdbc:postgresql://172.17.20.91:5866/highgo
