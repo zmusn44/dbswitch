@@ -110,7 +110,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 	@Override
 	public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
 		String querySQL = String.format("SELECT * from (%s) tmp where ROWNUM<=1 ", sql.replace(";", ""));
-		return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.MYSQL);
+		return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.ORACLE);
 	}
 	
 	@Override

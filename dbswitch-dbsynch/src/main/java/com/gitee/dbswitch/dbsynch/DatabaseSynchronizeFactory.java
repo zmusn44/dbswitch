@@ -14,12 +14,13 @@ import java.util.HashMap;
 import javax.sql.DataSource;
 import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.dbsynch.db2.DB2DatabaseSynchImpl;
+import com.gitee.dbswitch.dbsynch.dm.DmDatabaseSynchImpl;
+import com.gitee.dbswitch.dbsynch.kingbase.KingbaseDatabaseSynchImpl;
 import com.gitee.dbswitch.dbsynch.mssql.SqlServerDatabaseSynchImpl;
 import com.gitee.dbswitch.dbsynch.mysql.MySqlDatabaseSynchImpl;
 import com.gitee.dbswitch.dbsynch.oracle.OracleDatabaseSynchImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.GreenplumDatabaseSynchImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.PostgresqlDatabaseSynchImpl;
-
 import java.lang.reflect.Constructor;
 
 /**
@@ -41,6 +42,8 @@ public final class DatabaseSynchronizeFactory {
 			put("POSTGRESQL", PostgresqlDatabaseSynchImpl.class.getName());
 			put("GREENPLUM", GreenplumDatabaseSynchImpl.class.getName());
 			put("DB2",DB2DatabaseSynchImpl.class.getName());
+			put("DM",DmDatabaseSynchImpl.class.getName());
+			put("KINGBASE",KingbaseDatabaseSynchImpl.class.getName());
 		}
 	};
 

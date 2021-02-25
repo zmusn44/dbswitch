@@ -13,7 +13,9 @@ import java.util.HashMap;
 import java.util.Map;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.impl.DatabaseDB2Impl;
+import com.gitee.dbswitch.core.database.impl.DatabaseDmImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseGreenplumImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseKingbaseImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMariaDBImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMysqlImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseOracleImpl;
@@ -41,6 +43,8 @@ public final class DatabaseFactory {
 	      put(DatabaseTypeEnum.GREENPLUM,DatabaseGreenplumImpl.class.getName());
 	      put(DatabaseTypeEnum.MARIADB,DatabaseMariaDBImpl.class.getName());
 	      put(DatabaseTypeEnum.DB2,DatabaseDB2Impl.class.getName());
+	      put(DatabaseTypeEnum.DM,DatabaseDmImpl.class.getName());
+	      put(DatabaseTypeEnum.KINGBASE,DatabaseKingbaseImpl.class.getName());
 	}}; 
 	
 	public static AbstractDatabase getDatabaseInstance(DatabaseTypeEnum type) {

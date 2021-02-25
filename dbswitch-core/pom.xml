@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gitee</groupId>
 		<artifactId>dbswitch</artifactId>
-		<version>1.5.2</version>
+		<version>1.5.3</version>
 	</parent>
 
 	<artifactId>dbswitch-core</artifactId>
@@ -76,6 +76,22 @@
 			<version>5.1.4</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/greenplum-jdbc-5.1.4.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dameng</groupId>
+			<artifactId>dm-jdbc</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/DmJdbcDriver18.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.kingbase</groupId>
+			<artifactId>kingbase-jdbc</artifactId>
+			<version>8.2.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/kingbase8-8.2.0.jar</systemPath>
 		</dependency>
 
 		<dependency>

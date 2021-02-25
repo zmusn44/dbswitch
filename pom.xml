@@ -21,7 +21,7 @@
 
 	<groupId>com.gitee</groupId>
 	<artifactId>dbswitch</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 	<packaging>pom</packaging>
 	<name>dbswitch</name>
 	<description>database switch project</description>

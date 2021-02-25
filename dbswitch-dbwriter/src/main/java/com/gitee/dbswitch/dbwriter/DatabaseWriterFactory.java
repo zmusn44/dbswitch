@@ -12,9 +12,7 @@ package com.gitee.dbswitch.dbwriter;
 import java.util.Map;
 import java.util.HashMap;
 import javax.sql.DataSource;
-import org.springframework.boot.jdbc.DatabaseDriver;
-import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.jdbc.support.MetaDataAccessException;
+import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
 import java.lang.reflect.Constructor;
 
 /**
@@ -36,6 +34,9 @@ public class DatabaseWriterFactory {
 			put("POSTGRESQL", "com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl");
 			put("GREENPLUM", "com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl");
 			put("DB2", "com.gitee.dbswitch.dbwriter.db2.DB2WriterImpl");
+			put("DM", "com.gitee.dbswitch.dbwriter.dm.DmWriterImpl");
+			//对于kingbase当前只能使用insert模式
+			put("KINGBASE", "com.gitee.dbswitch.dbwriter.kingbase.KingbaseInsertWriterImpl");
 		}
 	};
 
@@ -57,10 +58,14 @@ public class DatabaseWriterFactory {
 	 * @return 写入器对象
 	 */
 	public static AbstractDatabaseWriter createDatabaseWriter(DataSource dataSource, boolean insert) {
-		String type = DatabaseWriterFactory.getDatabaseNameByDataSource(dataSource).toUpperCase();
+		String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
 		if (insert) {
 			if ("POSTGRESQL".equalsIgnoreCase(type) || "GREENPLUM".equalsIgnoreCase(type)) {
 				return new com.gitee.dbswitch.dbwriter.gpdb.GreenplumInsertWriterImpl(dataSource);
+			}
+			
+			if ("KINGBASE".equalsIgnoreCase(type)) {
+				return new com.gitee.dbswitch.dbwriter.kingbase.KingbaseInsertWriterImpl(dataSource);
 			}
 		}
 
@@ -81,29 +86,4 @@ public class DatabaseWriterFactory {
 		throw new RuntimeException(String.format("[dbwrite] Unkown Supported database type (%s)", type));
 	}
 
-	/**
-	 * 根据DataSource获取数据库的类型
-	 * 
-	 * @param dataSource 数据库源
-	 * @return 数据库的类型：mysql/oracle/postgresql/greenplum
-	 */
-	private static String getDatabaseNameByDataSource(DataSource dataSource) {
-		try {
-			String productName = JdbcUtils.commonDatabaseName(
-					JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName").toString());
-			if (productName.equalsIgnoreCase("Greenplum")) {
-				return "greenplum";
-			} else if (productName.equalsIgnoreCase("Microsoft SQL Server")) {
-				return "sqlserver";
-			}
-
-			DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
-			if (databaseDriver == DatabaseDriver.UNKNOWN) {
-				throw new IllegalStateException("[dbwrite] Unable to detect database type from data source instance");
-			}
-			return databaseDriver.getId();
-		} catch (MetaDataAccessException ex) {
-			throw new IllegalStateException("[dbwrite] Unable to detect database type", ex);
-		}
-	}
 }

@@ -42,8 +42,12 @@ public final class DatabaseAwareUtils {
 				return "greenplum";
 			} else if (productName.equalsIgnoreCase("Microsoft SQL Server")) {
 				return "sqlserver";
+			} else if (productName.equalsIgnoreCase("KingbaseES")) {
+				return "kingbase";
+			} else if (productName.equalsIgnoreCase("DM DBMS")) {
+				return "dm";
 			}
-
+			
 			DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
 			if (databaseDriver == DatabaseDriver.UNKNOWN) {
 				throw new IllegalStateException("Unable to detect database type from data source instance");

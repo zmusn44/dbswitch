@@ -473,9 +473,7 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 					}
 				});
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("Greenplum copy write data affect count:{}", count);
-			}
+
 			return count;
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
