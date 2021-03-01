@@ -43,6 +43,7 @@ public class DbswichProperties {
 
 		private Integer fetchSize=5000;
 		private String sourceSchema="";
+		private String prefixTable="";
 		private String sourceIncludes="";
 		private String sourceExcludes="";
 	}
