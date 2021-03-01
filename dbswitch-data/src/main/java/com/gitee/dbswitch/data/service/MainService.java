@@ -78,48 +78,48 @@ public class MainService {
 					properties.getTarget().getWriterEngineInsert().booleanValue());
 			
 			log.info("service is running....");
-			//log.info("Application properties configuration :{}", jackson.writeValueAsString(this.properties));
+			//log.info("Application properties configuration :{}", jackson.writeValueAsString(properties));
 			
-			List<DbswichProperties.SourceDataSourceProperties> sources = properties.getSource();
+			List<DbswichProperties.SourceDataSourceProperties> sourcesProperties = properties.getSource();
 
-			for (DbswichProperties.SourceDataSourceProperties source : sources) {
-				HikariDataSource sourceDataSource = this.createSourceDataSource(source);
+			for (DbswichProperties.SourceDataSourceProperties sourceProperties : sourcesProperties) {
+				
+				HikariDataSource sourceDataSource = this.createSourceDataSource(sourceProperties);
 
-				DatabaseTypeEnum sourceDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource);
-				metaDataService.setDatabaseConnection(sourceDatabaseType);
+				metaDataService.setDatabaseConnection(JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource));
 				
 				// 判断处理的策略：是排除还是包含
-				List<String> includes = stringToList(source.getSourceIncludes());
+				List<String> includes = stringToList(sourceProperties.getSourceIncludes());
 				log.info("Includes tables is :{}", jackson.writeValueAsString(includes));
-				List<String> filters = stringToList(source.getSourceExcludes());
+				List<String> filters = stringToList(sourceProperties.getSourceExcludes());
 				log.info("Filter tables is :{}", jackson.writeValueAsString(filters));
 
 				boolean useExcludeTables = includes.isEmpty();
 				if (useExcludeTables) {
-					log.info("!!!! Use dbswitch.source[i].source-excludes to filter tables");
+					log.info("!!!! Use dbswitch.source[{}].source-excludes to filter tables", sourcesProperties.indexOf(sourceProperties));
 				} else {
-					log.info("!!!! Use dbswitch.source[i].source-includes to filter tables");
+					log.info("!!!! Use dbswitch.source[{}].source-includes to filter tables", sourcesProperties.indexOf(sourceProperties));
 				}
 
-				List<String> schemas = stringToList(source.getSourceSchema());
+				List<String> schemas = stringToList(sourceProperties.getSourceSchema());
 				log.info("Source schema names is :{}", jackson.writeValueAsString(schemas));
 				for (String schema : schemas) {
 					// 读取源库指定schema里所有的表
-					List<TableDescription> tableList = metaDataService.queryTableList(source.getUrl(),
-							source.getUsername(), source.getPassword(), schema);
+					List<TableDescription> tableList = metaDataService.queryTableList(sourceProperties.getUrl(),
+							sourceProperties.getUsername(), sourceProperties.getPassword(), schema);
 					if (tableList.isEmpty()) {
-						log.warn("### Find table list empty for shema={}", schema);
+						log.warn("### Find source database table list empty for shema={}", schema);
 					} else {
 						int finished = 0;
 						for (TableDescription td : tableList) {
 							String tableName = td.getTableName();
 							if (useExcludeTables) {
 								if (!filters.contains(tableName)) {
-									this.doDataMigration(td, source, sourceDataSource, writer);
+									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							} else {
 								if (includes.contains(tableName)) {
-									this.doDataMigration(td, source, sourceDataSource, writer);
+									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							}
 
@@ -156,7 +156,7 @@ public class MainService {
 	private void doDataMigration(TableDescription tableDescription,
 			DbswichProperties.SourceDataSourceProperties sourceProperties, HikariDataSource sourceDataSource,
 			IDatabaseWriter writer) {
-		log.info("migration table for {} ", tableDescription.getTableName());
+		log.info("Migrate table for {}.{} ", tableDescription.getSchemaName(), tableDescription.getTableName());
 		JdbcTemplate targetJdbcTemplate = new JdbcTemplate(writer.getDataSource());
 		DatabaseTypeEnum targetDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(writer.getDataSource());
 
@@ -168,12 +168,12 @@ public class MainService {
 
 			// 先drop表
 			try {
-				IDatabaseOperator targetOperator = DatabaseOperatorFactory
-						.createDatabaseOperator(writer.getDataSource());
-				targetOperator.dropTable(properties.getTarget().getTargetSchema(), tableDescription.getTableName());
+				IDatabaseOperator targetOperator = DatabaseOperatorFactory.createDatabaseOperator(writer.getDataSource());
+				targetOperator.dropTable(properties.getTarget().getTargetSchema(),
+						sourceProperties.getPrefixTable() + tableDescription.getTableName());
 			} catch (Exception e) {
 				log.info("Target Table {}.{} is not exits!", properties.getTarget().getTargetSchema(),
-						tableDescription.getTableName());
+						sourceProperties.getPrefixTable() + tableDescription.getTableName());
 			}
 
 			// 然后create表
@@ -184,7 +184,8 @@ public class MainService {
 					sourceProperties.getUsername(), sourceProperties.getPassword(), tableDescription.getSchemaName(),
 					tableDescription.getTableName());
 			String sqlCreateTable = metaDataService.getDDLCreateTableSQL(targetDatabaseType, columnDescs, primaryKeys,
-					properties.getTarget().getTargetSchema(), tableDescription.getTableName(),
+					properties.getTarget().getTargetSchema(),
+					sourceProperties.getPrefixTable() + tableDescription.getTableName(),
 					properties.getTarget().getCreateTableAutoIncrement().booleanValue());
 			targetJdbcTemplate.execute(sqlCreateTable);
 			log.info("Execute SQL: \n{}", sqlCreateTable);
@@ -193,13 +194,13 @@ public class MainService {
 		} else {
 			// 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
 			if (properties.getTarget().getChangeDataSynch().booleanValue()) {
-				// 根据主键情况判断推送的方式
+				// 根据主键情况判断同步的方式：增量同步或覆盖同步
 				JdbcMetaDataUtils mds = new JdbcMetaDataUtils(sourceDataSource);
 				JdbcMetaDataUtils mdt = new JdbcMetaDataUtils(writer.getDataSource());
 				List<String> pks1 = mds.queryTablePrimaryKeys(tableDescription.getSchemaName(),
 						tableDescription.getTableName());
 				List<String> pks2 = mdt.queryTablePrimaryKeys(properties.getTarget().getTargetSchema(),
-						tableDescription.getTableName());
+						sourceProperties.getPrefixTable() + tableDescription.getTableName());
 
 				if (!pks1.isEmpty() && !pks2.isEmpty() && pks1.containsAll(pks2) && pks2.containsAll(pks1)) {
 					if (targetDatabaseType == DatabaseTypeEnum.MYSQL
@@ -237,11 +238,11 @@ public class MainService {
 		final int BATCH_SIZE = fetchSize;
 
 		// 准备目的端的数据写入操作
-		writer.prepareWrite(properties.getTarget().getTargetSchema(), tableDescription.getTableName());
+		writer.prepareWrite(properties.getTarget().getTargetSchema(), sourceProperties.getPrefixTable() + tableDescription.getTableName());
 
 		// 清空目的端表的数据
 		IDatabaseOperator targetOperator = DatabaseOperatorFactory.createDatabaseOperator(writer.getDataSource());
-		targetOperator.truncateTableData(properties.getTarget().getTargetSchema(), tableDescription.getTableName());
+		targetOperator.truncateTableData(properties.getTarget().getTargetSchema(), sourceProperties.getPrefixTable() + tableDescription.getTableName());
 
 		// 查询源端数据并写入目的端
 		IDatabaseOperator sourceOperator = DatabaseOperatorFactory.createDatabaseOperator(sourceDataSource);
@@ -277,18 +278,18 @@ public class MainService {
 
 				if (cache.size() >= BATCH_SIZE) {
 					long ret = writer.write(fields, cache);
-					log.info("handle table [{}] data count: {}", fullTableName, ret);
+					log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
 					cache.clear();
 				}
 			}
 
 			if (cache.size() > 0) {
 				long ret = writer.write(fields, cache);
-				log.info("handle table [{}] data count: {}", fullTableName, ret);
+				log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
 				cache.clear();
 			}
 
-			log.info("handle table [{}]  total data count:{} ", fullTableName, totalCount);
+			log.info("[FullCoverSynch] handle table [{}] total data count:{} ", fullTableName, totalCount);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
@@ -313,12 +314,12 @@ public class MainService {
 
 		DatabaseTypeEnum sourceDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource);
 		String fullTableName = CommonUtils.getTableFullNameByDatabase(sourceDatabaseType,
-				tableDescription.getSchemaName(), tableDescription.getTableName());
+				tableDescription.getSchemaName(), sourceProperties.getPrefixTable() + tableDescription.getTableName());
 
 		TaskParamBean.TaskParamBeanBuilder taskBuilder = TaskParamBean.builder();
 		taskBuilder.oldDataSource(writer.getDataSource());
 		taskBuilder.oldSchemaName(properties.getTarget().getTargetSchema());
-		taskBuilder.oldTableName(tableDescription.getTableName());
+		taskBuilder.oldTableName(sourceProperties.getPrefixTable() + tableDescription.getTableName());
 		taskBuilder.newDataSource(sourceDataSource);
 		taskBuilder.newSchemaName(tableDescription.getSchemaName());
 		taskBuilder.newTableName(tableDescription.getTableName());
@@ -398,25 +399,25 @@ public class MainService {
 					doUpdate(fields);
 				}
 
-				log.info("Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, count,
+				log.info("[IncreaseSynch] Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, count,
 						countInsert, countUpdate, countDelete);
 			}
 
 			private void doInsert(List<String> fields) {
 				long ret = synch.executeInsert(cacheInsert);
-				log.info("handle table [{}] data Insert count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Insert count: {}", fullTableName, ret);
 				cacheInsert.clear();
 			}
 
 			private void doUpdate(List<String> fields) {
 				long ret = synch.executeUpdate(cacheUpdate);
-				log.info("handle table [{}] data Update count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Update count: {}", fullTableName, ret);
 				cacheUpdate.clear();
 			}
 
 			private void doDelete(List<String> fields) {
 				long ret = synch.executeDelete(cacheDelete);
-				log.info("handle table [{}] data Delete count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Delete count: {}", fullTableName, ret);
 				cacheDelete.clear();
 			}
 
@@ -482,7 +483,7 @@ public class MainService {
 			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 			String versionString = jdbcTemplate.queryForObject("SELECT version()", String.class);
 			if (Objects.nonNull(versionString) && versionString.contains("Greenplum")) {
-				log.info("#### Target database is Greenplum Cluster，close optimizer now: set optimizer to 'off' ");
+				log.info("#### Target database is Greenplum Cluster, Close Optimizer now: set optimizer to 'off' ");
 				ds.setConnectionInitSql("set optimizer to 'off'");
 			}
 		}
