@@ -200,7 +200,7 @@ public class MainService {
 				List<String> pks1 = mds.queryTablePrimaryKeys(tableDescription.getSchemaName(),
 						tableDescription.getTableName());
 				List<String> pks2 = mdt.queryTablePrimaryKeys(properties.getTarget().getTargetSchema(),
-						tableDescription.getTableName());
+						sourceProperties.getPrefixTable() + tableDescription.getTableName());
 
 				if (!pks1.isEmpty() && !pks2.isEmpty() && pks1.containsAll(pks2) && pks2.containsAll(pks1)) {
 					if (targetDatabaseType == DatabaseTypeEnum.MYSQL
@@ -278,18 +278,18 @@ public class MainService {
 
 				if (cache.size() >= BATCH_SIZE) {
 					long ret = writer.write(fields, cache);
-					log.info("handle table [{}] data count: {}", fullTableName, ret);
+					log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
 					cache.clear();
 				}
 			}
 
 			if (cache.size() > 0) {
 				long ret = writer.write(fields, cache);
-				log.info("handle table [{}] data count: {}", fullTableName, ret);
+				log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
 				cache.clear();
 			}
 
-			log.info("handle table [{}]  total data count:{} ", fullTableName, totalCount);
+			log.info("[FullCoverSynch] handle table [{}] total data count:{} ", fullTableName, totalCount);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
@@ -328,7 +328,7 @@ public class MainService {
 		TaskParamBean param = taskBuilder.build();
 
 		IDatabaseSynchronize synch = DatabaseSynchronizeFactory.createDatabaseWriter(writer.getDataSource());
-		synch.prepare(param.getOldSchemaName(), sourceProperties.getPrefixTable() + param.getOldTableName(), fields, pks);
+		synch.prepare(param.getOldSchemaName(), param.getOldTableName(), fields, pks);
 
 		IDatabaseChangeCaculator changeCaculator = new ChangeCaculatorService();
 		changeCaculator.setFetchSize(BATCH_SIZE);
@@ -399,25 +399,25 @@ public class MainService {
 					doUpdate(fields);
 				}
 
-				log.info("Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, count,
+				log.info("[IncreaseSynch] Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, count,
 						countInsert, countUpdate, countDelete);
 			}
 
 			private void doInsert(List<String> fields) {
 				long ret = synch.executeInsert(cacheInsert);
-				log.info("handle table [{}] data Insert count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Insert count: {}", fullTableName, ret);
 				cacheInsert.clear();
 			}
 
 			private void doUpdate(List<String> fields) {
 				long ret = synch.executeUpdate(cacheUpdate);
-				log.info("handle table [{}] data Update count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Update count: {}", fullTableName, ret);
 				cacheUpdate.clear();
 			}
 
 			private void doDelete(List<String> fields) {
 				long ret = synch.executeDelete(cacheDelete);
-				log.info("handle table [{}] data Delete count: {}", fullTableName, ret);
+				log.info("[IncreaseSynch] Handle table [{}] data Delete count: {}", fullTableName, ret);
 				cacheDelete.clear();
 			}
 
