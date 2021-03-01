@@ -111,7 +111,7 @@ sh ./docker-maven-build.sh
 | dbswitch.source[i].password | 来源端连接帐号密码 | tangyibo | 无 |
 | dbswitch.source[i].fetch-size | 来源端数据库查询时的fetch_size设置 | 10000 | 需要大于100有效 |
 | dbswitch.source[i].source-schema | 来源端的schema名称 | dbo,test | 多个之间用英文逗号分隔 |
-| dbswitch.source[i].prefix-table= | 创建对应目的表的前缀 | TA_ | 不能含有特殊字符，可以为空; 建议最长为8个字符，以下划线结尾 |
+| dbswitch.source[i].prefix-table | 创建对应目的表的前缀 | TA_ | 不能含有特殊字符，可以为空; 建议最长为8个字符，以下划线结尾 |
 | dbswitch.source[i].source-includes | 来源端schema下的表中需要包含的表名称 | users1,orgs1 | 多个之间用英文逗号分隔 |
 | dbswitch.source[i].source-excludes | 来源端schema下的表中需要过滤的表名称 | users,orgs | 不包含的表名称，多个之间用英文逗号分隔 |
 | dbswitch.target.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum,mysql/mariadb/db2/dm/kingbase8/highgo也支持，但字段类型兼容性问题比较多 |
