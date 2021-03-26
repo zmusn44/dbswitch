@@ -253,11 +253,11 @@ public class ColumnMetaData {
 		case java.sql.Types.CHAR:
 		case java.sql.Types.VARCHAR:
 		case java.sql.Types.NVARCHAR:
-		case java.sql.Types.LONGVARCHAR: // Character Large Object
 			valtype = ColumnMetaData.TYPE_STRING;
 			length = desc.getDisplaySize();
 			break;
 
+		case java.sql.Types.LONGVARCHAR: // Character Large Object
 		case java.sql.Types.CLOB:
 		case java.sql.Types.NCLOB:
 			valtype = ColumnMetaData.TYPE_STRING;
