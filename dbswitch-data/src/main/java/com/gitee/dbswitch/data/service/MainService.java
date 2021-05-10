@@ -16,6 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
+
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +120,11 @@ public class MainService {
 									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							} else {
-								if (includes.contains(tableName)) {
+								if (includes.size() == 1 && includes.get(0).contains("*")) {
+									if (Pattern.matches(includes.get(0), tableName)) {
+										this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
+									}
+								} else if (includes.contains(tableName)) {
 									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							}
