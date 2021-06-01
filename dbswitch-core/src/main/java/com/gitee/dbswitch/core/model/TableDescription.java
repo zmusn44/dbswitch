@@ -13,6 +13,7 @@ import com.gitee.dbswitch.core.constant.DBTableType;
 
 /**
  * 数据库表描述符信息定义(Table Description)
+ *
  * @author tang
  *
  */

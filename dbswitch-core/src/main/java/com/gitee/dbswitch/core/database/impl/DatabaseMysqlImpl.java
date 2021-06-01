@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
@@ -26,6 +26,7 @@ import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.util.JdbcOperatorUtils;
 import com.gitee.dbswitch.core.util.JdbcUrlUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 支持MySQL数据库的元信息实现
@@ -145,7 +146,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 		case ColumnMetaData.TYPE_NUMBER:
 		case ColumnMetaData.TYPE_INTEGER:
 		case ColumnMetaData.TYPE_BIGNUMBER:
-			if (null!=pks && pks.contains(fieldname)) {
+			if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
 				if (useAutoInc) {
 					retval += "BIGINT AUTO_INCREMENT NOT NULL";
 				} else {
@@ -188,7 +189,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 					retval += "CHAR(1)";
 				} else if (length < 256) {
 					retval += "VARCHAR(" + length + ")";
-				}else if (null!=pks && pks.contains(fieldname)) {
+				}else if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
 					/*
 					 * MySQL5.6中varchar字段为主键时最大长度为254,例如如下的建表语句在MySQL5.7下能通过，但在MySQL5.6下无法通过：
 					 *	create table `t_test`(
@@ -226,7 +227,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 
 	@Override
 	public String getPrimaryKeyAsString(List<String> pks) {
-		if (!pks.isEmpty()) {
+		if (!CollectionUtils.isEmpty(pks)) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("`");
 			sb.append(StringUtils.join(pks, "` , `"));

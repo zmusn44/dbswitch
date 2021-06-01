@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
@@ -45,7 +45,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 
 	@Override
 	public List<TableDescription> queryTableList(String schemaName) {
-		List<TableDescription> ret = new ArrayList<TableDescription>();
+		List<TableDescription> ret = new ArrayList<>();
 		String sql = String.format(
 				"SELECT \"OWNER\",\"TABLE_NAME\",\"TABLE_TYPE\",\"COMMENTS\" from all_tab_comments where \"OWNER\"='%s'",
 				schemaName);
@@ -84,7 +84,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 		// Oracle表的主键可以使用如下命令设置主键是否生效
 		// 使主键失效：alter table tableName disable primary key;
 		// 使主键恢复：alter table tableName enable primary key;
-		Set<String> ret = new HashSet<String>();
+		Set<String> ret = new HashSet<>();
 		String sql = String.format("SELECT COLUMN_NAME FROM user_cons_columns WHERE owner='%s' and constraint_name = "
 				+ "(SELECT constraint_name FROM user_constraints WHERE table_name = '%s' AND constraint_type = 'P' and STATUS='ENABLED') ",
 				schemaName, tableName);
@@ -173,7 +173,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 			} else {
 				if (length == 1) {
 					retval.append("NVARCHAR2(1)");
-				} else if (length > 0) {
+				} else if (length > 0 && length < 2000) {
 					// VARCHAR2(size)，size最大值为4000，单位是字节；而NVARCHAR2(size)，size最大值为2000，单位是字符
 					retval.append("NVARCHAR2(").append(length).append(')');
 				} else {

@@ -11,7 +11,6 @@ package com.gitee.dbswitch.core.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
@@ -30,8 +29,10 @@ public class GenerateSqlUtils {
 	public static String getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
 			List<String> primaryKeys, String schemaName, String tableName, boolean autoIncr) {
 		StringBuilder retval = new StringBuilder();
-		List<String> pks = fieldNames.stream().filter((cd) -> primaryKeys.contains(cd.getFieldName()))
-				.map((cd) -> cd.getFieldName()).collect(Collectors.toList());
+		List<String> pks = fieldNames.stream()
+				.filter((cd) -> primaryKeys.contains(cd.getFieldName()))
+				.map((cd) -> cd.getFieldName())
+				.collect(Collectors.toList());
 
 		AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
 

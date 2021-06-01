@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
@@ -26,6 +26,7 @@ import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.util.JdbcOperatorUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 支持SQLServer数据库的元信息实现
@@ -87,7 +88,6 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 			try {
 				if (null != schemas) {
 					schemas.close();
-					schemas = null;
 				}
 			} catch (SQLException e) {
 			}
@@ -228,7 +228,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 		case ColumnMetaData.TYPE_NUMBER:
 		case ColumnMetaData.TYPE_INTEGER:
 		case ColumnMetaData.TYPE_BIGNUMBER:
-			if (null != pks && pks.contains(fieldname)) {
+			if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
 				if (useAutoInc) {
 					retval += "BIGINT IDENTITY(0,1)";
 				} else {
@@ -288,7 +288,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 
 	@Override
 	public String getPrimaryKeyAsString(List<String> pks) {
-		if (!pks.isEmpty()) {
+		if (!CollectionUtils.isEmpty(pks)) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("[");
 			sb.append(StringUtils.join(pks, "] , ["));

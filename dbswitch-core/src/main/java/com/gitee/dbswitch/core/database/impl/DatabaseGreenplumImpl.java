@@ -4,11 +4,12 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
+import java.util.Collections;
 import java.util.List;
 import com.alibaba.druid.sql.SQLUtils;
 import com.gitee.dbswitch.core.constant.Const;
@@ -17,6 +18,7 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 支持Greenplum数据库的元信息实现
@@ -76,7 +78,7 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
 		case ColumnMetaData.TYPE_NUMBER:
 		case ColumnMetaData.TYPE_INTEGER:
 		case ColumnMetaData.TYPE_BIGNUMBER:
-			if (null!=pks && pks.contains(fieldname)) {
+			if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
 				if (useAutoInc) {
 					retval += "BIGSERIAL";
 				} else {

@@ -14,6 +14,7 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 
 /**
  * 数据库表列的元信息
+ *
  * @author tang
  *
  */
@@ -81,10 +82,7 @@ public class ColumnMetaData {
 	/**
 	 * Constructor function
 	 * 
-	 * @param name
-	 * @param type
-	 * @param length
-	 * @param precision
+	 * @param desc
 	 */
 	public ColumnMetaData(ColumnDescription desc) {
 		this.create(desc);
@@ -257,7 +255,7 @@ public class ColumnMetaData {
 			length = desc.getDisplaySize();
 			break;
 
-		case java.sql.Types.LONGVARCHAR: // Character Large Object
+		case java.sql.Types.LONGVARCHAR:
 		case java.sql.Types.CLOB:
 		case java.sql.Types.NCLOB:
 			valtype = ColumnMetaData.TYPE_STRING;
