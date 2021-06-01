@@ -4,13 +4,17 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.oracle;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Objects;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
@@ -38,13 +42,11 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
 
 	@Override
 	public long write(List<String> fieldNames, List<Object[]> recordValues) {
-		List<String> placeHolders = new ArrayList<String>();
-		for (int i = 0; i < fieldNames.size(); ++i) {
-			placeHolders.add("?");
-		}
-
 		String schemaName = Objects.requireNonNull(this.schemaName, "schema-name名称为空，不合法!");
 		String tableName = Objects.requireNonNull(this.tableName, "table-name名称为空，不合法!");
+
+		List<String> placeHolders = Collections.nCopies(fieldNames.size(), "?");
+
 		String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )", schemaName, tableName,
 				StringUtils.join(fieldNames, "\",\""), StringUtils.join(placeHolders, ","));
 
@@ -53,6 +55,18 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
 			String col = fieldNames.get(i);
 			argTypes[i] = this.columnType.get(col);
 		}
+
+		/**  处理Oracle的Clob类型需写入String类型的数据的问题   */
+		recordValues.parallelStream().forEach((Object[] row) -> {
+			for (int i = 0; i < row.length; ++i) {
+				try {
+					row[i] = convertClobToString(row[i]);
+				} catch (Exception e) {
+					log.warn("Field Value convert from java.sql.Clob to java.lang.String failed, field name is : {} ", fieldNames.get(i));
+					row[i] = null;
+				}
+			}
+		});
 
 		DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
 		definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
@@ -80,6 +94,50 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
 			throw e;
 		}
 
+	}
+
+	/**
+	 * 将java.sql.Clob 类型转换为java.lang.String
+	 * @param o
+	 * @return
+	 * @throws SQLException
+	 * @throws IOException
+	 */
+	private Object convertClobToString(Object o) throws SQLException, IOException {
+		if (null == o) {
+			return null;
+		}
+
+		if (o instanceof Clob) {
+			Clob clob = (Clob) o;
+			java.io.Reader is = null;
+			java.io.BufferedReader reader = null;
+			try {
+				is = clob.getCharacterStream();
+				reader = new java.io.BufferedReader(is);
+				String line = reader.readLine();
+				StringBuilder sb = new StringBuilder();
+				while (line != null) {
+					sb.append(line);
+					line = reader.readLine();
+				}
+				return sb.toString();
+			} catch (SQLException | java.io.IOException e) {
+				throw new RuntimeException(e);
+			} finally {
+				try {
+					if (null != reader) {
+						reader.close();
+					}
+					if (null != is) {
+						is.close();
+					}
+				} catch (Exception ex) {
+				}
+			}
+		}
+
+		return o;
 	}
 
 }

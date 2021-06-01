@@ -4,13 +4,12 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.webapi.model;
 
 import java.io.Serializable;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 

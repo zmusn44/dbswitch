@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
@@ -16,6 +16,7 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 支持DB2数据库的元信息实现
@@ -117,7 +118,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 				retval += ")";
 			}
 			
-			if (null != pks && pks.contains(fieldname)) {
+			if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
 				retval += " NOT NULL";
 			}
 			

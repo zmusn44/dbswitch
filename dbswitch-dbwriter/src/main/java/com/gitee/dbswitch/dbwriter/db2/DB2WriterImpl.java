@@ -4,12 +4,12 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.db2;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -38,13 +38,11 @@ public class DB2WriterImpl extends AbstractDatabaseWriter implements IDatabaseWr
 	
 	@Override
 	public long write(List<String> fieldNames, List<Object[]> recordValues) {
-		List<String> placeHolders = new ArrayList<String>();
-		for (int i = 0; i < fieldNames.size(); ++i) {
-			placeHolders.add("?");
-		}
-
 		String schemaName = Objects.requireNonNull(this.schemaName, "schema-name名称为空，不合法!");
 		String tableName = Objects.requireNonNull(this.tableName, "table-name名称为空，不合法!");
+
+		List<String> placeHolders = Collections.nCopies(fieldNames.size(), "?");
+
 		String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )", schemaName, tableName,
 				StringUtils.join(fieldNames, "\",\""), StringUtils.join(placeHolders, ","));
 

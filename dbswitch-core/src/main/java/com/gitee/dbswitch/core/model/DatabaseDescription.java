@@ -13,6 +13,7 @@ import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 
 /**
  * 数据库连接描述符信息定义(Database Description)
+ *
  * @author tang
  *
  */
@@ -20,7 +21,8 @@ public class DatabaseDescription {
 	protected DatabaseTypeEnum type;
 	protected String host;
 	protected int port;
-	protected String mode;//对于Oracle数据库的模式，可取范围为：sid,servicename,tnsname三种
+	/** 对于Oracle数据库的模式，可取范围为：sid,serviceName,TNSName三种 */
+	protected String mode;
 	protected String dbname;
 	protected String charset;
 	protected String username;

@@ -13,8 +13,8 @@ import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 
 /**
  * 数据库列描述符信息定义(Column Description)
- * @author tang
  *
+ * @author tang
  */
 public class ColumnDescription {
 
