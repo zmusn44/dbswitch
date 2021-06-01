@@ -283,12 +283,12 @@ public class MainService {
 				}
 
 				cache.add(record);
-				cacheBytes += RamUsageEstimator.shallowSizeOf(record);
+				cacheBytes += RamUsageEstimator.sizeOf(record);
 				++totalCount;
 
 				if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
 					long ret = writer.write(fields, cache);
-					log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
+					log.info("[FullCoverSynch] handle table [{}] data count: {}, batch bytes sie: {}", fullTableName, ret, cacheBytes);
 					cache.clear();
 					cacheBytes = 0;
 				}
@@ -371,7 +371,7 @@ public class MainService {
 					countDelete++;
 				}
 
-				cacheBytes+=RamUsageEstimator.shallowSizeOf(record);
+				cacheBytes+=RamUsageEstimator.sizeOf(record);
 				count++;
 				checkFull(fields);
 			}
@@ -396,6 +396,7 @@ public class MainService {
 						doUpdate(fields);
 					}
 
+					log.info("[IncreaseSynch] Handle data batch size: {}", cacheBytes);
 					cacheBytes = 0;
 				}
 			}
