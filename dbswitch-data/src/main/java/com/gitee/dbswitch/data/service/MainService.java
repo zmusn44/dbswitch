@@ -213,13 +213,11 @@ public class MainService {
 				if (!pks1.isEmpty() && !pks2.isEmpty() && pks1.containsAll(pks2) && pks2.containsAll(pks1)) {
 					if (targetDatabaseType == DatabaseTypeEnum.MYSQL
 							&& !isMysqlInodbStorageEngine(properties.getTarget().getTargetSchema(),
-									tableDescription.getTableName(), writer.getDataSource())) {
+							sourceProperties.getPrefixTable() + tableDescription.getTableName(), writer.getDataSource())) {
 						this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
 					} else {
-						List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(),
-								tableDescription.getTableName());
-						this.doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1,
-								fields);
+						List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(), tableDescription.getTableName());
+						this.doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1, fields);
 					}
 				} else {
 					this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
