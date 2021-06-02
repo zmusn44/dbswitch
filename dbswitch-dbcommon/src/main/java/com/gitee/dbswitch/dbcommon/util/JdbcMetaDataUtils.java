@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbcommon.util;
@@ -53,7 +53,7 @@ public class JdbcMetaDataUtils {
 				String columnName = columns.getString("COLUMN_NAME");
 				result.add(columnName);
 			}
-			return new ArrayList<String>(result);
+			return new ArrayList<>(result);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		} finally {
@@ -70,7 +70,7 @@ public class JdbcMetaDataUtils {
 	 * @return 主键字段名称列表
 	 */
 	public List<String> queryTablePrimaryKeys(String schemaName, String tableName) {
-		Set<String> result = new HashSet<String>();
+		Set<String> result = new HashSet<>();
 		Connection connection = null;
 
 		try {
@@ -81,7 +81,7 @@ public class JdbcMetaDataUtils {
 				String columnName = columns.getString("COLUMN_NAME");
 				result.add(columnName);
 			}
-			return new ArrayList<String>(result);
+			return new ArrayList<>(result);
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		} finally {

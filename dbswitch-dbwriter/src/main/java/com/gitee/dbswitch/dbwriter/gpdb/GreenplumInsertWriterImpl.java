@@ -4,12 +4,12 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.gpdb;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.sql.DataSource;
@@ -26,60 +26,56 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Greenplum数据库Insert写入实现类
- * 
- * @author tang
  *
+ * @author tang
  */
 @Slf4j
 public class GreenplumInsertWriterImpl extends AbstractDatabaseWriter implements IDatabaseWriter {
 
-	public GreenplumInsertWriterImpl(DataSource dataSource) {
-		super(dataSource);
-	}
+    public GreenplumInsertWriterImpl(DataSource dataSource) {
+        super(dataSource);
+    }
 
-	@Override
-	public long write(List<String> fieldNames, List<Object[]> recordValues) {
-		List<String> placeHolders = new ArrayList<String>();
-		for (int i = 0; i < fieldNames.size(); ++i) {
-			placeHolders.add("?");
-		}
+    @Override
+    public long write(List<String> fieldNames, List<Object[]> recordValues) {
+        String schemaName = Objects.requireNonNull(this.schemaName, "schema-name名称为空，不合法!");
+        String tableName = Objects.requireNonNull(this.tableName, "table-name名称为空，不合法!");
 
-		String schemaName = Objects.requireNonNull(this.schemaName, "schema-name名称为空，不合法!");
-		String tableName = Objects.requireNonNull(this.tableName, "table-name名称为空，不合法!");
-		String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )", schemaName, tableName,
-				StringUtils.join(fieldNames, "\",\""), StringUtils.join(placeHolders, ","));
+        List<String> placeHolders = Collections.nCopies(fieldNames.size(), "?");
 
-		int[] argTypes = new int[fieldNames.size()];
-		for (int i = 0; i < fieldNames.size(); ++i) {
-			String col = fieldNames.get(i);
-			argTypes[i] = this.columnType.get(col);
-		}
+        String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )", schemaName, tableName,
+                StringUtils.join(fieldNames, "\",\""), StringUtils.join(placeHolders, ","));
 
-		DefaultTransactionDefinition defination = new DefaultTransactionDefinition();
-		defination.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-		defination.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-		PlatformTransactionManager transactionManager = new DataSourceTransactionManager(
-				this.jdbcTemplate.getDataSource());
-		TransactionStatus status = transactionManager.getTransaction(defination);
+        int[] argTypes = new int[fieldNames.size()];
+        for (int i = 0; i < fieldNames.size(); ++i) {
+            String col = fieldNames.get(i);
+            argTypes[i] = this.columnType.get(col);
+        }
 
-		try {
-			int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
-			int affectCount = 0;
-			for (int i : affects) {
-				affectCount += i;
-			}
+        DefaultTransactionDefinition defination = new DefaultTransactionDefinition();
+        defination.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        defination.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(this.dataSource);
+        TransactionStatus status = transactionManager.getTransaction(defination);
 
-			recordValues.clear();
-			transactionManager.commit(status);
-			return affectCount;
-		} catch (TransactionException e) {
-			transactionManager.rollback(status);
-			throw e;
-		} catch (Exception e) {
-			transactionManager.rollback(status);
-			throw e;
-		}
+        try {
+            int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
+            int affectCount = 0;
+            for (int i : affects) {
+                affectCount += i;
+            }
 
-	}
+            recordValues.clear();
+            transactionManager.commit(status);
+            return affectCount;
+        } catch (TransactionException e) {
+            transactionManager.rollback(status);
+            throw e;
+        } catch (Exception e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
+
+    }
 
 }

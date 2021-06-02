@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data.service;
@@ -16,7 +16,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
+import com.carrotsearch.sizeof.RamUsageEstimator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,6 +57,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service("MainService")
 public class MainService {
+
+	private final long MAX_CACHE_BYTES_SIZE = 512 * 1024 * 1024;
 
 	private ObjectMapper jackson = new ObjectMapper();
 
@@ -118,7 +122,11 @@ public class MainService {
 									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							} else {
-								if (includes.contains(tableName)) {
+								if (includes.size() == 1 && includes.get(0).contains("*")) {
+									if (Pattern.matches(includes.get(0), tableName)) {
+										this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
+									}
+								} else if (includes.contains(tableName)) {
 									this.doDataMigration(td, sourceProperties, sourceDataSource, writer);
 								}
 							}
@@ -205,13 +213,11 @@ public class MainService {
 				if (!pks1.isEmpty() && !pks2.isEmpty() && pks1.containsAll(pks2) && pks2.containsAll(pks1)) {
 					if (targetDatabaseType == DatabaseTypeEnum.MYSQL
 							&& !isMysqlInodbStorageEngine(properties.getTarget().getTargetSchema(),
-									tableDescription.getTableName(), writer.getDataSource())) {
+							sourceProperties.getPrefixTable() + tableDescription.getTableName(), writer.getDataSource())) {
 						this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
 					} else {
-						List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(),
-								tableDescription.getTableName());
-						this.doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1,
-								fields);
+						List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(), tableDescription.getTableName());
+						this.doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1, fields);
 					}
 				} else {
 					this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
@@ -258,7 +264,8 @@ public class MainService {
 		StatementResultSet srs = sourceOperator.queryTableData(tableDescription.getSchemaName(),
 				tableDescription.getTableName(), fields);
 
-		List<Object[]> cache = new LinkedList<Object[]>();
+		List<Object[]> cache = new LinkedList<>();
+		long cacheBytes=0;
 		long totalCount = 0;
 		try {
 			ResultSet rs = srs.getResultset();
@@ -274,12 +281,14 @@ public class MainService {
 				}
 
 				cache.add(record);
+				cacheBytes += RamUsageEstimator.sizeOf(record);
 				++totalCount;
 
-				if (cache.size() >= BATCH_SIZE) {
+				if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
 					long ret = writer.write(fields, cache);
-					log.info("[FullCoverSynch] handle table [{}] data count: {}", fullTableName, ret);
+					log.info("[FullCoverSynch] handle table [{}] data count: {}, batch bytes sie: {}", fullTableName, ret, cacheBytes);
 					cache.clear();
+					cacheBytes = 0;
 				}
 			}
 
@@ -342,6 +351,7 @@ public class MainService {
 			private long countUpdate = 0;
 			private long countDelete = 0;
 			private long count = 0;
+			private long cacheBytes=0;
 			private List<Object[]> cacheInsert = new LinkedList<Object[]>();
 			private List<Object[]> cacheUpdate = new LinkedList<Object[]>();
 			private List<Object[]> cacheDelete = new LinkedList<Object[]>();
@@ -359,6 +369,7 @@ public class MainService {
 					countDelete++;
 				}
 
+				cacheBytes+=RamUsageEstimator.sizeOf(record);
 				count++;
 				checkFull(fields);
 			}
@@ -370,7 +381,7 @@ public class MainService {
 			 */
 			private void checkFull(List<String> fields) {
 				if (cacheInsert.size() >= BATCH_SIZE || cacheUpdate.size() >= BATCH_SIZE
-						|| cacheDelete.size() >= BATCH_SIZE) {
+						|| cacheDelete.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
 					if (cacheDelete.size() > 0) {
 						doDelete(fields);
 					}
@@ -382,6 +393,9 @@ public class MainService {
 					if (cacheUpdate.size() > 0) {
 						doUpdate(fields);
 					}
+
+					log.info("[IncreaseSynch] Handle data batch size: {}", cacheBytes);
+					cacheBytes = 0;
 				}
 			}
 
@@ -427,7 +441,7 @@ public class MainService {
 	/**
 	 * 创建于指定数据库连接描述符的连接池
 	 * 
-	 * @param dbdesc 数据库连接描述符
+	 * @param description 数据库连接描述符
 	 * @return HikariDataSource连接池
 	 */
 	private HikariDataSource createSourceDataSource(DbswichProperties.SourceDataSourceProperties description) {
@@ -453,7 +467,7 @@ public class MainService {
 	/**
 	 * 创建于指定数据库连接描述符的连接池
 	 * 
-	 * @param dbdesc 数据库连接描述符
+	 * @param description 数据库连接描述符
 	 * @return HikariDataSource连接池
 	 */
 	private HikariDataSource createTargetDataSource(DbswichProperties.TargetDataSourceProperties description) {
@@ -493,15 +507,16 @@ public class MainService {
 
 	/**
 	 * 检查MySQL数据库表的存储引擎是否为Innodb
-	 * 
+	 *
+	 * @param shemaName  schema名
+	 * @param tableName  table名
 	 * @param dataSource 数据源
-	 * @param task       任务实体
-	 * @return 为Innodb存储引擎时返回True,否在为false
+	 * @return 为Innodb存储引擎时返回True, 否在为false
 	 */
 	private boolean isMysqlInodbStorageEngine(String shemaName, String tableName, DataSource dataSource) {
 		String sql = "SELECT count(*) as total FROM information_schema.tables WHERE table_schema=? AND table_name=? AND ENGINE='InnoDB'";
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-		return jdbcTemplate.queryForObject(sql, new Object[] { shemaName, tableName }, Integer.class) > 0;
+		return jdbcTemplate.queryForObject(sql, new Object[]{shemaName, tableName}, Integer.class) > 0;
 	}
 
 	/**

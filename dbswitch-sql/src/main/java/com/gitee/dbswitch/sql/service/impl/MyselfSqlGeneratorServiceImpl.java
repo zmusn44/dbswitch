@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.sql.service.impl;
@@ -56,32 +56,32 @@ public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 	}
 
 	@Override
-	public String createTable(String dbtype, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbtype.toUpperCase());
+	public String createTable(String dbType, TableDefinition t) {
+		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlCreateTable(t);
 		return operator.toSqlString(dialect);
 	}
 
 	@Override
-	public String alterTable(String dbtype, String handle, TableDefinition t){
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbtype.toUpperCase());
+	public String alterTable(String dbType, String handle, TableDefinition t){
+		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlAlterTable(t,handle);
 		return operator.toSqlString(dialect);
 	}
 
 	@Override
-	public String dropTable(String dbtype, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbtype.toUpperCase());
+	public String dropTable(String dbType, TableDefinition t) {
+		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlDropTable(t);
 		return operator.toSqlString(dialect);
 	}
 
 	@Override
-	public String truncateTable(String dbtype, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbtype.toUpperCase());
+	public String truncateTable(String dbType, TableDefinition t) {
+		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlTruncateTable(t);
 		return operator.toSqlString(dialect);
