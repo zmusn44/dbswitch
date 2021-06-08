@@ -56,4 +56,5 @@ public class TableDescription {
 		this.tableType = DBTableType.valueOf(tableType.toUpperCase());
 	}
 
+
 }
