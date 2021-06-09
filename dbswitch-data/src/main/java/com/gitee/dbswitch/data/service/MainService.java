@@ -120,30 +120,15 @@ public class MainService {
 
                                 if (useExcludeTables) {
                                     if (!filters.contains(tableName)) {
-                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(
-                                                getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
-                                                .exceptionally(getExceptHandler(td, numberOfFailures))
-                                                .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
-
-                                        futures.add(future);
+                                        futures.add(makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, numberOfFailures, totalBytesSize));
                                     }
                                 } else {
                                     if (includes.size() == 1 && (includes.get(0).contains("*") || includes.get(0).contains("?"))) {
                                         if (Pattern.matches(includes.get(0), tableName)) {
-                                            CompletableFuture<Void> future = CompletableFuture.supplyAsync(
-                                                    getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
-                                                    .exceptionally(getExceptHandler(td, numberOfFailures))
-                                                    .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
-
-                                            futures.add(future);
+                                            futures.add(makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, numberOfFailures, totalBytesSize));
                                         }
                                     } else if (includes.contains(tableName)) {
-                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(
-                                                getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
-                                                .exceptionally(getExceptHandler(td, numberOfFailures))
-                                                .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
-
-                                        futures.add(future);
+                                        futures.add(makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, numberOfFailures, totalBytesSize));
                                     }
                                 }
 
@@ -173,24 +158,47 @@ public class MainService {
             StringBuilder sb = new StringBuilder();
             sb.append("===================================\n");
             sb.append(String.format("total elipse time:\t %f s\n", watch.getTotalTimeSeconds()));
-            this.perfStats.stream().forEach(st -> sb.append(st));
+            sb.append("-------------------------------------\n");
+            perfStats.stream().forEach(st -> {
+                sb.append(st);
+                if(perfStats.size()>1){
+                    sb.append("-------------------------------------\n");
+                }
+            });
             sb.append("===================================\n");
             System.out.println(sb.toString());
         }
     }
 
     /**
+     * 构造一个异步执行任务
+     *
+     * @param td               表描述上下文
+     * @param indexInternal    源端索引号
+     * @param sds              源端的DataSource数据源
+     * @param tds              目的端的DataSource数据源
+     * @param numberOfFailures 失败的数量
+     * @param totalBytesSize   同步的字节大小
+     * @return
+     */
+    private CompletableFuture<Void> makeFutureTask(TableDescription td, Integer indexInternal,
+                                                   HikariDataSource sds, HikariDataSource tds,
+                                                   AtomicInteger numberOfFailures, AtomicLong totalBytesSize) {
+        return CompletableFuture.supplyAsync(getMigrateHandler(td, indexInternal, sds, tds))
+                .exceptionally(getExceptHandler(td, numberOfFailures))
+                .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
+    }
+
+    /**
      * 单表迁移处理方法
      *
      * @param td            表描述上下文
-     * @param properties    属性配置参数
      * @param indexInternal 源端索引号
      * @param sds           源端的DataSource数据源
      * @param tds           目的端的DataSource数据源
      * @return
      */
-    private Supplier<Long> getMigrateHandler(TableDescription td, DbswichProperties properties, Integer indexInternal,
-                                             HikariDataSource sds, HikariDataSource tds) {
+    private Supplier<Long> getMigrateHandler(TableDescription td, Integer indexInternal, HikariDataSource sds, HikariDataSource tds) {
         return () -> MigrationHandler.createInstance(td, properties, indexInternal, sds, tds).get();
     }
 
