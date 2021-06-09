@@ -13,11 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import javax.sql.DataSource;
-
 import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
+import com.gitee.dbswitch.data.domain.PerfStat;
 import com.gitee.dbswitch.data.handler.MigrationHandler;
+import com.gitee.dbswitch.data.util.BytesUnitUtils;
 import com.gitee.dbswitch.data.util.DataSouceUtils;
 import com.gitee.dbswitch.data.util.StrUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +41,19 @@ import lombok.extern.slf4j.Slf4j;
  * @author tang
  */
 @Slf4j
-@Service("MainService")
+@Service
 public class MainService {
 
     private ObjectMapper jackson = new ObjectMapper();
 
     @Autowired
     private DbswichProperties properties;
+
+    private List<PerfStat> perfStats;
+
+    public MainService(){
+        perfStats=new ArrayList<>();
+    }
 
     /**
      * 执行主逻辑
@@ -52,10 +62,10 @@ public class MainService {
         StopWatch watch = new StopWatch();
         watch.start();
 
-        log.info("service is running....");
+        log.info("service is started....");
 
         try {
-            //log.info("Application properties configuration \n{}", jackson.writeValueAsString(properties));
+            //log.info("Application properties configuration \n{}", properties);
 
             HikariDataSource targetDataSource = DataSouceUtils.createTargetDataSource(properties.getTarget());
 
@@ -66,7 +76,9 @@ public class MainService {
             for (DbswichProperties.SourceDataSourceProperties sourceProperties : sourcesProperties) {
 
                 HikariDataSource sourceDataSource = DataSouceUtils.createSourceDataSource(sourceProperties);
-                IMetaDataService sourceMetaDataService = getMetaDataService(sourceDataSource);
+                IMetaDataService sourceMetaDataService = new MigrationMetaDataServiceImpl();
+
+                sourceMetaDataService.setDatabaseConnection(JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource));
 
                 // 判断处理的策略：是排除还是包含
                 List<String> includes = StrUtils.stringToList(sourceProperties.getSourceIncludes());
@@ -86,8 +98,9 @@ public class MainService {
                 List<String> schemas = StrUtils.stringToList(sourceProperties.getSourceSchema());
                 log.info("Source schema names is :{}", jackson.writeValueAsString(schemas));
 
-                AtomicInteger numberOfFailures = new AtomicInteger();
-
+                AtomicInteger numberOfFailures = new AtomicInteger(0);
+                AtomicLong totalBytesSize=new AtomicLong(0L);
+                final int indexInternal=sourcePropertiesIndex;
                 for (String schema : schemas) {
                     // 读取源库指定schema里所有的表
                     List<TableDescription> tableList = sourceMetaDataService.queryTableList(sourceProperties.getUrl(),
@@ -97,44 +110,26 @@ public class MainService {
                     } else {
                         for (TableDescription td : tableList) {
                             String tableName = td.getTableName();
+                            Supplier<Long> supplier = () -> new MigrationHandler(td, properties, indexInternal, sourceDataSource, targetDataSource).call();
+                            Function<Throwable, Long> exceptFunction = (e) -> {
+                                log.error("Error migration for table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
+                                numberOfFailures.incrementAndGet();
+                                throw new RuntimeException(e);
+                            };
+                            Consumer<Long> finishConsumer = (r) -> totalBytesSize.addAndGet(r.longValue());
+                            CompletableFuture<Void> future = CompletableFuture.supplyAsync(supplier).exceptionally(exceptFunction).thenAccept(finishConsumer);
+
                             if (useExcludeTables) {
                                 if (!filters.contains(tableName)) {
-                                    futures.add(CompletableFuture.runAsync(
-                                            new MigrationHandler(td, properties, sourcePropertiesIndex, sourceDataSource, targetDataSource)
-                                            ).exceptionally(
-                                            (e) -> {
-                                                log.error("Error migration table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                                numberOfFailures.incrementAndGet();
-                                                throw new RuntimeException(e);
-                                            }
-                                            )
-                                    );
+                                    futures.add(future);
                                 }
                             } else {
-                                if (includes.size() == 1 && includes.get(0).contains("*")) {
+                                if (includes.size() == 1 && (includes.get(0).contains("*") || includes.get(0).contains("?"))) {
                                     if (Pattern.matches(includes.get(0), tableName)) {
-                                        futures.add(CompletableFuture.runAsync(
-                                                new MigrationHandler(td, properties, sourcePropertiesIndex, sourceDataSource, targetDataSource)
-                                                ).exceptionally(
-                                                (e) -> {
-                                                    log.error("Error migration table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                                    numberOfFailures.incrementAndGet();
-                                                    throw new RuntimeException(e);
-                                                }
-                                                )
-                                        );
+                                        futures.add(future);
                                     }
                                 } else if (includes.contains(tableName)) {
-                                    futures.add(CompletableFuture.runAsync(
-                                            new MigrationHandler(td, properties, sourcePropertiesIndex, sourceDataSource, targetDataSource)
-                                            ).exceptionally(
-                                            (e) -> {
-                                                log.error("Error migration table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                                numberOfFailures.incrementAndGet();
-                                                throw new RuntimeException(e);
-                                            }
-                                            )
-                                    );
+                                    futures.add(future);
                                 }
                             }
 
@@ -144,10 +139,10 @@ public class MainService {
 
                 }
 
-                CompletableFuture<Void> allFuture=CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{}));
-                allFuture.get();
-                log.info("#### Complete data migration for the [ {} ] data source ,total count={}, failure count={}",
-                        sourcePropertiesIndex, futures.size(), numberOfFailures);
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).join();
+                log.info("#### Complete data migration for the [ {} ] data source:\ntotal count={}\nfailure count={}\ntotal bytes size={}",
+                        sourcePropertiesIndex, futures.size(), numberOfFailures.get(), BytesUnitUtils.bytesSizeToHuman(totalBytesSize.get()));
+                perfStats.add(new PerfStat(sourcePropertiesIndex,futures.size(),numberOfFailures.get(),totalBytesSize.get()));
                 DataSouceUtils.closeHikariDataSource(sourceDataSource);
 
                 ++sourcePropertiesIndex;
@@ -159,19 +154,11 @@ public class MainService {
         } finally {
             watch.stop();
             log.info("total elipse = {} s", watch.getTotalTimeSeconds());
+            System.out.println("===================================");
+            System.out.println(String.format("total elipse time:\t %f s", watch.getTotalTimeSeconds()));
+            this.perfStats.stream().forEach(st -> System.out.println(st));
+            System.out.println("===================================");
         }
-    }
-
-    /**
-     * 获取MetaDataService对象
-     *
-     * @param dataSource
-     * @return IMetaDataService
-     */
-    private IMetaDataService getMetaDataService(DataSource dataSource) {
-        IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-        metaDataService.setDatabaseConnection(JdbcTemplateUtils.getDatabaseProduceName(dataSource));
-        return metaDataService;
     }
 
 }

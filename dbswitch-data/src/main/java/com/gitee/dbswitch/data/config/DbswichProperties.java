@@ -11,6 +11,8 @@ package com.gitee.dbswitch.data.config;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -25,6 +27,7 @@ import lombok.NoArgsConstructor;
  */
 @Configuration
 @Data
+@ToString
 @ConfigurationProperties(prefix = "dbswitch", ignoreInvalidFields=false, ignoreUnknownFields = false)
 @PropertySource("classpath:config.properties")
 public class DbswichProperties {

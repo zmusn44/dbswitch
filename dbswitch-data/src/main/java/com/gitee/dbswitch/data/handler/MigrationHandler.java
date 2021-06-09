@@ -1,3 +1,12 @@
+// Copyright tang.  All rights reserved.
+// https://gitee.com/inrgihc/dbswitch
+//
+// Use of this source code is governed by a BSD-style license
+//
+// Author: tang (inrgihc@126.com)
+// Date : 2020/1/2
+// Location: beijing , china
+/////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data.handler;
 
 import com.carrotsearch.sizeof.RamUsageEstimator;
@@ -31,6 +40,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 在一个线程内的单表迁移处理逻辑
@@ -38,10 +49,11 @@ import java.util.Map;
  * @author tang
  */
 @Slf4j
-public class MigrationHandler implements Runnable {
+public class MigrationHandler implements Callable<Long> {
 
     private final long MAX_CACHE_BYTES_SIZE = 512 * 1024 * 1024;
 
+    private int fetchSize = 100;
     private TableDescription tableDescription;
     private DbswichProperties properties;
     private DbswichProperties.SourceDataSourceProperties sourceProperties;
@@ -61,11 +73,15 @@ public class MigrationHandler implements Runnable {
         this.sourceMetaDataSerice = new MigrationMetaDataServiceImpl();
         this.targetDataSource = tds;
 
+        if (sourceProperties.getFetchSize() >= fetchSize) {
+            fetchSize = sourceProperties.getFetchSize();
+        }
+
         this.sourceMetaDataSerice.setDatabaseConnection(JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource));
     }
 
     @Override
-    public void run() {
+    public Long call() {
         log.info("Migrate table for {}.{} ", tableDescription.getSchemaName(), tableDescription.getTableName());
 
         JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
@@ -102,7 +118,7 @@ public class MigrationHandler implements Runnable {
             targetJdbcTemplate.execute(sqlCreateTable);
             log.info("Execute SQL: \n{}", sqlCreateTable);
 
-            this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
+            return doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
         } else {
             // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
             if (properties.getTarget().getChangeDataSynch().booleanValue()) {
@@ -118,16 +134,16 @@ public class MigrationHandler implements Runnable {
                     if (targetDatabaseType == DatabaseTypeEnum.MYSQL
                             && !JdbcTemplateUtils.isMysqlInodbStorageEngine(properties.getTarget().getTargetSchema(),
                             sourceProperties.getPrefixTable() + tableDescription.getTableName(), targetDataSource)) {
-                        this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
+                        return doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
                     } else {
                         List<String> fields = mds.queryTableColumnName(tableDescription.getSchemaName(), tableDescription.getTableName());
-                        this.doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1, fields);
+                        return doIncreaseSynchronize(tableDescription, sourceProperties, sourceDataSource, writer, pks1, fields);
                     }
                 } else {
-                    this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
+                    return doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
                 }
             } else {
-                this.doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
+                return doFullCoverSynchronize(tableDescription, sourceProperties, sourceDataSource, writer);
             }
         }
     }
@@ -138,14 +154,10 @@ public class MigrationHandler implements Runnable {
      * @param tableDescription 表的描述信息，可能是视图表，可能是物理表
      * @param writer           目的端的写入器
      */
-    private void doFullCoverSynchronize(TableDescription tableDescription,
+    private Long doFullCoverSynchronize(TableDescription tableDescription,
                                         DbswichProperties.SourceDataSourceProperties sourceProperties,
                                         HikariDataSource sourceDataSource,
                                         IDatabaseWriter writer) {
-        int fetchSize = 100;
-        if (sourceProperties.getFetchSize() >= fetchSize) {
-            fetchSize = sourceProperties.getFetchSize();
-        }
         final int BATCH_SIZE = fetchSize;
 
         // 准备目的端的数据写入操作
@@ -166,15 +178,13 @@ public class MigrationHandler implements Runnable {
                 fullTableName);
 
         List<String> fields = new ArrayList<>(columnMetaData.keySet());
-        StatementResultSet srs = sourceOperator.queryTableData(tableDescription.getSchemaName(),
-                tableDescription.getTableName(), fields);
+        StatementResultSet srs = sourceOperator.queryTableData(tableDescription.getSchemaName(), tableDescription.getTableName(), fields);
 
         List<Object[]> cache = new LinkedList<>();
         long cacheBytes = 0;
         long totalCount = 0;
         long totalBytes = 0;
-        try {
-            ResultSet rs = srs.getResultset();
+        try (ResultSet rs = srs.getResultset();) {
             while (rs.next()) {
                 Object[] record = new Object[fields.size()];
                 for (int i = 1; i <= fields.size(); ++i) {
@@ -192,7 +202,7 @@ public class MigrationHandler implements Runnable {
 
                 if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
                     long ret = writer.write(fields, cache);
-                    log.info("[FullCoverSynch] handle table [{}] data count: {}, batch bytes sie: {}", fullTableName, ret, BytesUnitUtils.bytesSizeToHuman(cacheBytes));
+                    log.info("[FullCoverSynch] handle table [{}] data count: {}, the batch bytes sie: {}", fullTableName, ret, BytesUnitUtils.bytesSizeToHuman(cacheBytes));
                     cache.clear();
                     totalBytes += cacheBytes;
                     cacheBytes = 0;
@@ -206,12 +216,14 @@ public class MigrationHandler implements Runnable {
                 totalBytes += cacheBytes;
             }
 
-            log.info("[FullCoverSynch] handle table [{}] total data count:{} ,total bytes={}", fullTableName, totalCount, BytesUnitUtils.bytesSizeToHuman(totalBytes));
+            log.info("[FullCoverSynch] handle table [{}] total data count:{}, total bytes={}", fullTableName, totalCount, BytesUnitUtils.bytesSizeToHuman(totalBytes));
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             srs.close();
         }
+
+        return totalBytes;
     }
 
     /**
@@ -220,13 +232,9 @@ public class MigrationHandler implements Runnable {
      * @param tableDescription 表的描述信息，这里只能是物理表
      * @param writer           目的端的写入器
      */
-    private void doIncreaseSynchronize(TableDescription tableDescription,
+    private Long doIncreaseSynchronize(TableDescription tableDescription,
                                        DbswichProperties.SourceDataSourceProperties sourceProperties, HikariDataSource sourceDataSource,
                                        IDatabaseWriter writer, List<String> pks, List<String> fields) {
-        int fetchSize = 100;
-        if (sourceProperties.getFetchSize() >= fetchSize) {
-            fetchSize = sourceProperties.getFetchSize();
-        }
         final int BATCH_SIZE = fetchSize;
 
         DatabaseTypeEnum sourceDatabaseType = JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource);
@@ -252,13 +260,15 @@ public class MigrationHandler implements Runnable {
         calculator.setRecordIdentical(false);
         calculator.setCheckJdbcType(false);
 
+        AtomicLong totalBytes=new AtomicLong(0);
+
         // 执行实际的变化同步过程
         calculator.executeCalculate(param, new IDatabaseRowHandler() {
 
             private long countInsert = 0;
             private long countUpdate = 0;
             private long countDelete = 0;
-            private long count = 0;
+            private long countTotal = 0;
             private long cacheBytes = 0;
             private List<Object[]> cacheInsert = new LinkedList<Object[]>();
             private List<Object[]> cacheUpdate = new LinkedList<Object[]>();
@@ -278,7 +288,8 @@ public class MigrationHandler implements Runnable {
                 }
 
                 cacheBytes += RamUsageEstimator.sizeOf(record);
-                count++;
+                totalBytes.addAndGet(cacheBytes);
+                countTotal++;
                 checkFull(fields);
             }
 
@@ -321,7 +332,7 @@ public class MigrationHandler implements Runnable {
                     doUpdate(fields);
                 }
 
-                log.info("[IncreaseSynch] Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, count,
+                log.info("[IncreaseSynch] Handle table [{}] total count: {}, Insert:{},Update:{},Delete:{} ", fullTableName, countTotal,
                         countInsert, countUpdate, countDelete);
             }
 
@@ -344,6 +355,8 @@ public class MigrationHandler implements Runnable {
             }
 
         });
+
+        return totalBytes.get();
     }
 
 }
