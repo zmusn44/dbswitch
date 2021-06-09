@@ -51,7 +51,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class MigrationHandler implements Supplier<Long> {
 
-    private final long MAX_CACHE_BYTES_SIZE = 512 * 1024 * 1024;
+    private final long MAX_CACHE_BYTES_SIZE = 64 * 1024 * 1024;
 
     private int fetchSize = 100;
     private TableDescription tableDescription;

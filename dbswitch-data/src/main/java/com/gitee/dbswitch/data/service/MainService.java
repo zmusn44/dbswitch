@@ -14,16 +14,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
 import com.gitee.dbswitch.data.domain.PerfStat;
 import com.gitee.dbswitch.data.handler.MigrationHandler;
 import com.gitee.dbswitch.data.util.BytesUnitUtils;
 import com.gitee.dbswitch.data.util.DataSouceUtils;
 import com.gitee.dbswitch.data.util.StrUtils;
+import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
@@ -44,11 +43,20 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class MainService {
 
+    /**
+     * JSON序列化工具
+     */
     private ObjectMapper jackson = new ObjectMapper();
 
+    /**
+     * 配置参数属性
+     */
     @Autowired
     private DbswichProperties properties;
 
+    /**
+     * 性能统计记录表
+     */
     private List<PerfStat> perfStats;
 
     public MainService() {
@@ -112,40 +120,28 @@ public class MainService {
 
                                 if (useExcludeTables) {
                                     if (!filters.contains(tableName)) {
-                                        Supplier<Long> supplier = () -> MigrationHandler.createInstance(td, properties, indexInternal, sourceDataSource, targetDataSource).get();
-                                        Function<Throwable, Long> exceptFunction = (e) -> {
-                                            log.error("Error migration for table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                            numberOfFailures.incrementAndGet();
-                                            throw new RuntimeException(e);
-                                        };
-                                        Consumer<Long> finishConsumer = (r) -> totalBytesSize.addAndGet(r.longValue());
-                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(supplier).exceptionally(exceptFunction).thenAccept(finishConsumer);
+                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(
+                                                getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
+                                                .exceptionally(getExceptHandler(td, numberOfFailures))
+                                                .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
 
                                         futures.add(future);
                                     }
                                 } else {
                                     if (includes.size() == 1 && (includes.get(0).contains("*") || includes.get(0).contains("?"))) {
                                         if (Pattern.matches(includes.get(0), tableName)) {
-                                            Supplier<Long> supplier = () -> MigrationHandler.createInstance(td, properties, indexInternal, sourceDataSource, targetDataSource).get();
-                                            Function<Throwable, Long> exceptFunction = (e) -> {
-                                                log.error("Error migration for table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                                numberOfFailures.incrementAndGet();
-                                                throw new RuntimeException(e);
-                                            };
-                                            Consumer<Long> finishConsumer = (r) -> totalBytesSize.addAndGet(r.longValue());
-                                            CompletableFuture<Void> future = CompletableFuture.supplyAsync(supplier).exceptionally(exceptFunction).thenAccept(finishConsumer);
+                                            CompletableFuture<Void> future = CompletableFuture.supplyAsync(
+                                                    getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
+                                                    .exceptionally(getExceptHandler(td, numberOfFailures))
+                                                    .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
 
                                             futures.add(future);
                                         }
                                     } else if (includes.contains(tableName)) {
-                                        Supplier<Long> supplier = () -> MigrationHandler.createInstance(td, properties, indexInternal, sourceDataSource, targetDataSource).get();
-                                        Function<Throwable, Long> exceptFunction = (e) -> {
-                                            log.error("Error migration for table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
-                                            numberOfFailures.incrementAndGet();
-                                            throw new RuntimeException(e);
-                                        };
-                                        Consumer<Long> finishConsumer = (r) -> totalBytesSize.addAndGet(r.longValue());
-                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(supplier).exceptionally(exceptFunction).thenAccept(finishConsumer);
+                                        CompletableFuture<Void> future = CompletableFuture.supplyAsync(
+                                                getMigrateHandler(td, properties, indexInternal, sourceDataSource, targetDataSource))
+                                                .exceptionally(getExceptHandler(td, numberOfFailures))
+                                                .thenAccept((r) -> totalBytesSize.addAndGet(r.longValue()));
 
                                         futures.add(future);
                                     }
@@ -157,10 +153,10 @@ public class MainService {
 
                     }
 
-                    //CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).get();
-                    futures.forEach(i->i.join());
+                    CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).join();
                     log.info("#### Complete data migration for the [ {} ] data source:\ntotal count={}\nfailure count={}\ntotal bytes size={}",
                             sourcePropertiesIndex, futures.size(), numberOfFailures.get(), BytesUnitUtils.bytesSizeToHuman(totalBytesSize.get()));
+
                     perfStats.add(new PerfStat(sourcePropertiesIndex, futures.size(), numberOfFailures.get(), totalBytesSize.get()));
 
                     ++sourcePropertiesIndex;
@@ -181,6 +177,36 @@ public class MainService {
             sb.append("===================================\n");
             System.out.println(sb.toString());
         }
+    }
+
+    /**
+     * 单表迁移处理方法
+     *
+     * @param td            表描述上下文
+     * @param properties    属性配置参数
+     * @param indexInternal 源端索引号
+     * @param sds           源端的DataSource数据源
+     * @param tds           目的端的DataSource数据源
+     * @return
+     */
+    private Supplier<Long> getMigrateHandler(TableDescription td, DbswichProperties properties, Integer indexInternal,
+                                             HikariDataSource sds, HikariDataSource tds) {
+        return () -> MigrationHandler.createInstance(td, properties, indexInternal, sds, tds).get();
+    }
+
+    /**
+     * 异常处理函数方法
+     *
+     * @param td               表描述上下文
+     * @param numberOfFailures 失败记录数
+     * @return
+     */
+    private Function<Throwable, Long> getExceptHandler(TableDescription td, AtomicInteger numberOfFailures) {
+        return (e) -> {
+            log.error("Error migration for table: {}.{}, error message:", td.getSchemaName(), td.getTableName(), e);
+            numberOfFailures.incrementAndGet();
+            throw new RuntimeException(e);
+        };
     }
 
 }
