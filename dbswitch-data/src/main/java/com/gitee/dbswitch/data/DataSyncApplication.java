@@ -31,7 +31,7 @@ public class DataSyncApplication {
 		springApplication.setWebApplicationType(WebApplicationType.NONE);
 		springApplication.setBannerMode(Banner.Mode.OFF);
 		ApplicationContext context = springApplication.run(args);
-		MainService service = context.getBean("MainService", MainService.class);
+		MainService service = context.getBean(MainService.class);
 		service.run();
 	}
 

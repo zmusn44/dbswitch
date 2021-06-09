@@ -112,4 +112,18 @@ public final class JdbcTemplateUtils {
 		return null;
 	}
 
+	/**
+	 * 检查MySQL数据库表的存储引擎是否为Innodb
+	 *
+	 * @param shemaName  schema名
+	 * @param tableName  table名
+	 * @param dataSource 数据源
+	 * @return 为Innodb存储引擎时返回True, 否在为false
+	 */
+	public static boolean isMysqlInodbStorageEngine(String shemaName, String tableName, DataSource dataSource) {
+		String sql = "SELECT count(*) as total FROM information_schema.tables WHERE table_schema=? AND table_name=? AND ENGINE='InnoDB'";
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+		return jdbcTemplate.queryForObject(sql, new Object[]{shemaName, tableName}, Integer.class) > 0;
+	}
+
 }
