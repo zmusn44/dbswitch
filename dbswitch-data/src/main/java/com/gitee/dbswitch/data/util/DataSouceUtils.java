@@ -33,9 +33,9 @@ public final class DataSouceUtils {
         } else {
             ds.setConnectionTestQuery("SELECT 1");
         }
-        ds.setMaximumPoolSize(5);
-        ds.setMinimumIdle(2);
-        ds.setConnectionTimeout(30000);
+        ds.setMaximumPoolSize(8);
+        ds.setMinimumIdle(5);
+        ds.setConnectionTimeout(60000);
         ds.setIdleTimeout(60000);
 
         return ds;
@@ -59,8 +59,8 @@ public final class DataSouceUtils {
         } else {
             ds.setConnectionTestQuery("SELECT 1");
         }
-        ds.setMaximumPoolSize(5);
-        ds.setMinimumIdle(2);
+        ds.setMaximumPoolSize(8);
+        ds.setMinimumIdle(5);
         ds.setConnectionTimeout(30000);
         ds.setIdleTimeout(60000);
 

@@ -40,8 +40,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 /**
  * 在一个线程内的单表迁移处理逻辑
@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author tang
  */
 @Slf4j
-public class MigrationHandler implements Callable<Long> {
+public class MigrationHandler implements Supplier<Long> {
 
     private final long MAX_CACHE_BYTES_SIZE = 512 * 1024 * 1024;
 
@@ -61,7 +61,15 @@ public class MigrationHandler implements Callable<Long> {
     private IMetaDataService sourceMetaDataSerice;
     private HikariDataSource targetDataSource;
 
-    public MigrationHandler(TableDescription td,
+    public static MigrationHandler createInstance(TableDescription td,
+                                                  DbswichProperties properties,
+                                                  Integer sourcePropertiesIndex,
+                                                  HikariDataSource sds,
+                                                  HikariDataSource tds) {
+        return new MigrationHandler(td, properties, sourcePropertiesIndex, sds, tds);
+    }
+
+    private MigrationHandler(TableDescription td,
                             DbswichProperties properties,
                             Integer sourcePropertiesIndex,
                             HikariDataSource sds,
@@ -81,7 +89,7 @@ public class MigrationHandler implements Callable<Long> {
     }
 
     @Override
-    public Long call() {
+    public Long get() {
         log.info("Migrate table for {}.{} ", tableDescription.getSchemaName(), tableDescription.getTableName());
 
         JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
@@ -260,7 +268,7 @@ public class MigrationHandler implements Callable<Long> {
         calculator.setRecordIdentical(false);
         calculator.setCheckJdbcType(false);
 
-        AtomicLong totalBytes=new AtomicLong(0);
+        AtomicLong totalBytes = new AtomicLong(0);
 
         // 执行实际的变化同步过程
         calculator.executeCalculate(param, new IDatabaseRowHandler() {
