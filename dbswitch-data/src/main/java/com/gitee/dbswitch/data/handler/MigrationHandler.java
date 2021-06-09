@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data.handler;
 
-import com.carrotsearch.sizeof.RamUsageEstimator;
+import org.ehcache.sizeof.SizeOf;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.util.CommonUtils;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -205,7 +205,7 @@ public class MigrationHandler implements Supplier<Long> {
                 }
 
                 cache.add(record);
-                cacheBytes += RamUsageEstimator.sizeOf(record);
+                cacheBytes += SizeOf.newInstance().deepSizeOf(record);
                 ++totalCount;
 
                 if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
@@ -295,7 +295,7 @@ public class MigrationHandler implements Supplier<Long> {
                     countDelete++;
                 }
 
-                cacheBytes += RamUsageEstimator.sizeOf(record);
+                cacheBytes += SizeOf.newInstance().deepSizeOf(record);
                 totalBytes.addAndGet(cacheBytes);
                 countTotal++;
                 checkFull(fields);
