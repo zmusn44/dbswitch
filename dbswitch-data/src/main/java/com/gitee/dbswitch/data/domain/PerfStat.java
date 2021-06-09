@@ -31,6 +31,6 @@ public class PerfStat {
         return "Data Source Index: \t" + index + "\n" +
                 "Total Tables Count: \t" + total + "\n" +
                 "Failure Tables count: \t" + failure + "\n" +
-                "Total Transfer Size: \t" + BytesUnitUtils.bytesSizeToHuman(bytes);
+                "Total Transfer Size: \t" + BytesUnitUtils.bytesSizeToHuman(bytes) + "\n";
     }
 }
