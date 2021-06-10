@@ -132,15 +132,15 @@ sh ./docker-maven-build.sh
 
  **注意:**
  
-- *（1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数； *
+- （1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数； 
  
-- *（2）如果```dbswitch.source[i].source-includes```不为空，则按照包含表的方式来执行； *
+- （2）如果```dbswitch.source[i].source-includes```不为空，则按照包含表的方式来执行； 
 
-- *（3）如果```dbswitch.source[i].source-includes```为空，则按照```dbswitch.source[i].source-excludes```排除表的方式来执行。 *
+- （3）如果```dbswitch.source[i].source-includes```为空，则按照```dbswitch.source[i].source-excludes```排除表的方式来执行。 
 
-- *（4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 *
+- （4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 
 
-- *（5）也支持配置文件名为```conf/config.yml```的YML格式，配置文件样例如下：*
+- （5）也支持配置文件名为```conf/config.yml```的YML格式，配置文件样例如下：
 
 ```
 dbswitch:
@@ -185,7 +185,7 @@ dbswitch:
     change-data-synch: true
 ```
 
-- *（6）各个数据库的JDBC驱动连接示例如下：
+- （6）各个数据库的JDBC驱动连接示例如下：
 
 **mysql/mariadb的驱动配置样例**
 
