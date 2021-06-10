@@ -132,86 +132,134 @@ sh ./docker-maven-build.sh
 
  **注意:**
  
-- *（1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数；*
+- （1）支持源端为多个数据源类型，如果```dbswitch.source[i]```为数组类型，i为编号，从0开始的整数； 
  
-- *（2）如果dbswitch.source[i].source-includes不为空，则按照包含表的方式来执行；*
+- （2）如果```dbswitch.source[i].source-includes```不为空，则按照包含表的方式来执行； 
 
-- *（3）如果dbswitch.source[i].source-includes为空，则按照dbswitch.source[i].source-excludes排除表的方式来执行。*
+- （3）如果```dbswitch.source[i].source-includes```为空，则按照```dbswitch.source[i].source-excludes```排除表的方式来执行。 
 
-- *（4）如果dbswitch.target.target-drop=false，dbswitch.target.change-data-synch=true；时会对有主键表启用增量变更方式同步*
+- （4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 
 
-- mysql/mariadb的驱动配置样例
+- （5）同时也支持配置文件名为```conf/config.yml```的YML格式，配置文件样例如下：
+
+```
+dbswitch:
+  source:
+	# source database connection information
+	## support MySQL/MariaDB/DB2/DM/Kingbase8/Oracle/SQLServer/PostgreSQL/Greenplum
+	## support mutiple source database connection
+    - url: jdbc:oracle:thin:@172.17.2.10:1521:ORCL
+      driver-class-name: 'oracle.jdbc.driver.OracleDriver'
+      username: 'system'
+      password: '123456'
+      # source database configuration parameters
+      ## fetch size for query source database
+      fetch-size: 10000
+      ## schema name for query source database
+      source-schema: 'TANG'
+      ## prefix of table name for target name
+      prefix-table: 'TA_'
+      ## table name include from table lists
+      source-includes: ''
+      ## table name exclude from table lists
+      source-excludes: ''
+
+  target:
+    # target database connection information
+    ## Best support for Oracle/PostgreSQL/Greenplum/DM/Kingbase8
+    url: jdbc:postgresql://172.17.2.10:5432/test
+    driver-class-name: org.postgresql.Driver
+    username: tang
+    password: 123456
+    # target database configuration parameters
+    ## schema name for create/insert table data
+    target-schema: public
+    ## whether drop-create table when target table exist
+    target-drop: true
+    ## whether create table support auto increment for primary key field
+    create-table-auto-increment: false
+    ## whether use insert engine to write data for target database
+    ## Only usefull for PostgreSQL/Greenplum database
+    writer-engine-insert: false
+    ## whether use change data synchronize to target database table
+    change-data-synch: true
+```
+
+- （6）各个数据库的JDBC驱动连接示例如下：
+
+**mysql/mariadb的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
 jdbc驱动名称： com.mysql.cj.jdbc.Driver
 ```
 
+与:
+
 ```
 jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
 jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
-- oracle的驱动配置样例
+**oracle的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:oracle:thin:@172.17.2.10:1521:ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
-- SqlServer(>=2005)的驱动配置样例
+**SqlServer(>=2005)的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:sqlserver://172.17.2.10:1433;DatabaseName=hqtest
 jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 
-- PostgreSQL的驱动配置样例
+**PostgreSQL/Greenplum的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/study
 jdbc驱动名称：org.postgresql.Driver
 ```
 
-- DB2的驱动配置样例
+**DB2的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:db2://172.17.2.10:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
 jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
-- 达梦DM的驱动配置样例
+**达梦DM的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:dm://172.17.2.10:5236
 jdbc驱动名称：dm.jdbc.driver.DmDriver
 ```
 
-- 人大金仓Kingbase8的驱动配置样例
+**人大金仓Kingbase8的驱动配置样例**
 
 ```
 jdbc连接地址：jdbc:kingbase8://172.17.2.10:54321/MYTEST
 jdbc驱动名称：com.kingbase8.Driver
 ```
 
-- 翰高HighGo数据库(可按PostgreSQL使用)
-
+**翰高HighGo数据库(可按PostgreSQL使用)**
+ 
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5866/highgo
 jdbc驱动名称：org.postgresql.Driver
 ```
 
+### 4、启动方法
 
-启动执行命令如下：
-
-linux系统下：
+- linux系统下：
 
 ```
 cd dbswitch-release-X.X.X/
 bin/datasync.sh
 ```
 
-windows系统下：
+- windows系统下：
 
 ```
 切换到dbswitch-release-X.X.X/bin/目录下，双击datasync.cmd脚本文件即可启动
@@ -262,7 +310,7 @@ bin/startup.sh
 
 ## 五、问题反馈
 
-如果您看到或使用了本工具，或您觉得本工具对您有价值，请为此项目**点个赞**，多谢！如果您在使用时遇到了bug，欢迎在issue中反馈。也可扫描下方二维码入群讨论：（加好友请注明："程序交流"）
+如果您看到并使用了本工具，或您觉得本工具对您有价值，请为此项目**点个赞**，以表示对本项目的支持，多谢！如果您在使用时遇到了bug，欢迎在issue中反馈。也可扫描下方二维码入群讨论：（加好友请注明："程序交流"）
 
 ![structure](images/weixin.PNG)
 
