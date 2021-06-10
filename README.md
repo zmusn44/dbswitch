@@ -97,7 +97,7 @@ sh ./docker-maven-build.sh
 
 **特别注意：** 在Java9及以上版本默认情况下不允许应用程序查看来自JDK的所有类，但在dbswitch中利用反射计算对象的字节大小，所以需要在JVM启动时(bin/datasync.sh脚本)需要增加如下参数：
 ```
---add-opens java.base/jdk.internal.loader=ALL-UNNAMED
+--add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED
 ```
 
 ### 2、安装部署
