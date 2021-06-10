@@ -40,8 +40,8 @@ public class GenerateSqlUtils {
 		// if(ifNotExist && type!=DatabaseType.ORACLE) {
 		// retval.append( Const.IF_NOT_EXISTS );
 		// }
-		retval.append(db.getQuotedSchemaTableCombination(schemaName, tableName) + Const.CR);
-		retval.append("(").append(Const.CR);
+		retval.append(db.getQuotedSchemaTableCombination(schemaName, tableName));
+		retval.append("(");
 
 		for (int i = 0; i < fieldNames.size(); i++) {
 			if (i > 0) {
@@ -51,19 +51,19 @@ public class GenerateSqlUtils {
 			}
 
 			ColumnMetaData v = fieldNames.get(i).getMetaData();
-			retval.append(db.getFieldDefinition(v, pks, autoIncr, true));
+			retval.append(db.getFieldDefinition(v, pks, autoIncr, false));
 		}
 
 		if (!pks.isEmpty()) {
 			String pk = db.getPrimaryKeyAsString(pks);
-			retval.append(", PRIMARY KEY (").append(pk).append(")").append(Const.CR);
+			retval.append(", PRIMARY KEY (").append(pk).append(")");
 		}
 
-		retval.append(")").append(Const.CR);
+		retval.append(")");
 		if (DatabaseTypeEnum.MYSQL == type) {
-			retval.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin").append(Const.CR);
+			retval.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin");
 		}
 
-		return db.formatSQL(retval.toString());
+		return DDLFormatterUtils.format(retval.toString());
 	}
 }

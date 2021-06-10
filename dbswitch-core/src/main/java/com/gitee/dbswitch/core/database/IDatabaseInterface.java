@@ -112,12 +112,4 @@ public interface IDatabaseInterface extends AutoCloseable {
 	 * @return 主键字段拼接串
 	 */
 	public String getPrimaryKeyAsString(List<String> pks);
-
-	/**
-	 * SQL语句格式化
-	 * 
-	 * @param sql SQL的语句
-	 * @return 格式化后的SQL语句
-	 */
-	public String formatSQL(String sql);
 }
