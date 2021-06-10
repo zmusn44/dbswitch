@@ -132,7 +132,7 @@ sh ./docker-maven-build.sh
 
  **注意:**
  
-- （1）支持源端为多个数据源类型，如果dbswitch.source[i]为数组类型，i为编号，从0开始的整数； 
+- （1）支持源端为多个数据源类型，如果```dbswitch.source[i]```为数组类型，i为编号，从0开始的整数； 
  
 - （2）如果```dbswitch.source[i].source-includes```不为空，则按照包含表的方式来执行； 
 
@@ -140,7 +140,7 @@ sh ./docker-maven-build.sh
 
 - （4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 
 
-- （5）也支持配置文件名为```conf/config.yml```的YML格式，配置文件样例如下：
+- （5）同时也支持配置文件名为```conf/config.yml```的YML格式，配置文件样例如下：
 
 ```
 dbswitch:
@@ -250,17 +250,16 @@ jdbc连接地址：jdbc:postgresql://172.17.2.10:5866/highgo
 jdbc驱动名称：org.postgresql.Driver
 ```
 
+### 4、启动方法
 
-启动执行命令如下：
-
-linux系统下：
+- linux系统下：
 
 ```
 cd dbswitch-release-X.X.X/
 bin/datasync.sh
 ```
 
-windows系统下：
+- windows系统下：
 
 ```
 切换到dbswitch-release-X.X.X/bin/目录下，双击datasync.cmd脚本文件即可启动
