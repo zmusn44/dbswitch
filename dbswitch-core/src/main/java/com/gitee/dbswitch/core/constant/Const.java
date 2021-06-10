@@ -50,22 +50,22 @@ public final class Const {
 	/**
 	 * Create Table Statement Prefix String
 	 */
-	public static final String CREATE_TABLE = " CREATE TABLE ";
+	public static final String CREATE_TABLE = "CREATE TABLE ";
 
 	/**
 	 * Drop Table Statement Prefix String
 	 */
-	public static final String DROP_TABLE = " DROP TABLE ";
+	public static final String DROP_TABLE = "DROP TABLE ";
 
 	/**
 	 * Constant Keyword String
 	 */
-	public static final String IF_NOT_EXISTS = " IF NOT EXISTS ";
+	public static final String IF_NOT_EXISTS = "IF NOT EXISTS ";
 
 	/**
 	 * Constant Keyword String
 	 */
-	public static final String IF_EXISTS = " IF EXISTS ";
+	public static final String IF_EXISTS = "IF EXISTS ";
 
 	/**
 	 * Constructor Function

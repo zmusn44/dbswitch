@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import com.alibaba.druid.sql.SQLUtils;
 import com.gitee.dbswitch.core.constant.Const;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
@@ -196,11 +195,6 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 	@Override
 	public String getQuotedSchemaTableCombination(String schemaName, String tableName) {
 		return String.format("  [%s].[%s] ", schemaName, tableName);
-	}
-
-	@Override
-	public String formatSQL(String sql) {
-		return SQLUtils.formatSQLServer(sql);
 	}
 
 	@Override

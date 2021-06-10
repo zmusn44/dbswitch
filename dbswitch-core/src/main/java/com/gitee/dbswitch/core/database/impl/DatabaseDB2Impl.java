@@ -47,11 +47,6 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 	}
 
 	@Override
-	public String formatSQL(String sql) {
-		return sql;
-	}
-
-	@Override
 	public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc, boolean addCr) {
 		String fieldname = v.getName();
 		int length = v.getLength();

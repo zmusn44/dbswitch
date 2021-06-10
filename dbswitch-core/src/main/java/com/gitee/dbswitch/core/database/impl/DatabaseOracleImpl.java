@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import com.alibaba.druid.sql.SQLUtils;
 import com.gitee.dbswitch.core.constant.Const;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
@@ -121,11 +120,6 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 	@Override
 	protected String getTestQuerySQL(String sql) {
 		return String.format("explain plan for %s", sql.replace(";", ""));
-	}
-	
-	@Override
-	public String formatSQL(String sql) {
-		return SQLUtils.formatOracle(sql);
 	}
 
 	@Override
