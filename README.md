@@ -67,7 +67,7 @@
 
 - 环境要求:
 
-  **JDK**:==1.8
+  **JDK**:>=1.8
  
   **maven**:>=3.6
  
@@ -93,6 +93,11 @@ sh ./build.sh
 git clone https://gitee.com/inrgihc/dbswitch.git
 cd dbswitch/
 sh ./docker-maven-build.sh
+```
+
+**特别注意：** 在Java9及以上版本默认情况下不允许应用程序查看来自JDK的所有类，但在dbswitch中利用反射计算对象的字节大小，所以需要在JVM启动时(bin/datasync.sh脚本)需要增加如下参数：
+```
+--add-opens java.base/jdk.internal.loader=ALL-UNNAMED
 ```
 
 ### 2、安装部署
