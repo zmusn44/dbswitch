@@ -248,9 +248,6 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 		return "";
 	}
 
-	@Override
-	public abstract String formatSQL(String sql);
-
 	/**************************************
 	 * internal function
 	 **************************************/

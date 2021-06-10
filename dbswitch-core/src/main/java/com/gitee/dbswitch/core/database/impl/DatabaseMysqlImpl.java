@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 import com.gitee.dbswitch.core.constant.Const;
-import com.alibaba.druid.sql.SQLUtils;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
@@ -114,11 +113,6 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 	@Override
 	public String getQuotedSchemaTableCombination(String schemaName, String tableName) {
 		return String.format("  `%s`.`%s` ", schemaName, tableName);
-	}
-	
-	@Override
-	public String formatSQL(String sql) {
-		return SQLUtils.formatMySql(sql);
 	}
 	
 	@Override

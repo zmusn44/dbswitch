@@ -10,7 +10,6 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import java.util.List;
-import com.alibaba.druid.sql.SQLUtils;
 import com.gitee.dbswitch.core.constant.Const;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
@@ -45,11 +44,6 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
 	@Override
 	protected String getTestQuerySQL(String sql) {
 		return String.format("explain %s", sql.replace(";", ""));
-	}
-
-	@Override
-	public String formatSQL(String sql) {
-		return SQLUtils.formatPGSql(sql,null);
 	}
 	
 	@Override
