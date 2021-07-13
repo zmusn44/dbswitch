@@ -145,9 +145,9 @@ sh ./docker-maven-build.sh
 ```
 dbswitch:
   source:
-	# source database connection information
-	## support MySQL/MariaDB/DB2/DM/Kingbase8/Oracle/SQLServer/PostgreSQL/Greenplum
-	## support mutiple source database connection
+    # source database connection information
+    ## support MySQL/MariaDB/DB2/DM/Kingbase8/Oracle/SQLServer/PostgreSQL/Greenplum
+    ## support mutiple source database connection
     - url: jdbc:oracle:thin:@172.17.2.10:1521:ORCL
       driver-class-name: 'oracle.jdbc.driver.OracleDriver'
       username: 'system'
@@ -190,7 +190,7 @@ dbswitch:
 **mysql/mariadb的驱动配置样例**
 
 ```
-jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false
 jdbc驱动名称： com.mysql.cj.jdbc.Driver
 ```
 
