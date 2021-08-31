@@ -367,6 +367,12 @@ bin/startup.sh
 
 > 建立源端数据库的连接 -> 建立目的断数据库的连接  -> 配置任务  -> 发布任务  -> 手动/系统调度执行任务  -> 查看调度记录
 
+- WEB系统的访问如下：
+
+> URL地址: htttp://127.0.0.1:9088
+> 登陆账号：admin
+> 登陆密码：123456
+
  ![admin_01.png](images/admin_01.png)
  
  ![admin_02.png](images/admin_02.png)
