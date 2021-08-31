@@ -62,21 +62,21 @@ public class ScheduleService {
 
   }
 
-  public Trigger getQuartzJobDetail(String jobKey) {
-    Scheduler scheduler = schedulerFactoryBean.getScheduler();
-
-    String triggerName = jobKey;
-    String triggerGroup = JobExecutorService.GROUP;
-    TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
-    try {
-      Trigger trigger = scheduler.getTrigger(triggerKey);
-      return trigger;
-    } catch (SchedulerException e) {
-      log.error("Query job trigger detail failed:", e);
-    }
-
-    return null;
-  }
+//  public Trigger getQuartzJobDetail(String jobKey) {
+//    Scheduler scheduler = schedulerFactoryBean.getScheduler();
+//
+//    String triggerName = jobKey;
+//    String triggerGroup = JobExecutorService.GROUP;
+//    TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
+//    try {
+//      Trigger trigger = scheduler.getTrigger(triggerKey);
+//      return trigger;
+//    } catch (SchedulerException e) {
+//      log.error("Query job trigger detail failed:", e);
+//    }
+//
+//    return null;
+//  }
 
   public void scheduleTask(Long taskId, ScheduleModeEnum scheduleMode) {
     /** 准备JobDetail */
@@ -84,12 +84,10 @@ public class ScheduleService {
     String jobGroup = JobExecutorService.GROUP;
     JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
 
-    JobDetail jobDetail = JobBuilder.newJob(JobExecutorService.class)
+    JobBuilder jobBuilder = JobBuilder.newJob(JobExecutorService.class)
         .withIdentity(jobKey)
         .usingJobData(JobExecutorService.TASK_ID, taskId.toString())
-        .usingJobData(JobExecutorService.SCHEDULE, scheduleMode.getValue().toString())
-        .storeDurably()
-        .build();
+        .usingJobData(JobExecutorService.SCHEDULE, scheduleMode.getValue().toString());
 
     /** 准备TriggerKey，注意这里的triggerName与jobName配置相同 */
     String triggerName = jobName;
@@ -100,9 +98,9 @@ public class ScheduleService {
 
     AssignmentTaskEntity task = assignmentTaskDAO.getById(taskId);
     if (ScheduleModeEnum.MANUAL == scheduleMode) {
-      scheduleOnce(jobDetail, triggerKey);
+      scheduleOnce(jobBuilder.storeDurably(false).build(), triggerKey);
     } else {
-      scheduleCron(jobDetail, triggerKey, task.getCronExpression());
+      scheduleCron(jobBuilder.storeDurably(true).build(), triggerKey, task.getCronExpression());
     }
 
   }
@@ -132,9 +130,7 @@ public class ScheduleService {
     try {
       scheduler.interrupt(jobKey);
       scheduler.pauseTrigger(triggerKey);
-      scheduler.unscheduleJob(triggerKey);
-      scheduler.deleteJob(jobKey);
-      return true;
+      return scheduler.unscheduleJob(triggerKey) && scheduler.deleteJob(jobKey);
     } catch (SchedulerException e) {
       log.error("Quartz stop task job failed. JobKey: {}", jobKey);
     }

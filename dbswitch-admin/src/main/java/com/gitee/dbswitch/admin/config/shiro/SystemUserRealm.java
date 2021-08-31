@@ -9,6 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.config.shiro;
 
+import com.gitee.dbswitch.admin.common.excption.DbswitchException;
+import com.gitee.dbswitch.admin.common.response.ResultCode;
 import com.gitee.dbswitch.admin.dao.SystemUserDAO;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
 import com.gitee.dbswitch.admin.util.CacheUtil;
@@ -91,7 +93,7 @@ public class SystemUserRealm extends AuthorizingRealm {
     //根据缓存将token转换成User实体对象
     Object cache = CacheUtil.get(accessToken);
     if (null == cache) {
-      throw new RuntimeException("token不存在或已经失效，请重新登录!");
+      throw new DbswitchException(ResultCode.ERROR_ACCESS_FORBIDDEN, "token不存在或已经失效，请重新登录!");
     }
 
     //判断数据库中的User实体对象的有效性
@@ -103,7 +105,7 @@ public class SystemUserRealm extends AuthorizingRealm {
       throw new LockedAccountException("token所使用的认证用户已经被锁定"); // 帐号锁定
     }
 
-    ServletUtil.getHttpServletRequest().setAttribute("username",user.getUsername());
+    ServletUtil.getHttpServletRequest().setAttribute("username", user.getUsername());
 
     return new SimpleAuthenticationInfo(accessToken, accessToken, this.getName());
   }

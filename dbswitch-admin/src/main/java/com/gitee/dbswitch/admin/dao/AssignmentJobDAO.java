@@ -28,8 +28,9 @@ public class AssignmentJobDAO {
   @Resource
   private AssignmentJobMapper assignmentJobMapper;
 
-  public AssignmentJobEntity newAssignmentJob(Long assignmentId, Integer scheduleMode , String jobKey) {
-    AssignmentJobEntity assignmentJobEntity =new AssignmentJobEntity();
+  public AssignmentJobEntity newAssignmentJob(Long assignmentId, Integer scheduleMode,
+      String jobKey) {
+    AssignmentJobEntity assignmentJobEntity = new AssignmentJobEntity();
     assignmentJobEntity.setAssignmentId(assignmentId);
     assignmentJobEntity.setJobKey(jobKey);
     assignmentJobEntity.setScheduleMode(scheduleMode);
@@ -46,20 +47,27 @@ public class AssignmentJobDAO {
 
   public List<AssignmentJobEntity> getByAssignmentId(Long assignmentId) {
     Objects.requireNonNull(assignmentId, "assignmentId不能为null");
+
+    AssignmentJobEntity condition = new AssignmentJobEntity();
+    condition.setAssignmentId(assignmentId);
+
     Example example = new Example(AssignmentJobEntity.class);
-    example.createCriteria().andEqualTo("assignmentId", assignmentId);
+    example.createCriteria().andEqualTo(condition);
     example.orderBy("createTime").desc();
     return assignmentJobMapper.selectByExample(example);
   }
 
   public void updateSelective(AssignmentJobEntity assignmentJobEntity) {
-    Objects.requireNonNull(assignmentJobEntity.getId(),"AssignmentJob的id不能为null");
+    Objects.requireNonNull(assignmentJobEntity.getId(), "AssignmentJob的id不能为null");
     assignmentJobMapper.updateByPrimaryKeySelective(assignmentJobEntity);
   }
 
   public int getCountByStatus(JobStatusEnum status) {
+    AssignmentJobEntity condition = new AssignmentJobEntity();
+    condition.setStatus(status.getValue());
+
     Example example = new Example(AssignmentJobEntity.class);
-    example.createCriteria().andEqualTo("status", status.getValue());
+    example.createCriteria().andEqualTo(condition);
     return assignmentJobMapper.selectCountByExample(example);
   }
 
@@ -68,7 +76,7 @@ public class AssignmentJobDAO {
         .orElseGet(ArrayList::new).size();
   }
 
-  public List<OpsTaskJobTrend> queryTaskJobTrend(Integer days){
+  public List<OpsTaskJobTrend> queryTaskJobTrend(Integer days) {
     return assignmentJobMapper.queryTaskJobTrend(days);
   }
 

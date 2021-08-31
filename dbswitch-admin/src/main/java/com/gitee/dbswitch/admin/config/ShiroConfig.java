@@ -82,12 +82,13 @@ public class ShiroConfig {
     // anno匿名访问  auth验证
     filterMap.put("/static/**", "anon");
     filterMap.put("/index.html", "anon");
-    filterMap.put("/favicon.ico", "anon");
+    filterMap.put("/favicon.ico*", "anon");
     filterMap.put("/webjars/**", "anon");
     filterMap.put(SwaggerConfig.API_V1 + "/authentication/login", "anon");
     filterMap.put("/swagger/**", "anon");
-    filterMap.put("/v2/api-docs", "anon");
-    filterMap.put("/swagger-ui.html", "anon");
+    filterMap.put("/swagger-ui/**", "anon");
+    filterMap.put("/v2/api-docs*", "anon");
+    filterMap.put("/swagger-ui.html*", "anon");
     filterMap.put("/swagger-resources/**", "anon");
     // 除了以上路径，其他都需要权限验证
     filterMap.put("/**", "auth");

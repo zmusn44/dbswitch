@@ -31,7 +31,11 @@ public class SystemLogDAO {
   public List<SystemLogEntity> listAll(LogTypeEnum logType) {
     Example example = new Example(SystemLogEntity.class);
     Criteria criteria = example.createCriteria();
-    criteria.andEqualTo("type", logType.getValue());
+
+    SystemLogEntity condition=new SystemLogEntity();
+    condition.setType(logType.getValue());
+
+    criteria.andEqualTo(condition);
     example.orderBy("createTime").desc();
     return systemLogMapper.selectByExample(example);
   }

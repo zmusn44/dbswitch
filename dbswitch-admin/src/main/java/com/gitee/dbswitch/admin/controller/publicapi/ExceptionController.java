@@ -24,14 +24,17 @@ public class ExceptionController {
   @ResponseBody
   @ExceptionHandler(value = Exception.class)
   public Result errorHandler(Exception ex) {
+    if (ex instanceof DbswitchException) {
+      DbswitchException learnException = (DbswitchException) ex;
+      return Result.failed(learnException.getCode(), learnException.getMessage());
+    }
+
     log.error("ERROR:", ex);
     if (ex instanceof NullPointerException) {
       return Result.failed(ResultCode.ERROR_INTERNAL_ERROR, "Null Pointer Expression");
-    } else if (ex instanceof DbswitchException) {
-      DbswitchException learnException = (DbswitchException) ex;
-      return Result.failed(learnException.getCode(), learnException.getMessage());
     } else {
       return Result.failed(ResultCode.ERROR_INTERNAL_ERROR, ex.getMessage());
     }
+
   }
 }
