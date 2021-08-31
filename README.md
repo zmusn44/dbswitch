@@ -107,13 +107,13 @@ sh ./docker-maven-build.sh
 
 ## 三、工具使用
 
-> dbswitch工具提供基于conf/config.yml配置的启动方式和基于conf/application.yml的WEB端使用方式；
+> dbswitch工具提供基于```conf/config.yml```配置的启动方式和基于```conf/application.yml```的WEB端使用方式；
 
 ### 1、基于conf/config.yml配置启动的命令操作方式
 
 #### (1)、配置文件
 
-配置文件信息请见部署包中的：conf/config.ymls（注：也同时支持使用conf/config.properties配置文件名的properties格式），示例配置如下：
+配置文件信息请见部署包中的：```conf/config.yml```（注：也同时支持使用```conf/config.properties```配置文件名的properties格式），示例配置如下：
 
 ```
 dbswitch:
@@ -288,9 +288,9 @@ dbswitch.target.writer-engine-insert=true
 
 - 4、关于增量变更同步方式的使用说明
 
-> 步骤A：先通过设置dbswitch.target.target-drop=true，dbswitch.target.change-data-synch=false；启动程序进行表结构和数据的全量同步;
+> 步骤A：先通过设置```dbswitch.target.target-drop=true```，```dbswitch.target.change-data-synch=false```；启动程序进行表结构和数据的全量同步;
 
-> 步骤B：然后设置dbswitch.target.target-drop=false，dbswitch.target.change-data-synch=true；再启动程序对（有主键表）数据进行增量变更同步。
+> 步骤B：然后设置```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；再启动程序对（有主键表）数据进行增量变更同步。
 
 > 注：如果待同步的两端表结构已经一致或源端字段是目的端字段的子集，也可直接用步骤B配置进行变更同步
 
@@ -338,7 +338,7 @@ mapper:
   enable-method-annotation: true
 ```
 
-按照上述配置，修改conf/application.yml配置文件中的spring.datasource.url和spring.datasource.username及spring.datasource.password三个字段值的配置。
+按照上述配置，修改```conf/application.yml```配置文件中的```spring.datasource.url```和```spring.datasource.username```及```spring.datasource.password```三个字段值的配置。
 
 #### (3)、启动dbswitch-admin系统
 
@@ -361,17 +361,15 @@ bin/startup.sh
 
 - dbswitch离线同步工具提供各种数据库间表结构转换RESTful类型的API接口：
 
-> swagger在线接口文档：htttp://127.0.0.1:9088/swagger-ui.html
+> swagger在线接口文档：```htttp://127.0.0.1:9088/swagger-ui.html```
+
+- WEB系统的访问如下：
+
+> URL地址: ```htttp://127.0.0.1:9088``` 登陆账号：```admin```  登陆密码：```123456```
 
 - WEB系统的使用流程为：
 
 > 建立源端数据库的连接 -> 建立目的断数据库的连接  -> 配置任务  -> 发布任务  -> 手动/系统调度执行任务  -> 查看调度记录
-
-- WEB系统的访问如下：
-
-> URL地址: htttp://127.0.0.1:9088
-> 登陆账号：admin
-> 登陆密码：123456
 
  ![admin_01.png](images/admin_01.png)
  
