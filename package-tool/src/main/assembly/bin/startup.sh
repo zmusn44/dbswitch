@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
 # Author : tang
-# Date :2019-12-16
+# Date :2021-07-31
 #
 #############################################
 # !!!!!! Modify here please
 
-APP_MAIN="com.gitee.dbswitch.webapi.WebServiceApplication"
+APP_MAIN="com.gitee.dbswitch.admin.AdminApplication"
 
 #############################################
 

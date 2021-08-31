@@ -6,7 +6,7 @@
 #############################################
 # !!!!!! Modify here please
 
-APP_MAIN="com.gitee.dbswitch.webapi.WebServiceApplication"
+APP_MAIN="com.gitee.dbswitch.admin.AdminApplication"
 
 #############################################
 
