@@ -46,14 +46,14 @@ public class AssignmentController {
   @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<AssignmentInfoResponse> createAssignment(
       @RequestBody AssigmentCreateRequest request) {
-    return Result.success(assignmentService.create(request));
+    return Result.success(assignmentService.createAssignment(request));
   }
 
   @OperateLog(name = "修改任务", description = "'修改任务的名称为：'+#request.name")
   @ApiOperation(value = "修改")
   @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result updateAssignment(@RequestBody AssigmentUpdateRequest request) {
-    assignmentService.update(request);
+    assignmentService.updateAssignment(request);
     return Result.success();
   }
 
@@ -61,7 +61,7 @@ public class AssignmentController {
   @ApiOperation(value = "删除")
   @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result deleteAssignment(@PathVariable("id") Long id) {
-    assignmentService.delete(id);
+    assignmentService.deleteAssignment(id);
     return Result.success();
   }
 
@@ -81,24 +81,24 @@ public class AssignmentController {
   @OperateLog(name = "发布任务", description = "'发布任务的ID为：'+#ids")
   @ApiOperation(value = "发布")
   @PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result deployAssignment(@RequestParam(value = "ids") List<Long> ids) {
-    assignmentService.deploy(ids);
+  public Result deployAssignments(@RequestParam(value = "ids") List<Long> ids) {
+    assignmentService.deployAssignments(ids);
     return Result.success();
   }
 
   @OperateLog(name = "手动执行任务", description = "'手动执行任务的ID为：'+#ids")
   @ApiOperation(value = "手动执行")
   @RequestMapping(value = "/run", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
-  public Result runAssignment(@RequestBody List<Long> ids) {
-    assignmentService.run(ids);
+  public Result runAssignments(@RequestBody List<Long> ids) {
+    assignmentService.runAssignments(ids);
     return Result.success();
   }
 
   @OperateLog(name = "下线任务", description = "'下线任务的ID为：'+#ids")
   @ApiOperation(value = "下线")
   @PostMapping(value = "/retire", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result retireAssignment(@RequestParam(value = "ids") List<Long> ids) {
-    assignmentService.retire(ids);
+  public Result retireAssignments(@RequestParam(value = "ids") List<Long> ids) {
+    assignmentService.retireAssignments(ids);
     return Result.success();
   }
 

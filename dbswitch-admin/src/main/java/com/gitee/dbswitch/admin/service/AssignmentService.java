@@ -58,7 +58,7 @@ public class AssignmentService {
   private DatabaseConnectionDAO databaseConnectionDAO;
 
   @Transactional(rollbackFor = Exception.class)
-  public AssignmentInfoResponse create(AssigmentCreateRequest request) {
+  public AssignmentInfoResponse createAssignment(AssigmentCreateRequest request) {
     AssignmentTaskEntity assignment = request.toAssignmentTask();
     assignmentTaskDAO.insert(assignment);
 
@@ -70,12 +70,12 @@ public class AssignmentService {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void delete(Long id) {
+  public void deleteAssignment(Long id) {
     assignmentTaskDAO.deleteById(id);
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void update(AssigmentUpdateRequest request) {
+  public void updateAssignment(AssigmentUpdateRequest request) {
     AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(request.getId());
     if (Objects.isNull(assignmentTaskEntity)) {
       throw new DbswitchException(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "ID=" + request.getId());
@@ -93,10 +93,9 @@ public class AssignmentService {
   }
 
   public PageResult<AssignmentInfoResponse> listAll(String searchText, Integer page, Integer size) {
-    Supplier<List<AssignmentInfoResponse>> method = () -> {
-      List<AssignmentTaskEntity> assignments = assignmentTaskDAO.listAll(searchText);
-      return ConverterFactory.getConverter(AssignmentInfoConverter.class).convert(assignments);
-    };
+    Supplier<List<AssignmentInfoResponse>> method = () ->
+        ConverterFactory.getConverter(AssignmentInfoConverter.class)
+            .convert(assignmentTaskDAO.listAll(searchText));
 
     return PageUtil.getPage(method, page, size);
   }
@@ -113,7 +112,7 @@ public class AssignmentService {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void deploy(List<Long> ids) {
+  public void deployAssignments(List<Long> ids) {
     checkAssignmentAllExist(ids);
 
     //检查是否有已经发布过
@@ -147,7 +146,7 @@ public class AssignmentService {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void run(List<Long> ids) {
+  public void runAssignments(List<Long> ids) {
     checkAssignmentAllExist(ids);
 
     //检查是否有已经都发布了
@@ -168,12 +167,12 @@ public class AssignmentService {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public void retire(List<Long> ids) {
+  public void retireAssignments(List<Long> ids) {
     checkAssignmentAllExist(ids);
     for (Long id : ids) {
       AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(id);
-      if (Objects.nonNull(assignmentTaskEntity.getPublished()) && assignmentTaskEntity
-          .getPublished()) {
+      if (Objects.nonNull(assignmentTaskEntity.getPublished()) &&
+          assignmentTaskEntity.getPublished()) {
         scheduleService.cancelJobByTaskId(id);
         assignmentTaskEntity.setPublished(Boolean.FALSE);
         assignmentTaskEntity.setContent("{}");

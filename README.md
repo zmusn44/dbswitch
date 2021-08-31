@@ -359,9 +359,11 @@ bin/startup.sh
 
 - dbswitch-admin的WEB端会根据用户的配置调用dbswitch-data模块执行数据迁移同步；
 
-- dbswitch离线同步工具提供各种数据库间表结构转换RESTful类型的API接口：
+- dbswitch-admin服务启动时会基于flyway自动建库建表，需要保证配置的mysql连接账号具有建库建表等权限；
 
-> swagger在线接口文档：```htttp://127.0.0.1:9088/swagger-ui.html```
+- dbswitch离线同步工具提供各种数据库间表结构转换RESTful类型的在线API接口如下:（详见[接口文档](/INTERFACE.md)）
+
+> Swagger在线接口地址： http://127.0.0.1:9088/swagger-ui/
 
 - WEB系统的访问如下：
 
@@ -370,6 +372,8 @@ bin/startup.sh
 - WEB系统的使用流程为：
 
 > 建立源端数据库的连接 -> 建立目的断数据库的连接  -> 配置任务  -> 发布任务  -> 手动/系统调度执行任务  -> 查看调度记录
+
+- WEB系统的部分截图：
 
  ![admin_01.png](images/admin_01.png)
  

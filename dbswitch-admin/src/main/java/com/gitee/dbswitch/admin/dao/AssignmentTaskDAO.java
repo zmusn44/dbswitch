@@ -59,8 +59,11 @@ public class AssignmentTaskDAO {
   }
 
   public int getPublishedCount() {
+    AssignmentTaskEntity condition = new AssignmentTaskEntity();
+    condition.setPublished(Boolean.TRUE);
+
     Example example = new Example(AssignmentTaskEntity.class);
-    example.createCriteria().andEqualTo("published", 1);
+    example.createCriteria().andEqualTo(condition);
     return assignmentTaskMapper.selectCountByExample(example);
   }
 
