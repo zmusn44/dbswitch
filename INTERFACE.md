@@ -1,10 +1,10 @@
-# dbswitch-weibapi接口调用说明文档
+# dbswitch-admin-public-api接口调用说明文档
 
 ## 目录
 
 <!-- TOC -->
 
-- [dbswitch-weibapi接口调用说明文档](#dbswitch-weibapi接口调用说明文档)
+- [dbswitch-admin-publicapi接口调用说明文档](#dbswitch-admin-public-api接口调用说明文档)
     - [目录](#目录)
     - [一、功能描述](#一功能描述)
     - [二、数据库结构转换的兼容性问题](#二数据库结构转换的兼容性问题)
@@ -49,21 +49,21 @@
 
 ```
 {
-  "errcode": -1,
-  "errmsg": "Invalid JSON format：expect ':' at 0, name source:"
+  "code": -1,
+  "message": "Invalid JSON format：expect ':' at 0, name source:"
 }
 ```
 
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 
 ## 四、异构库表结构转换部分接口
 
 ### 1、获取数据库中所有的模式(model/schema)
  
- **URI:** http://host:port/database/models_list
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/models_list
  
  **Request Method:** POST
  
@@ -99,8 +99,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | list | 数据列表 | 返回的模式列表 |
 
 **Response Example:**
@@ -112,13 +112,13 @@
         "ODI",
         "TEST"
     ],
-    "errcode":0,
-    "errmsg":"ok"
+    "code":0,
+    "message":"ok"
 }
 ```
 
 ### 2、获取数据库中指定模式下的所有表
- **URI:** http://host:port/database/tables_list
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/tables_list
  
  **Request Method:** POST
  
@@ -156,8 +156,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | list | 数据列表 | 返回的数据列表 |
 | table_name | string | 表名称 | 表或视图的英文名称 |
 | table_type | string | 表类型 | 当表为物理表时标记为table;当表为视图表时标记为view |
@@ -179,14 +179,14 @@
             "remarks":"视图表"
         }
     ],
-    "errcode":0,
-    "errmsg":"ok"
+    "code":0,
+    "message":"ok"
 }
 ```
 
 ### 3、获取业务数据库中指定表的元信息
  
- **URI:** http://host:port/database/table_info
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/table_info
  
  **Request Method:** POST
  
@@ -226,8 +226,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | primary_key | list | 表的主键列 | 表的主键字段列表 |
 | columns | list | 表的字段列 | 表的字段列表 |
@@ -249,8 +249,8 @@
  
 ```
 {
-  "errcode": 0,
-  "errmsg": "success",
+  "code": 0,
+  "message": "success",
   "data": {
     "metadata": {
       "table_name": "C_SEX",
@@ -301,7 +301,7 @@
 
 ### 4、获取业务数据库中指定SQL的元信息
  
- **URI:** http://host:port/database/sql_info
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/sql_info
  
  **Request Method:** POST
  
@@ -340,8 +340,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | columns | list | 表的字段列 | 表的字段列表 |
 | name | string | 字段列名称 | 表的字段列表 |
@@ -358,8 +358,8 @@
  
 ```
 {
-  "errcode": 0,
-  "errmsg": "success",
+  "code": 0,
+  "message": "success",
   "data": {
     "columns": [
       {
@@ -402,7 +402,7 @@
 
 ### 5、转换业务数据库中指定表为建表SQL语句
  
- **URI:** http://host:port/database/table_sql
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/table_sql
  
  **Request Method:** POST
  
@@ -448,8 +448,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | create_sql | string | 建表的SQL语句 | 指定数据库语法的建表SQL语句 |
 | primary_key | list | 表的主键列 | 表的主键字段列表 |
@@ -471,7 +471,7 @@
  
 ```
 {
-  "errcode": 0,
+  "code": 0,
   "data": {
     "metadata": {
       "table_name": "C_SEX",
@@ -515,12 +515,12 @@
       "id"
     ]
   },
-  "errmsg": "success"
+  "message": "success"
 }
 ```
 
 ### 6、测试指定数据库中sql有效性
- **URI:** http://host:port/database/sql_test
+ **URI:** http://host:port/dbswitch/admin/api/v1/database/sql_test
  
  **Request Method:** POST
  
@@ -558,15 +558,15 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 
 **Response Example:**
 
 ```
 {
-    "errcode":0,            
-    "errmsg":"ok"           
+    "code":0,            
+    "message":"ok"           
 }
 ```
 
@@ -574,7 +574,7 @@
 
 ### 1、创建表拼接生成SQL语句
  
- **URI:** http://host:port/generator/create_table
+ **URI:** http://host:port/dbswitch/admin/api/v1/generator/create_table
  
  **Request Method:** POST
  
@@ -643,8 +643,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | sql | string | 返回的SQL语句 | 返回的SQL语句 |
 
@@ -652,11 +652,11 @@
 
 ```
 {
-  "errcode": 0,
+  "code": 0,
   "data": {
     "sql": " CREATE TABLE `tang`.`test_table` (\n  `col1` INT (11)  NOT NULL AUTO_INCREMENT COMMENT '列1'\n,`col2` CHAR (25)  DEFAULT 'test' COMMENT '列2'\n, PRIMARY KEY (`col1`)\n )\n"
   },
-  "errmsg": "success"
+  "message": "success"
 }
 ```
 
@@ -666,7 +666,7 @@
 
 ### 2、修改表拼接生成SQL语句
  
- **URI:** http://host:port/generator/alter_table
+ **URI:** http://host:port/dbswitch/admin/api/v1/generator/alter_table
  
  **Request Method:** POST
  
@@ -721,8 +721,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | sql | string | 返回的SQL语句 | 返回的SQL语句 |
 
@@ -730,11 +730,11 @@
 
 ```
 {
-  "errcode": 0,
+  "code": 0,
   "data": {
     "sql": " CREATE TABLE `tang`.`test_table` (\n  `col1` INT (11)  NOT NULL COMMENT '列1'\n,`col2` CHAR (25)  DEFAULT 'test' COMMENT '列2'\n, PRIMARY KEY (`col1`)\n )\n"
   },
-  "errmsg": "success"
+  "message": "success"
 }
 ```
 
@@ -745,7 +745,7 @@
 
 ### 3、删除表拼接生成SQL语句
  
- **URI:** http://host:port/generator/drop_table
+ **URI:** http://host:port/dbswitch/admin/api/v1/generator/drop_table
  
  **Request Method:** POST
  
@@ -771,8 +771,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | sql | string | 返回的SQL语句 | 返回的SQL语句 |
 
@@ -780,17 +780,17 @@
 
 ```
 {
-  "errcode": 0,
+  "code": 0,
   "data": {
     "sql": "DROP TABLE `public`.`test_table`"
   },
-  "errmsg": "success"
+  "message": "success"
 }
 ```
 
 ### 4、清空表拼接生成SQL语句
  
- **URI:** http://host:port/generator/truncate_table
+ **URI:** http://host:port/dbswitch/admin/api/v1/generator/truncate_table
  
  **Request Method:** POST
  
@@ -816,8 +816,8 @@
  
 | 字段名称 | 类型 | 描述 | 取值范围 |
 | :------:| :------: | :------: | :------ |
-| errcode | integer | 错误码 | 0为成功，其他为失败 |
-| errmsg | string | 错误信息 | 当errcode=0时，为"ok",否则为错误的详细信息 |
+| code | integer | 错误码 | 0为成功，其他为失败 |
+| message | string | 错误信息 | 当code=0时，为"ok",否则为错误的详细信息 |
 | data | Object | 数据对象 | 返回的数据对象 |
 | sql | string | 返回的SQL语句 | 返回的SQL语句 |
 
@@ -825,11 +825,11 @@
 
 ```
 {
-  "errcode": 0,
+  "code": 0,
   "data": {
     "sql": "TRUNCATE TABLE `public`.`test_table`"
   },
-  "errmsg": "success"
+  "message": "success"
 }
 ```
 
