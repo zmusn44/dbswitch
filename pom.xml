@@ -9,9 +9,9 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.gitee</groupId>
-	<artifactId>dbswitch</artifactId>
-	<version>1.5.6</version>
+	<groupId>com.gitee.dbswitch</groupId>
+	<artifactId>dbswitch-parent</artifactId>
+	<version>1.6.0</version>
 	<packaging>pom</packaging>
 	<name>dbswitch</name>
 	<description>database switch project</description>
@@ -36,7 +36,7 @@
 		<module>dbswitch-dbsynch</module>
 		<module>dbswitch-data</module>
 		<module>dbswitch-sql</module>
-		<module>dbswitch-webapi</module>
+		<module>dbswitch-admin</module>
 		<module>package-tool</module>
 	</modules>
 

@@ -26,13 +26,12 @@
 			</excludes>
 		</fileSet>
 
-		<!-- 打包dbswitch-webapi中的配置文件到打包目录/conf 下 -->
+		<!-- 打包dbswitch-admin中的配置文件到打包目录/conf 下 -->
 		<fileSet>
-			<directory>${project.parent.basedir}/dbswitch-webapi/src/main/resources/
+			<directory>${project.parent.basedir}/dbswitch-admin/src/main/resources/
 			</directory>
 			<outputDirectory>conf</outputDirectory>
 			<includes>
-				<include>*.properties</include>
 				<include>*.yml</include>
 				<include>*.xml</include>
 			</includes>
@@ -44,7 +43,6 @@
 			</directory>
 			<outputDirectory>conf</outputDirectory>
 			<includes>
-				<include>*.properties</include>
 				<include>*.yml</include>
 				<include>*.xml</include>
 			</includes>
@@ -82,7 +80,7 @@
 
 		<!-- 将模块dbswitch-webapi的jar文件放到打包目录/lib 下 -->
 		<fileSet>
-			<directory>${project.parent.basedir}/dbswitch-webapi/target
+			<directory>${project.parent.basedir}/dbswitch-admin/target
 			</directory>
 			<outputDirectory>lib</outputDirectory>
 			<includes>

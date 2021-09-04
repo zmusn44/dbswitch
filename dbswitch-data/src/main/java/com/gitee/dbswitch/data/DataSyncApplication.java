@@ -9,13 +9,14 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data;
 
+import com.gitee.dbswitch.data.config.DbswichProperties;
+import com.gitee.dbswitch.data.core.MainService;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.context.ApplicationContext;
-import com.gitee.dbswitch.data.service.MainService;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * DATA模块启动类
@@ -23,16 +24,24 @@ import com.gitee.dbswitch.data.service.MainService;
  * @author tang
  *
  */
-@SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class DataSyncApplication {
 
 	public static void main(String[] args) {
 		SpringApplication springApplication = new SpringApplication(DataSyncApplication.class);
 		springApplication.setWebApplicationType(WebApplicationType.NONE);
 		springApplication.setBannerMode(Banner.Mode.OFF);
-		ApplicationContext context = springApplication.run(args);
-		MainService service = context.getBean(MainService.class);
-		service.run();
+		ConfigurableApplicationContext applicationContext = springApplication.run(args);
+		try {
+			DbswichProperties properties = applicationContext.getBean(DbswichProperties.class);
+			MainService mainService = new MainService(properties);
+			mainService.run();
+		}catch (Exception e){
+
+		} finally {
+			applicationContext.close();
+		}
+
 	}
 
 }
