@@ -36,7 +36,7 @@ import org.springframework.util.CollectionUtils;
 public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInterface {
 
 	public DatabaseMysqlImpl() {
-		super("com.mysql.cj.jdbc.Driver");
+		super("com.mysql.jdbc.Driver");
 	}
 	
 	public DatabaseMysqlImpl(String driverClassName) {

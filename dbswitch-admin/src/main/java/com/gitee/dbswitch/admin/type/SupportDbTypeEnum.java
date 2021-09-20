@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 @AllArgsConstructor
 public enum SupportDbTypeEnum {
 
-  MYSQL(1, "mysql", "com.mysql.cj.jdbc.Driver", "/* ping */ SELECT 1",
+  MYSQL(1, "mysql", "com.mysql.jdbc.Driver", "/* ping */ SELECT 1",
       "jdbc:mysql://{host}:{port>/{name}?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false"),
   MARIADB(2, "mariadb", "org.mariadb.jdbc.Driver", "SELECT 1",
       "jdbc:mariadb://{host}:{port}/{name}?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false"),

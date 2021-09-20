@@ -387,7 +387,19 @@ bin/startup.sh
  
  ![admin_06.png](images/admin_06.png)
 
-## 四、文档博客
+## 四、常见问题解决
+
+### 1、执行启动脚本报错
+
+- （1）在Windows下，执行startup.cmd或datasync.cmd脚本报错
+
+> 解决办法：将脚本的内容复制后，删除原脚本文件，然后再创建一个同名脚本文件后，将原内容粘贴进去后，再执行脚本。
+
+- （2）在Linux下，执行startup.sh或datasync.sh脚本报错
+
+> 解决办法：用vi/vim工具打开脚本，然后命令模式下设置 ```set ff=unix```后，然后保存退出，再执行脚本。
+
+## 五、文档博客
 
 （1）https://blog.csdn.net/inrgihc/article/details/103739629
 
@@ -397,7 +409,7 @@ bin/startup.sh
 
 （4）https://blog.csdn.net/inrgihc/article/details/103738656
 
-## 五、问题反馈
+## 六、问题反馈
 
 如果您看到并使用了本工具，或您觉得本工具对您有价值，请为此项目**点个赞**，以表示对本项目的支持，多谢！如果您在使用时遇到了bug，欢迎在issue中反馈。也可扫描下方二维码入群讨论：（加好友请注明："程序交流"）
 
