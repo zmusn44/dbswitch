@@ -1,4 +1,3 @@
-package com.gitee.dbswitch.admin.service;
 // Copyright tang.  All rights reserved.
 // https://gitee.com/inrgihc/dbswitch
 //
@@ -8,6 +7,8 @@ package com.gitee.dbswitch.admin.service;
 // Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
+package com.gitee.dbswitch.admin.service;
+
 import cn.hutool.core.exceptions.ExceptionUtil;
 import com.gitee.dbswitch.admin.dao.AssignmentConfigDAO;
 import com.gitee.dbswitch.admin.dao.AssignmentJobDAO;
@@ -108,14 +109,21 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
     try {
       DbswichProperties properties = JsonUtil
           .toBeanObject(task.getContent(), DbswichProperties.class);
+      if (!assignmentConfigEntity.getFirstFlag()) {
+        properties.getTarget().setTargetDrop(false);
+        properties.getTarget().setChangeDataSynch(true);
+      }
+
       MainService mainService = new MainService(properties);
       mainService.run();
 
-      AssignmentConfigEntity config = new AssignmentConfigEntity();
-      config.setId(assignmentConfigEntity.getId());
-      config.setTargetDropTable(Boolean.FALSE);
-      config.setFirstFlag(Boolean.FALSE);
-      assignmentConfigDAO.updateSelective(config);
+      if (assignmentConfigEntity.getFirstFlag()) {
+        AssignmentConfigEntity config = new AssignmentConfigEntity();
+        config.setId(assignmentConfigEntity.getId());
+        config.setTargetDropTable(Boolean.FALSE);
+        config.setFirstFlag(Boolean.FALSE);
+        assignmentConfigDAO.updateSelective(config);
+      }
 
       assignmentJobEntity.setStatus(JobStatusEnum.PASS.getValue());
       log.info("Execute Assignment Success [taskId={}],Task Name: {}", task.getId(),
