@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gitee.dbswitch</groupId>
 		<artifactId>dbswitch-parent</artifactId>
-		<version>1.6.0</version>
+		<version>1.6.1</version>
 	</parent>
 
 	<artifactId>dbswitch-core</artifactId>
@@ -21,16 +21,19 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.47</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.oracle.ojdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.oracle.database.nls/orai18n -->
@@ -38,12 +41,14 @@
 			<groupId>com.oracle.database.nls</groupId>
 			<artifactId>orai18n</artifactId>
 			<version>19.7.0.0</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>sqljdbc4</artifactId>
 			<version>4.0</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
@@ -97,12 +102,14 @@
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>com.ibm.db2.jcc</groupId>
 			<artifactId>db2jcc</artifactId>
 			<version>db2jcc4</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
