@@ -30,6 +30,8 @@ public final class DataSouceUtils {
         ds.setPassword(description.getPassword());
         if (description.getDriverClassName().contains("oracle")) {
             ds.setConnectionTestQuery("SELECT 'Hello' from DUAL");
+        } else if (description.getDriverClassName().contains("db2")) {
+            ds.setConnectionTestQuery("SELECT 1 FROM SYSIBM.SYSDUMMY1");
         } else {
             ds.setConnectionTestQuery("SELECT 1");
         }
@@ -56,6 +58,8 @@ public final class DataSouceUtils {
         ds.setPassword(description.getPassword());
         if (description.getDriverClassName().contains("oracle")) {
             ds.setConnectionTestQuery("SELECT 'Hello' from DUAL");
+        } else if (description.getDriverClassName().contains("db2")) {
+            ds.setConnectionTestQuery("SELECT 1 FROM SYSIBM.SYSDUMMY1");
         } else {
             ds.setConnectionTestQuery("SELECT 1");
         }

@@ -23,7 +23,7 @@ public enum SupportDbTypeEnum {
       "jdbc:mariadb://{host}:{port}/{name}?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false"),
   ORACLE(3, "oracle", "oracle.jdbc.driver.OracleDriver", "SELECT 'Hello' from DUAL",
       "jdbc:oracle:thin:@{host}:{port}:{name}"),
-  SQLSERVER(4, "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "SELECT 1",
+  SQLSERVER(4, "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "SELECT 1+2 as a",
       "jdbc:sqlserver://{host}:{port};DatabaseName={name}"),
   POSTGRESQL(5, "postgresql", "org.postgresql.Driver", "SELECT 1",
       "jdbc:postgresql://{host}:{port}/{name}"),
