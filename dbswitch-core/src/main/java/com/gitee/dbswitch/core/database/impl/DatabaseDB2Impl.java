@@ -43,7 +43,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
 
 	@Override
 	protected String getTestQuerySQL(String sql) {
-		return String.format("explain %s", sql.replace(";", ""));
+		return String.format("SELECT * FROM ( %s ) t WHERE 1=2 ", sql.replace(";", ""));
 	}
 
 	@Override
