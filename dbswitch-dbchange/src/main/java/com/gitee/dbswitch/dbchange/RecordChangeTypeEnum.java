@@ -11,49 +11,51 @@ package com.gitee.dbswitch.dbchange;
 
 /**
  * 记录变化状态枚举类
- * 
- * @author tang
  *
+ * @author tang
  */
 public enum RecordChangeTypeEnum {
-	/**
-	 * 未变标识
-	 */
-	VALUE_IDENTICAL(0, "identical"), 
-	
-	/**
-	 * 更新标识
-	 */
-	VALUE_CHANGED(1, "update"), 
-	
-	/**
-	 * 插入标识
-	 */
-	VALUE_INSERT(2, "insert"),
-	
-	/**
-	 * 删除标识
-	 */
-	VALUE_DELETED(3, "delete")
-	;
+  /**
+   * 未变标识
+   */
+  VALUE_IDENTICAL(0, "identical"),
 
-	/** index */
-	private Integer index;
-	
-	/** 状态标记 */
-	private String status;
+  /**
+   * 更新标识
+   */
+  VALUE_CHANGED(1, "update"),
 
-	RecordChangeTypeEnum(int idx, String flag) {
-		this.index = idx;
-		this.status = flag;
-	}
+  /**
+   * 插入标识
+   */
+  VALUE_INSERT(2, "insert"),
 
-	public int getIndex() {
-		return index;
-	}
+  /**
+   * 删除标识
+   */
+  VALUE_DELETED(3, "delete");
 
-	public String getStatus() {
-		return this.status;
-	}
+  /**
+   * index
+   */
+  private Integer index;
+
+  /**
+   * 状态标记
+   */
+  private String status;
+
+  RecordChangeTypeEnum(int idx, String flag) {
+    this.index = idx;
+    this.status = flag;
+  }
+
+  public int getIndex() {
+    return index;
+  }
+
+  public String getStatus() {
+    return this.status;
+  }
 
 }
