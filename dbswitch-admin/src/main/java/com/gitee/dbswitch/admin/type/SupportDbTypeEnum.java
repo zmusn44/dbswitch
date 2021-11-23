@@ -17,28 +17,31 @@ import org.springframework.util.StringUtils;
 @AllArgsConstructor
 public enum SupportDbTypeEnum {
 
-  MYSQL(1, "mysql", "com.mysql.jdbc.Driver", "/* ping */ SELECT 1",
-      "jdbc:mysql://{host}:{port>/{name}?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false"),
-  MARIADB(2, "mariadb", "org.mariadb.jdbc.Driver", "SELECT 1",
-      "jdbc:mariadb://{host}:{port}/{name}?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false"),
-  ORACLE(3, "oracle", "oracle.jdbc.driver.OracleDriver", "SELECT 'Hello' from DUAL",
-      "jdbc:oracle:thin:@{host}:{port}:{name}"),
-  SQLSERVER(4, "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "SELECT 1+2 as a",
-      "jdbc:sqlserver://{host}:{port};DatabaseName={name}"),
-  POSTGRESQL(5, "postgresql", "org.postgresql.Driver", "SELECT 1",
-      "jdbc:postgresql://{host}:{port}/{name}"),
-  DB2(6, "db2", "com.ibm.db2.jcc.DB2Driver", "SELECT 1 FROM SYSIBM.SYSDUMMY1",
-      "jdbc:db2://{host}:{port}/{name}:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;"),
-  DM(7, "dm", "dm.jdbc.driver.DmDriver", "SELECT 'Hello' from DUAL", "jdbc:dm://{host}:{port}"),
-  KINGBASE(8, "kingbase", "com.kingbase8.Driver", "SELECT 1",
-      "jdbc:kingbase8://{host}:{port}/{name}"),
+  MYSQL(1, "mysql", "com.mysql.jdbc.Driver", 3306, "/* ping */ SELECT 1",
+      new String[]{"jdbc:mysql://{host}[:{port}]/[{database}][\\?{params}]"}),
+  MARIADB(2, "mariadb", "org.mariadb.jdbc.Driver", 3306, "SELECT 1",
+      new String[]{"jdbc:mariadb://{host}[:{port}]/[{database}][\\?{params}]"}),
+  ORACLE(3, "oracle", "oracle.jdbc.driver.OracleDriver", 1521, "SELECT 'Hello' from DUAL",
+      new String[]{"jdbc:oracle:thin:@{host}:{port}:{name}",
+          "jdbc:oracle:thin:@//{host}[:{port}]/{name}"}),
+  SQLSERVER(4, "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", 1433, "SELECT 1+2 as a",
+      new String[]{"jdbc:sqlserver://{host}[:{port}][;databaseName={database}][;{params}]"}),
+  POSTGRESQL(5, "postgresql", "org.postgresql.Driver", 5432, "SELECT 1",
+      new String[]{"jdbc:postgresql://{host}[:{port}]/[{database}][\\?{params}]"}),
+  DB2(6, "db2", "com.ibm.db2.jcc.DB2Driver", 50000, "SELECT 1 FROM SYSIBM.SYSDUMMY1",
+      new String[]{"jdbc:db2://{host}:{port}/{database}[:{params}]"}),
+  DM(7, "dm", "dm.jdbc.driver.DmDriver", 5236, "SELECT 'Hello' from DUAL",
+      new String[]{"jdbc:dm://{host}:{port}[/{database}][\\?{params}]"}),
+  KINGBASE(8, "kingbase", "com.kingbase8.Driver", 54321, "SELECT 1",
+      new String[]{"jdbc:kingbase8://{host}[:{port}]/[{database}][\\?{params}]"}),
   ;
 
   private int id;
   private String name;
   private String driver;
+  private int port;
   private String sql;
-  private String template;
+  private String[] url;
 
   public static SupportDbTypeEnum of(String name) {
     if (!StringUtils.isEmpty(name)) {

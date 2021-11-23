@@ -13,25 +13,24 @@ import java.util.List;
 
 /**
  * 计算结果行记录处理器
- * 
- * @author tang
  *
+ * @author tang
  */
 public interface IDatabaseRowHandler {
 
-	/**
-	 * 行数据处理
-	 * 
-	 * @param fields 字段名称列表，该列表只读
-	 * @param record 一条数据记实录
-	 * @param flag   数据变化状态
-	 */
-	public void handle(List<String> fields, Object[] record, RecordChangeTypeEnum flag);
+  /**
+   * 行数据处理
+   *
+   * @param fields 字段名称列表，该列表只读
+   * @param record 一条数据记实录
+   * @param flag   数据变化状态
+   */
+  void handle(List<String> fields, Object[] record, RecordChangeTypeEnum flag);
 
-	/**
-	 * 计算结束通知
-	 * 
-	 * @param fields 字段名称列表，该列表只读
-	 */
-	public void destroy(List<String> fields);
+  /**
+   * 计算结束通知
+   *
+   * @param fields 字段名称列表，该列表只读
+   */
+  void destroy(List<String> fields);
 }

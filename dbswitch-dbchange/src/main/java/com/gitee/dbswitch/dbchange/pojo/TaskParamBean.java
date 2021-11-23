@@ -19,53 +19,53 @@ import lombok.AllArgsConstructor;
 
 /**
  * 任务参数实体类定义
- * 
- * @author tang
  *
+ * @author tang
  */
 @Data
 @Builder
 @AllArgsConstructor
 public class TaskParamBean {
-	/**
-	 *  老表的数据源
-	 */
-	@NonNull
-	DataSource oldDataSource;
 
-	/**
-	 *  老表的schema名
-	 */
-	@NonNull
-	private String oldSchemaName;
+  /**
+   * 老表的数据源
+   */
+  @NonNull
+  DataSource oldDataSource;
 
-	/**
-	 *  老表的table名
-	 */
-	@NonNull
-	private String oldTableName;
+  /**
+   * 老表的schema名
+   */
+  @NonNull
+  private String oldSchemaName;
 
-	/**
-	 *  新表的数据源
-	 */
-	@NonNull
-	DataSource newDataSource;
+  /**
+   * 老表的table名
+   */
+  @NonNull
+  private String oldTableName;
 
-	/**
-	 *  新表的schema名
-	 */
-	@NonNull
-	private String newSchemaName;
+  /**
+   * 新表的数据源
+   */
+  @NonNull
+  DataSource newDataSource;
 
-	/**
-	 *  新表的table名
-	 */
-	@NonNull
-	private String newTableName;
-	
-	/**
-	 * 字段列
-	 */
-	@Nullable
-	private List<String> fieldColumns;
+  /**
+   * 新表的schema名
+   */
+  @NonNull
+  private String newSchemaName;
+
+  /**
+   * 新表的table名
+   */
+  @NonNull
+  private String newTableName;
+
+  /**
+   * 字段列
+   */
+  @Nullable
+  private List<String> fieldColumns;
 }
