@@ -23,6 +23,7 @@ import com.gitee.dbswitch.admin.model.response.DatabaseTypeDetailResponse;
 import com.gitee.dbswitch.admin.model.response.DbConnectionDetailResponse;
 import com.gitee.dbswitch.admin.model.response.DbConnectionNameResponse;
 import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
+import com.gitee.dbswitch.admin.util.JDBCURL;
 import com.gitee.dbswitch.admin.util.PageUtil;
 import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.service.IMetaDataService;
@@ -31,8 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,7 +51,7 @@ public class DbConnectionService {
       detail.setId(type.getId());
       detail.setType(type.getName().toUpperCase());
       detail.setDriver(type.getDriver());
-      detail.setTemplate(type.getTemplate());
+      detail.setTemplate(StringUtils.join(type.getUrl(), ","));
 
       lists.add(detail);
     }
@@ -80,11 +83,38 @@ public class DbConnectionService {
       return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
     }
 
-    DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
-    IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-    metaDataService.setDatabaseConnection(dbType);
-    metaDataService.testQuerySQL(dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(),
-        dbConn.getType().getSql());
+    SupportDbTypeEnum supportDbType = SupportDbTypeEnum
+        .valueOf(dbConn.getType().getName().toUpperCase());
+    for (String pattern : supportDbType.getUrl()) {
+      final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
+      if (!matcher.matches()) {
+        if (1 == supportDbType.getUrl().length) {
+          return Result.failed(ResultCode.ERROR_INVALID_JDBC_URL, dbConn.getUrl());
+        } else {
+          continue;
+        }
+      }
+
+      String host = matcher.group("host");
+      String port = matcher.group("port");
+      if (null == port) {
+        port = String.valueOf(supportDbType.getPort());
+      }
+
+      if (!JDBCURL.reachable(host, port)) {
+        return Result.failed(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getUrl());
+      }
+
+      DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
+      IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
+      metaDataService.setDatabaseConnection(prd);
+      metaDataService.testQuerySQL(
+          dbConn.getUrl(),
+          dbConn.getUsername(),
+          dbConn.getPassword(),
+          dbConn.getType().getSql()
+      );
+    }
     return Result.success();
   }
 
