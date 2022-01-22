@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.config;
 
-import com.gitee.dbswitch.admin.config.shiro.UserAuthenticatingFilter;
 import com.gitee.dbswitch.admin.config.shiro.SystemUserRealm;
+import com.gitee.dbswitch.admin.config.shiro.UserAuthenticatingFilter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;

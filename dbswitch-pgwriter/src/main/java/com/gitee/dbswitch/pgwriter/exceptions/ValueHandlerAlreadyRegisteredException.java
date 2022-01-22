@@ -2,22 +2,23 @@ package com.gitee.dbswitch.pgwriter.exceptions;
 
 public class ValueHandlerAlreadyRegisteredException extends RuntimeException {
 
-    public ValueHandlerAlreadyRegisteredException(String message) {
-        super(message);
-    }
+  public ValueHandlerAlreadyRegisteredException(String message) {
+    super(message);
+  }
 
-    public ValueHandlerAlreadyRegisteredException() {
-    }
+  public ValueHandlerAlreadyRegisteredException() {
+  }
 
-    public ValueHandlerAlreadyRegisteredException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public ValueHandlerAlreadyRegisteredException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    public ValueHandlerAlreadyRegisteredException(Throwable cause) {
-        super(cause);
-    }
+  public ValueHandlerAlreadyRegisteredException(Throwable cause) {
+    super(cause);
+  }
 
-    public ValueHandlerAlreadyRegisteredException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+  public ValueHandlerAlreadyRegisteredException(String message, Throwable cause,
+      boolean enableSuppression, boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
+  }
 }

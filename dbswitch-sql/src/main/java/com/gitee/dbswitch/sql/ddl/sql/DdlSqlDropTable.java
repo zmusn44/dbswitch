@@ -16,26 +16,25 @@ import com.gitee.dbswitch.sql.ddl.pojo.TableDefinition;
 
 /**
  * Drop语句操作类
- * 
- * @author tang
  *
+ * @author tang
  */
 public class DdlSqlDropTable extends AbstractSqlDdlOperator {
 
-	private TableDefinition table;
+  private TableDefinition table;
 
-	public DdlSqlDropTable(TableDefinition t) {
-		super(Const.DROP_TABLE);
-		this.table = t;
-	}
-	
-	@Override
-	public String toSqlString(AbstractDatabaseDialect dialect) {
-		StringBuilder sb=new StringBuilder();
-		sb.append(this.getName());
-		String fullTableName=dialect.getSchemaTableName(table.getSchemaName(), table.getTableName());
-		sb.append(fullTableName);
-		return sb.toString();
-	}
-	
+  public DdlSqlDropTable(TableDefinition t) {
+    super(Const.DROP_TABLE);
+    this.table = t;
+  }
+
+  @Override
+  public String toSqlString(AbstractDatabaseDialect dialect) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.getName());
+    String fullTableName = dialect.getSchemaTableName(table.getSchemaName(), table.getTableName());
+    sb.append(fullTableName);
+    return sb.toString();
+  }
+
 }

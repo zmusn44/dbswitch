@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.sql.service;
 
 import java.util.Map;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 
 /**
  * SQL语言共分为四大类：数据查询语言DQL，数据操纵语言DML，数据定义语言DDL，数据控制语言DCL

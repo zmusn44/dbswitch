@@ -16,21 +16,22 @@ import lombok.Data;
 /**
  * 统计信息
  *
- * @Author: tang
+ * @author tang
  */
 @Data
 @AllArgsConstructor
 public class PerfStat {
-    private Integer index;
-    private Integer total;
-    private Integer failure;
-    private Long bytes;
 
-    @Override
-    public String toString() {
-        return "Data Source Index: \t" + index + "\n" +
-                "Total Tables Count: \t" + total + "\n" +
-                "Failure Tables count: \t" + failure + "\n" +
-                "Total Transfer Size: \t" + BytesUnitUtils.bytesSizeToHuman(bytes) + "\n";
-    }
+  private Integer index;
+  private Integer total;
+  private Integer failure;
+  private Long bytes;
+
+  @Override
+  public String toString() {
+    return "Data Source Index: \t" + index + "\n" +
+        "Total Tables Count: \t" + total + "\n" +
+        "Failure Tables count: \t" + failure + "\n" +
+        "Total Transfer Size: \t" + BytesUnitUtils.bytesSizeToHuman(bytes) + "\n";
+  }
 }

@@ -23,7 +23,7 @@ import com.gitee.dbswitch.sql.calcite.TheMssqlSqlDialect;
 import com.gitee.dbswitch.sql.calcite.TheMysqlSqlDialect;
 import com.gitee.dbswitch.sql.calcite.TheOracleSqlDialect;
 import com.gitee.dbswitch.sql.calcite.ThePostgresqlSqlDialect;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.sql.service.ISqlConvertService;
 
 /**

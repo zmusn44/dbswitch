@@ -10,18 +10,16 @@
 package com.gitee.dbswitch.dbcommon.database.impl;
 
 import javax.sql.DataSource;
-import com.gitee.dbswitch.dbcommon.database.IDatabaseOperator;
 
 /**
  * DM数据库实现类
  *
  * @author tang
- *
  */
-public class DmDatabaseOperator extends OracleDatabaseOperator implements IDatabaseOperator {
+public class DmDatabaseOperator extends OracleDatabaseOperator {
 
-	public DmDatabaseOperator(DataSource dataSource) {
-		super(dataSource);
-	}
+  public DmDatabaseOperator(DataSource dataSource) {
+    super(dataSource);
+  }
 
 }

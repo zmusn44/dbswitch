@@ -11,9 +11,9 @@ package com.gitee.dbswitch.admin.config.shiro;
 
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.common.response.ResultCode;
-import com.gitee.dbswitch.admin.util.JsonUtil;
-import com.gitee.dbswitch.admin.util.ServletUtil;
-import com.gitee.dbswitch.admin.util.TokenUtil;
+import com.gitee.dbswitch.admin.util.JsonUtils;
+import com.gitee.dbswitch.admin.util.ServletUtils;
+import com.gitee.dbswitch.admin.util.TokenUtils;
 import java.io.IOException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -38,7 +38,7 @@ public class UserAuthenticatingFilter extends AuthenticatingFilter {
   @Override
   protected AuthenticationToken createToken(ServletRequest request, ServletResponse response)
       throws Exception {
-    String token = TokenUtil.getRequestToken((HttpServletRequest) request);
+    String token = TokenUtils.getRequestToken((HttpServletRequest) request);
     return new UserAuthenticationToken(token);
   }
 
@@ -61,20 +61,20 @@ public class UserAuthenticatingFilter extends AuthenticatingFilter {
   @Override
   protected boolean onAccessDenied(ServletRequest request, ServletResponse response)
       throws Exception {
-    String path=((HttpServletRequest) request).getRequestURI();
-    if("/".equals(path)){
+    String path = ((HttpServletRequest) request).getRequestURI();
+    if ("/".equals(path)) {
       return true;
     }
 
-    String token = TokenUtil.getRequestToken((HttpServletRequest) request);
+    String token = TokenUtils.getRequestToken((HttpServletRequest) request);
     if (StringUtils.isEmpty(token)) {
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-      httpResponse.setHeader("Access-Control-Allow-Origin", ServletUtil.getOrigin());
+      httpResponse.setHeader("Access-Control-Allow-Origin", ServletUtils.getOrigin());
       httpResponse.setCharacterEncoding("UTF-8");
 
       Result result = Result.failed(ResultCode.ERROR_ACCESS_FORBIDDEN, "请登录");
-      String json = JsonUtil.toJsonString(result);
+      String json = JsonUtils.toJsonString(result);
       httpResponse.getWriter().print(json);
 
       return false;
@@ -93,11 +93,11 @@ public class UserAuthenticatingFilter extends AuthenticatingFilter {
     HttpServletResponse httpResponse = (HttpServletResponse) response;
     httpResponse.setContentType("application/json;charset=utf-8");
     httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
-    httpResponse.setHeader("Access-Control-Allow-Origin", ServletUtil.getOrigin());
+    httpResponse.setHeader("Access-Control-Allow-Origin", ServletUtils.getOrigin());
     httpResponse.setCharacterEncoding("UTF-8");
     try {
       Result result = Result.failed(ResultCode.ERROR_TOKEN_EXPIRED, "请登录");
-      String json = JsonUtil.toJsonString(result);
+      String json = JsonUtils.toJsonString(result);
       httpResponse.getWriter().print(json);
     } catch (IOException ex) {
     }

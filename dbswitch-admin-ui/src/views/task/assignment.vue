@@ -4,7 +4,8 @@
       <div align="right"
            style="margin:10px 5px;"
            width="65%">
-        <el-button type="primary" icon="el-icon-document-add"
+        <el-button type="primary"
+                   icon="el-icon-document-add"
                    @click="handleCreate">添加</el-button>
       </div>
       <el-table :data="tableData"
@@ -136,11 +137,39 @@
           <el-form-item label="源端模式名"
                         label-width="120px"
                         :required=true
-                        prop="sourceSchemas"
+                        prop="sourceSchema"
                         style="width:65%">
-            <el-select v-model="createform.sourceSchemas"
+            <el-select v-model="createform.sourceSchema"
+                       @change="selectCreateChangedSourceSchema"
                        placeholder="请选择">
               <el-option v-for="(item,index) in sourceConnectionSchemas"
+                         :key="index"
+                         :label="item"
+                         :value="item"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="配置方式"
+                        label-width="120px"
+                        :required=true
+                        prop="includeOrExclude"
+                        style="width:65%">
+            <el-select placeholder="请选择配置方式"
+                       v-model="createform.includeOrExclude">
+              <el-option label="包含表"
+                         value="INCLUDE"></el-option>
+              <el-option label="排除表"
+                         value="EXCLUDE"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="表名配置"
+                        label-width="120px"
+                        :required=false
+                        prop="sourceTables"
+                        style="width:65%">
+            <el-select placeholder="请选择表名"
+                       multiple
+                       v-model="createform.sourceTables">
+              <el-option v-for="(item,index) in sourceSchemaTables"
                          :key="index"
                          :label="item"
                          :value="item"></el-option>
@@ -178,6 +207,20 @@
                         style="width:85%">
             <el-input v-model="createform.tablePrefix"
                       auto-complete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="数据批次大小"
+                        label-width="120px"
+                        :required=true
+                        prop="batchSize"
+                        style="width:85%">
+            <el-select v-model="createform.batchSize">
+              <el-option label="1000"
+                         value="1000"></el-option>
+              <el-option label="5000"
+                         value="5000"></el-option>
+              <el-option label="10000"
+                         value="10000"></el-option>
+            </el-select>
           </el-form-item>
         </el-form>
         <div slot="footer"
@@ -259,11 +302,39 @@
           <el-form-item label="源端模式名"
                         label-width="120px"
                         :required=true
-                        prop="sourceSchemas"
+                        prop="sourceSchema"
                         style="width:65%">
-            <el-select v-model="updateform.sourceSchemas"
+            <el-select v-model="updateform.sourceSchema"
+                       @change="selectUpdateChangedSourceSchema"
                        placeholder="请选择">
               <el-option v-for="(item,index) in sourceConnectionSchemas"
+                         :key="index"
+                         :label="item"
+                         :value="item"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="配置方式"
+                        label-width="120px"
+                        :required=true
+                        prop="includeOrExclude"
+                        style="width:65%">
+            <el-select placeholder="请选择配置方式"
+                       v-model="updateform.includeOrExclude">
+              <el-option label="包含表"
+                         value="INCLUDE"></el-option>
+              <el-option label="排除表"
+                         value="EXCLUDE"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="表名配置"
+                        label-width="120px"
+                        :required=true
+                        prop="sourceTables"
+                        style="width:65%">
+            <el-select placeholder="请选择表名"
+                       multiple
+                       v-model="updateform.sourceTables">
+              <el-option v-for="(item,index) in sourceSchemaTables"
                          :key="index"
                          :label="item"
                          :value="item"></el-option>
@@ -302,6 +373,20 @@
             <el-input v-model="updateform.tablePrefix"
                       auto-complete="off"></el-input>
           </el-form-item>
+          <el-form-item label="数据批次大小"
+                        label-width="120px"
+                        :required=true
+                        prop="batchSize"
+                        style="width:85%">
+            <el-select v-model="updateform.batchSize">
+              <el-option label="1000"
+                         value="1000"></el-option>
+              <el-option label="5000"
+                         value="5000"></el-option>
+              <el-option label="10000"
+                         value="10000"></el-option>
+            </el-select>
+          </el-form-item>
         </el-form>
         <div slot="footer"
              class="dialog-footer">
@@ -331,11 +416,14 @@ export default {
         scheduleMode: "MANUAL",
         cronExpression: "",
         sourceConnectionId: 0,
-        sourceSchemas: "",
+        sourceSchema: "",
+        includeOrExclude: "",
+        sourceTables: [],
         tablePrefix: "",
         targetConnectionId: 0,
         targetDropTable: true,
-        targetSchema: ""
+        targetSchema: "",
+        batchSize: "10000"
       },
       updateform: {
         id: 0,
@@ -344,11 +432,14 @@ export default {
         scheduleMode: "MANUAL",
         cronExpression: "",
         sourceConnectionId: 0,
-        sourceSchemas: "",
+        sourceSchema: "",
+        includeOrExclude: "",
+        sourceTables: [],
         tablePrefix: "",
         targetConnectionId: 0,
         targetDropTable: true,
-        targetSchema: ""
+        targetSchema: "",
+        batchSize: "10000"
       },
       rules: {
         name: [
@@ -374,11 +465,27 @@ export default {
             trigger: "change"
           }
         ],
-        sourceSchemas: [
+        sourceSchema: [
           {
             required: true,
             type: 'string',
             message: "必选选择一个Schema名",
+            trigger: "change"
+          }
+        ],
+        includeOrExclude: [
+          {
+            required: true,
+            type: 'string',
+            message: "配置方式必须选择",
+            trigger: "change"
+          }
+        ],
+        sourceTables: [
+          {
+            required: false,
+            type: 'array',
+            message: "必选选择一个Table名",
             trigger: "change"
           }
         ],
@@ -398,6 +505,14 @@ export default {
             trigger: "change"
           }
         ],
+        batchSize: [
+          {
+            required: true,
+            type: 'string',
+            message: "必选选择一个批大小",
+            trigger: "change"
+          }
+        ]
       },
       jobTaskName: "",
       jobTableData: [
@@ -431,6 +546,7 @@ export default {
       cronPopover: false,
 
       sourceConnectionSchemas: [],
+      sourceSchemaTables: [],
       targetConnectionSchemas: []
     };
   },
@@ -527,12 +643,18 @@ export default {
             scheduleMode: detail.scheduleMode,
             cronExpression: detail.cronExpression,
             sourceConnectionId: detail.configuration.sourceConnectionId,
-            sourceSchemas: detail.configuration.sourceSchemas[0],
+            sourceSchema: detail.configuration.sourceSchema,
+            includeOrExclude: detail.configuration.includeOrExclude,
+            sourceTables: detail.configuration.sourceTables,
             tablePrefix: detail.configuration.tablePrefix,
             targetConnectionId: detail.configuration.targetConnectionId,
             targetDropTable: detail.configuration.targetDropTable,
-            targetSchema: detail.configuration.targetSchema
+            targetSchema: detail.configuration.targetSchema,
+            batchSize: detail.configuration.batchSize
           }
+          this.selectChangedSourceConnection(this.updateform.sourceConnectionId)
+          this.selectUpdateChangedSourceSchema(this.updateform.sourceSchema)
+          this.selectChangedTargetConnection(this.updateform.targetConnectionId)
           this.updateFormVisible = true;
         } else {
           alert("查询任务失败," + res.data.message);
@@ -556,11 +678,14 @@ export default {
               cronExpression: this.createform.cronExpression,
               config: {
                 sourceConnectionId: this.createform.sourceConnectionId,
-                sourceSchemas: [this.createform.sourceSchemas],
+                sourceSchema: this.createform.sourceSchema,
+                includeOrExclude: this.createform.includeOrExclude,
+                sourceTables: this.createform.sourceTables,
                 targetConnectionId: this.createform.targetConnectionId,
                 targetSchema: this.createform.targetSchema,
                 tablePrefix: this.createform.tablePrefix,
-                targetDropTable: true
+                targetDropTable: true,
+                batchSize: this.createform.batchSize
               }
             })
           }).then(res => {
@@ -595,11 +720,14 @@ export default {
               cronExpression: this.updateform.cronExpression,
               config: {
                 sourceConnectionId: this.updateform.sourceConnectionId,
-                sourceSchemas: [this.updateform.sourceSchemas],
+                sourceSchema: this.updateform.sourceSchema,
+                includeOrExclude: this.updateform.includeOrExclude,
+                sourceTables: this.updateform.sourceTables,
                 targetConnectionId: this.updateform.targetConnectionId,
                 targetSchema: this.updateform.targetSchema,
                 tablePrefix: this.updateform.tablePrefix,
-                targetDropTable: true
+                targetDropTable: true,
+                batchSize: this.updateform.batchSize
               }
             })
           }).then(res => {
@@ -675,7 +803,7 @@ export default {
     selectChangedSourceConnection: function (value) {
       this.sourceConnectionSchemas = [];
       this.$http.get(
-        "/dbswitch/admin/api/v1/connection/schema/get/" + value
+        "/dbswitch/admin/api/v1/connection/schemas/get/" + value
       ).then(res => {
         if (0 === res.data.code) {
           this.sourceConnectionSchemas = res.data.data;
@@ -684,10 +812,34 @@ export default {
         }
       });
     },
+    selectCreateChangedSourceSchema: function (value) {
+      this.sourceSchemaTables = [];
+      this.$http.get(
+        "/dbswitch/admin/api/v1/connection/tables/get/" + this.createform.sourceConnectionId + "?schema=" + value
+      ).then(res => {
+        if (0 === res.data.code) {
+          this.sourceSchemaTables = res.data.data;
+        } else {
+          this.$message.error("查询来源端数据库在制定Schema下的表列表失败," + res.data.message);
+        }
+      });
+    },
+    selectUpdateChangedSourceSchema: function (value) {
+      this.sourceSchemaTables = [];
+      this.$http.get(
+        "/dbswitch/admin/api/v1/connection/tables/get/" + this.updateform.sourceConnectionId + "?schema=" + value
+      ).then(res => {
+        if (0 === res.data.code) {
+          this.sourceSchemaTables = res.data.data;
+        } else {
+          this.$message.error("查询来源端数据库在制定Schema下的表列表失败," + res.data.message);
+        }
+      });
+    },
     selectChangedTargetConnection: function (value) {
       this.targetConnectionSchemas = [];
       this.$http.get(
-        "/dbswitch/admin/api/v1/connection/schema/get/" + value
+        "/dbswitch/admin/api/v1/connection/schemas/get/" + value
       ).then(res => {
         if (0 === res.data.code) {
           this.targetConnectionSchemas = res.data.data;

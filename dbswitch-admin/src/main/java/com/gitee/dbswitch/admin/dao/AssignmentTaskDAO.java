@@ -30,9 +30,8 @@ public class AssignmentTaskDAO {
     assignmentTaskMapper.insertSelective(assignment);
   }
 
-  public boolean updateById(AssignmentTaskEntity assignment) {
+  public void updateById(AssignmentTaskEntity assignment) {
     assignmentTaskMapper.updateByPrimaryKeySelective(assignment);
-    return false;
   }
 
   public List<AssignmentTaskEntity> listAll(String searchText) {

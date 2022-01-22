@@ -13,8 +13,8 @@ import com.gitee.dbswitch.admin.common.excption.DbswitchException;
 import com.gitee.dbswitch.admin.common.response.ResultCode;
 import com.gitee.dbswitch.admin.dao.SystemUserDAO;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
-import com.gitee.dbswitch.admin.util.CacheUtil;
-import com.gitee.dbswitch.admin.util.ServletUtil;
+import com.gitee.dbswitch.admin.util.CacheUtils;
+import com.gitee.dbswitch.admin.util.ServletUtils;
 import java.util.Collections;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -41,7 +41,9 @@ public class SystemUserRealm extends AuthorizingRealm {
   private SystemUserDAO systemUserDAO;
 
   /**
-   * 这里覆盖掉org.apache.shiro.realm.AuthenticatingRealm的方法，以支持我们自定义的 io.gitee.inrgihc.sbvb.domain.shiro.UserAuthenticationToken类。
+   * 这里覆盖掉org.apache.shiro.realm.AuthenticatingRealm的方法，以支持我们自定义的:
+   * <p>
+   * io.gitee.inrgihc.sbvb.domain.shiro.UserAuthenticationToken类。
    */
   @Override
   public boolean supports(AuthenticationToken token) {
@@ -60,7 +62,7 @@ public class SystemUserRealm extends AuthorizingRealm {
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     //根据缓存将token转换成User实体对象
     String accessToken = (String) principals.getPrimaryPrincipal();
-    Object cache = CacheUtil.get(accessToken);
+    Object cache = CacheUtils.get(accessToken);
     if (null == cache) {
       throw new RuntimeException("token不存在或已经失效，请重新登录!");
     }
@@ -91,7 +93,7 @@ public class SystemUserRealm extends AuthorizingRealm {
     String accessToken = (String) token.getPrincipal();
 
     //根据缓存将token转换成User实体对象
-    Object cache = CacheUtil.get(accessToken);
+    Object cache = CacheUtils.get(accessToken);
     if (null == cache) {
       throw new DbswitchException(ResultCode.ERROR_ACCESS_FORBIDDEN, "token不存在或已经失效，请重新登录!");
     }
@@ -105,7 +107,7 @@ public class SystemUserRealm extends AuthorizingRealm {
       throw new LockedAccountException("token所使用的认证用户已经被锁定"); // 帐号锁定
     }
 
-    ServletUtil.getHttpServletRequest().setAttribute("username", user.getUsername());
+    ServletUtils.getHttpServletRequest().setAttribute("username", user.getUsername());
 
     return new SimpleAuthenticationInfo(accessToken, accessToken, this.getName());
   }

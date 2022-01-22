@@ -32,7 +32,7 @@ public class SystemLogDAO {
     Example example = new Example(SystemLogEntity.class);
     Criteria criteria = example.createCriteria();
 
-    SystemLogEntity condition=new SystemLogEntity();
+    SystemLogEntity condition = new SystemLogEntity();
     condition.setType(logType.getValue());
 
     criteria.andEqualTo(condition);
@@ -40,7 +40,7 @@ public class SystemLogDAO {
     return systemLogMapper.selectByExample(example);
   }
 
-  public SystemLogEntity getById(Long id){
+  public SystemLogEntity getById(Long id) {
     return systemLogMapper.selectByPrimaryKey(id);
   }
 

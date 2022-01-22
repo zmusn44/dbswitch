@@ -15,52 +15,52 @@ import java.util.Objects;
 
 /**
  * 表定义实体类
- * 
- * @author tang
  *
+ * @author tang
  */
 public class TableDefinition {
-	private String schemaName;
-	private String tableName;
-	private String tableComment;
-	private List<ColumnDefinition> columns = new ArrayList<>();
 
-	public String getSchemaName() {
-		return schemaName;
-	}
+  private String schemaName;
+  private String tableName;
+  private String tableComment;
+  private List<ColumnDefinition> columns = new ArrayList<>();
 
-	public void setSchemaName(String schemaName) {
-		this.schemaName = Objects.requireNonNull(schemaName);
-	}
+  public String getSchemaName() {
+    return schemaName;
+  }
 
-	public String getTableName() {
-		return tableName;
-	}
+  public void setSchemaName(String schemaName) {
+    this.schemaName = Objects.requireNonNull(schemaName);
+  }
 
-	public void setTableName(String tableName) {
-		this.tableName = Objects.requireNonNull(tableName);
-	}
+  public String getTableName() {
+    return tableName;
+  }
 
-	public String getTableComment() {
-		return tableComment;
-	}
+  public void setTableName(String tableName) {
+    this.tableName = Objects.requireNonNull(tableName);
+  }
 
-	public void setTableComment(String tableComment) {
-		this.tableComment = tableComment;
-	}
+  public String getTableComment() {
+    return tableComment;
+  }
 
-	public List<ColumnDefinition> getColumns() {
-		return columns;
-	}
+  public void setTableComment(String tableComment) {
+    this.tableComment = tableComment;
+  }
 
-	public void addColumns(ColumnDefinition column) {
-		columns.add(column);
-	}
+  public List<ColumnDefinition> getColumns() {
+    return columns;
+  }
 
-	@Override
-	public String toString() {
-		return "TableDefinition [schemaName=" + schemaName + ", tableName=" + tableName + ", tableComment="
-				+ tableComment + ", columns=" + columns + "]";
-	}
+  public void addColumns(ColumnDefinition column) {
+    columns.add(column);
+  }
+
+  @Override
+  public String toString() {
+    return "TableDefinition [schemaName=" + schemaName + ", tableName=" + tableName
+        + ", tableComment=" + tableComment + ", columns=" + columns + "]";
+  }
 
 }

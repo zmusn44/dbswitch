@@ -10,8 +10,8 @@
 package com.gitee.dbswitch.admin.controller.converter;
 
 import com.gitee.dbswitch.admin.common.converter.AbstractConverter;
-import com.gitee.dbswitch.admin.model.response.DbConnectionDetailResponse;
 import com.gitee.dbswitch.admin.entity.DatabaseConnectionEntity;
+import com.gitee.dbswitch.admin.model.response.DbConnectionDetailResponse;
 import java.util.Objects;
 
 public class DbConnectionDetailConverter extends

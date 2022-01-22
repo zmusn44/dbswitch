@@ -10,8 +10,8 @@
 package com.gitee.dbswitch.admin.controller.converter;
 
 import com.gitee.dbswitch.admin.common.converter.AbstractConverter;
-import com.gitee.dbswitch.admin.model.response.SystemUserDetailResponse;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
+import com.gitee.dbswitch.admin.model.response.SystemUserDetailResponse;
 import java.util.Objects;
 
 public class SystemUserDetailConverter extends

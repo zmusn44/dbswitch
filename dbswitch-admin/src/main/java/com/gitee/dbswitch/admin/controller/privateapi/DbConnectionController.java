@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(tags = {"连接管理接口"})
@@ -58,16 +59,23 @@ public class DbConnectionController {
     return Result.success(databaseConnectionService.getDetailById(id));
   }
 
-  @ApiOperation(value = "测试链接")
+  @ApiOperation(value = "测试连接")
   @GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result test(@PathVariable("id") Long id) {
     return databaseConnectionService.test(id);
   }
 
-  @ApiOperation(value = "连接模式")
-  @GetMapping(value = "/schema/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ApiOperation(value = "查询连接的Schema列表")
+  @GetMapping(value = "/schemas/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result getSchemas(@PathVariable("id") Long id) {
     return databaseConnectionService.getSchemas(id);
+  }
+
+  @ApiOperation(value = "查询连接在制定Schema下的所有表列表")
+  @GetMapping(value = "/tables/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result getSchemaTables(@PathVariable("id") Long id,
+      @RequestParam("schema") String schema) {
+    return databaseConnectionService.getSchemaTables(id, schema);
   }
 
   @OperateLog(name = "数据库连接", description = "'添加的数据库连接标题为：'+#request.name")

@@ -31,7 +31,9 @@ public class AssignmentConfigDAO {
   }
 
   public AssignmentConfigEntity getByAssignmentTaskId(Long assignmentId) {
-    return assignmentConfigMapper.getByAssignmentId(assignmentId);
+    AssignmentConfigEntity record = new AssignmentConfigEntity();
+    record.setAssignmentId(assignmentId);
+    return assignmentConfigMapper.selectOne(record);
   }
 
   public void updateSelective(AssignmentConfigEntity assignmentConfigEntity) {

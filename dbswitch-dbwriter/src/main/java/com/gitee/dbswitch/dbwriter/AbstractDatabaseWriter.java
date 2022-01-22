@@ -12,90 +12,125 @@ package com.gitee.dbswitch.dbwriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.sql.DataSource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * 数据库写入抽象基类
- * 
- * @author tang
  *
+ * @author tang
  */
+@Slf4j
 public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
 
-	protected DataSource dataSource;
-	protected JdbcTemplate jdbcTemplate;
-	protected String schemaName;
-	protected String tableName;
-	protected Map<String, Integer> columnType;
+  protected DataSource dataSource;
+  protected JdbcTemplate jdbcTemplate;
+  protected String schemaName;
+  protected String tableName;
+  protected Map<String, Integer> columnType;
 
-	public AbstractDatabaseWriter(DataSource dataSource) {
-		this.dataSource = dataSource;
-		this.jdbcTemplate = new JdbcTemplate(this.dataSource);
-		this.schemaName = null;
-		this.tableName = null;
-		this.columnType = null;
-	}
+  public AbstractDatabaseWriter(DataSource dataSource) {
+    this.dataSource = dataSource;
+    this.jdbcTemplate = new JdbcTemplate(this.dataSource);
+    this.schemaName = null;
+    this.tableName = null;
+    this.columnType = null;
+  }
 
-	@Override
-	public DataSource getDataSource() {
-		return this.dataSource;
-	}
+  @Override
+  public DataSource getDataSource() {
+    return this.dataSource;
+  }
 
+  @Override
+  public void prepareWrite(String schemaName, String tableName) {
+    String sql = this.selectTableMetaDataSqlString(schemaName, tableName);
+    Map<String, Integer> columnMetaData = new HashMap<>();
+    jdbcTemplate.execute((Connection conn) -> {
+      try (Statement stmt = conn.createStatement();
+          ResultSet rs = stmt.executeQuery(sql);) {
+        ResultSetMetaData rsMetaData = rs.getMetaData();
+        for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+          columnMetaData.put(rsMetaData.getColumnName(i + 1), rsMetaData.getColumnType(i + 1));
+        }
 
-	@Override
-	public void prepareWrite(String schemaName, String tableName) {
-		String sql = String.format("SELECT *  FROM \"%s\".\"%s\"  WHERE 1=2", schemaName, tableName);
-		Map<String, Integer> columnMetaData = new HashMap<String, Integer>();
-		Boolean ret = this.jdbcTemplate.execute(new ConnectionCallback<Boolean>() {
+        return true;
+      } catch (Exception e) {
+        throw new RuntimeException(
+            String.format("获取表:%s.%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", schemaName, tableName), e);
+      }
+    });
 
-			@Override
-			public Boolean doInConnection(Connection conn) throws SQLException, DataAccessException {
-				Statement stmt = null;
-				ResultSet rs = null;
-				try {
-					stmt = conn.createStatement();
-					rs = stmt.executeQuery(sql);
-					ResultSetMetaData rsMetaData = rs.getMetaData();
-					for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
-						columnMetaData.put(rsMetaData.getColumnName(i + 1), rsMetaData.getColumnType(i + 1));
-					}
+    this.schemaName = schemaName;
+    this.tableName = tableName;
+    this.columnType = Objects.requireNonNull(columnMetaData);
+    if (this.columnType.isEmpty()) {
+      throw new RuntimeException(
+          String.format("获取表:%s.%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", schemaName, tableName));
+    }
 
-					return true;
-				} catch (Exception e) {
-					throw new RuntimeException(
-							String.format("获取表:%s.%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", schemaName, tableName), e);
-				} finally {
-					JdbcUtils.closeResultSet(rs);
-					JdbcUtils.closeStatement(stmt);
-				}
-			}
-		});
+  }
 
-		if (ret) {
-			this.schemaName = schemaName;
-			this.tableName = tableName;
-			this.columnType = Objects.requireNonNull(columnMetaData);
+  protected String selectTableMetaDataSqlString(String schemaName, String tableName) {
+    return String.format("SELECT *  FROM \"%s\".\"%s\"  WHERE 1=2", schemaName, tableName);
+  }
 
-			if (this.columnType.isEmpty()) {
-				throw new RuntimeException(
-						String.format("获取表:%s.%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", schemaName, tableName));
-			}
-		} else {
-			throw new RuntimeException("内部代码出现错误，请开发人员排查！");
-		}
-	}
+  protected abstract String getDatabaseProductName();
 
-	@Override
-	public abstract long write(List<String> fieldNames, List<Object[]> recordValues);
+  @Override
+  public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )",
+        schemaName, tableName,
+        StringUtils.join(fieldNames, "\",\""),
+        StringUtils.join(Collections.nCopies(fieldNames.size(), "?"), ","));
+
+    int[] argTypes = new int[fieldNames.size()];
+    for (int i = 0; i < fieldNames.size(); ++i) {
+      String col = fieldNames.get(i);
+      argTypes[i] = this.columnType.get(col);
+    }
+
+    DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+    definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+    definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+    PlatformTransactionManager transactionManager = new DataSourceTransactionManager(
+        this.dataSource);
+    TransactionStatus status = transactionManager.getTransaction(definition);
+
+    try {
+      int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
+      int affectCount = 0;
+      for (int i : affects) {
+        affectCount += i;
+      }
+
+      recordValues.clear();
+      transactionManager.commit(status);
+      if (log.isDebugEnabled()) {
+        log.debug("{} insert write data  affect count:{}", getDatabaseProductName(), affectCount);
+      }
+      return affectCount;
+    } catch (TransactionException e) {
+      transactionManager.rollback(status);
+      throw e;
+    } catch (Exception e) {
+      transactionManager.rollback(status);
+      throw e;
+    }
+  }
 
 }

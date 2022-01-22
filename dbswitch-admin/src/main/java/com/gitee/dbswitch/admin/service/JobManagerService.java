@@ -17,7 +17,8 @@ import com.gitee.dbswitch.admin.controller.converter.TaskJobDetailConverter;
 import com.gitee.dbswitch.admin.dao.AssignmentJobDAO;
 import com.gitee.dbswitch.admin.entity.AssignmentJobEntity;
 import com.gitee.dbswitch.admin.model.response.TaskJobDetailResponse;
-import com.gitee.dbswitch.admin.util.PageUtil;
+import com.gitee.dbswitch.admin.type.JobStatusEnum;
+import com.gitee.dbswitch.admin.util.PageUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -29,6 +30,8 @@ public class JobManagerService {
 
   @Resource
   private AssignmentJobDAO assignmentJobDAO;
+  @Resource
+  private ScheduleService scheduleService;
 
   public PageResult<TaskJobDetailResponse> listJobs(Long assignmentId, Integer page, Integer size) {
     Supplier<List<TaskJobDetailResponse>> method = () -> {
@@ -36,7 +39,7 @@ public class JobManagerService {
       return ConverterFactory.getConverter(TaskJobDetailConverter.class).convert(jobs);
     };
 
-    return PageUtil.getPage(method, page, size);
+    return PageUtils.getPage(method, page, size);
   }
 
   public Result<TaskJobDetailResponse> detailJob(Long jobId) {
@@ -46,6 +49,19 @@ public class JobManagerService {
     }
 
     return Result.success(ConverterFactory.getConverter(TaskJobDetailConverter.class).convert(job));
+  }
+
+  public Result<Boolean> cancelJob(Long jobId) {
+    AssignmentJobEntity job = assignmentJobDAO.getById(jobId);
+    if (Objects.isNull(job)) {
+      return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "jobId=" + jobId.toString());
+    }
+
+    if (job.getStatus() == JobStatusEnum.RUNNING.getValue()) {
+      scheduleService.cancelJob(jobId);
+    }
+
+    return Result.success(true);
   }
 
 }

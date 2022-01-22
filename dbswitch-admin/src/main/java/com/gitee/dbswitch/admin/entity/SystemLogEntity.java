@@ -52,7 +52,7 @@ public class SystemLogEntity {
   @Column(name = "user_agent")
   private String userAgent;
 
-  @Column(name="failed")
+  @Column(name = "failed")
   private Boolean failed;
 
   @Column(name = "exception")

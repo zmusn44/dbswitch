@@ -14,50 +14,49 @@ import javax.sql.DataSource;
 
 /**
  * 数据同步接口定义
- * 
- * @author tang
  *
+ * @author tang
  */
 public interface IDatabaseSynchronize {
 
-	/**
-	 * 获取数据源对象
-	 * 
-	 * @return DataSource数据源对象
-	 */
-	DataSource getDataSource();
+  /**
+   * 获取数据源对象
+   *
+   * @return DataSource数据源对象
+   */
+  DataSource getDataSource();
 
-	/**
-	 * 批量Insert/Update/Delete预处理
-	 * 
-	 * @param schemaName schema名称
-	 * @param tableName  table名称
-	 * @param fieldNames 字段列表
-	 * @param pks        主键字段列表
-	 */
-	void prepare(String schemaName, String tableName, List<String> fieldNames, List<String> pks);
+  /**
+   * 批量Insert/Update/Delete预处理
+   *
+   * @param schemaName schema名称
+   * @param tableName  table名称
+   * @param fieldNames 字段列表
+   * @param pks        主键字段列表
+   */
+  void prepare(String schemaName, String tableName, List<String> fieldNames, List<String> pks);
 
-	/**
-	 * 批量数据Insert
-	 * 
-	 * @param records 数据记录
-	 * @return 返回实际影响的记录条数
-	 */
-	long executeInsert(List<Object[]> records);
+  /**
+   * 批量数据Insert
+   *
+   * @param records 数据记录
+   * @return 返回实际影响的记录条数
+   */
+  long executeInsert(List<Object[]> records);
 
-	/**
-	 * 批量数据Update
-	 * 
-	 * @param records 数据记录
-	 * @return 返回实际影响的记录条数
-	 */
-	long executeUpdate(List<Object[]> records);
+  /**
+   * 批量数据Update
+   *
+   * @param records 数据记录
+   * @return 返回实际影响的记录条数
+   */
+  long executeUpdate(List<Object[]> records);
 
-	/**
-	 * 批量数据Delete
-	 * 
-	 * @param records 数据记录
-	 * @return 返回实际影响的记录条数
-	 */
-	long executeDelete(List<Object[]> records);
+  /**
+   * 批量数据Delete
+   *
+   * @param records 数据记录
+   * @return 返回实际影响的记录条数
+   */
+  long executeDelete(List<Object[]> records);
 }

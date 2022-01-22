@@ -34,7 +34,7 @@ dbswitch:
     ## whether create table support auto increment for primary key field
     create-table-auto-increment: false
     ## whether use insert engine to write data for target database
-    ## Only usefull for PostgreSQL/Greenplum database
+    ## Only useful for PostgreSQL/Greenplum database
     writer-engine-insert: false
     ## whether use change data synchronize to target database table
-    change-data-synch: true
+    change-data-sync: true
