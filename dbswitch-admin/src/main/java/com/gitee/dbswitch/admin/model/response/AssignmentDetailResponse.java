@@ -10,6 +10,7 @@
 package com.gitee.dbswitch.admin.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -64,7 +65,13 @@ public class AssignmentDetailResponse {
     private String sourceConnectionName;
 
     @ApiModelProperty("源端数据源的Schema")
-    private List<String> sourceSchemas;
+    private String sourceSchema;
+
+    @ApiModelProperty("表明配置方式")
+    private IncludeExcludeEnum includeOrExclude;
+
+    @ApiModelProperty("配置的表名列表")
+    private List<String> sourceTables;
 
     @ApiModelProperty("目的端连接ID")
     private Long targetConnectionId;
@@ -77,5 +84,8 @@ public class AssignmentDetailResponse {
 
     @ApiModelProperty("目的端的表名前缀")
     private String tablePrefix;
+
+    @ApiModelProperty("数据批次大小")
+    private Integer batchSize;
   }
 }

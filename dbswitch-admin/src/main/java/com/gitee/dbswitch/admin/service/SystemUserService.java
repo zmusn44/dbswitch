@@ -16,8 +16,8 @@ import com.gitee.dbswitch.admin.controller.converter.SystemUserDetailConverter;
 import com.gitee.dbswitch.admin.dao.SystemUserDAO;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
 import com.gitee.dbswitch.admin.model.response.SystemUserDetailResponse;
-import com.gitee.dbswitch.admin.util.PasswordUtil;
-import com.gitee.dbswitch.admin.util.ServletUtil;
+import com.gitee.dbswitch.admin.util.PasswordUtils;
+import com.gitee.dbswitch.admin.util.ServletUtils;
 import java.util.Objects;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -49,19 +49,19 @@ public class SystemUserService {
   }
 
   public Result changeOwnPassword(String oldPassword, String newPassword) {
-    String username = ServletUtil.getHttpServletRequest().getAttribute("username").toString();
+    String username = ServletUtils.getHttpServletRequest().getAttribute("username").toString();
     SystemUserEntity systemUserEntity = findByUsername(username);
     if (Objects.isNull(systemUserEntity)) {
       return Result.failed(ResultCode.ERROR_USER_NOT_EXISTS, username);
     }
 
-    String encryptOldPassword = PasswordUtil
+    String encryptOldPassword = PasswordUtils
         .encryptPassword(oldPassword, systemUserEntity.getSalt());
     if (!encryptOldPassword.equals(systemUserEntity.getPassword())) {
       return Result.failed(ResultCode.ERROR_USER_PASSWORD_WRONG, username);
     }
 
-    String encryptNewPassword = PasswordUtil
+    String encryptNewPassword = PasswordUtils
         .encryptPassword(newPassword, systemUserEntity.getSalt());
     systemUserDAO.updateUserPassword(username, encryptNewPassword);
 

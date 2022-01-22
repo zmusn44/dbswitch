@@ -32,7 +32,7 @@ public class AssignmentJobEntity {
   @Column(name = "assignment_id")
   private Long assignmentId;
 
-  @Column(name="job_key")
+  @Column(name = "job_key")
   private String jobKey;
 
   @Column(name = "schedule_mode")

@@ -16,9 +16,9 @@ import com.gitee.dbswitch.admin.dao.SystemLogDAO;
 import com.gitee.dbswitch.admin.entity.SystemLogEntity;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
 import com.gitee.dbswitch.admin.type.LogTypeEnum;
-import com.gitee.dbswitch.admin.util.CacheUtil;
-import com.gitee.dbswitch.admin.util.ServletUtil;
-import com.gitee.dbswitch.admin.util.TokenUtil;
+import com.gitee.dbswitch.admin.util.CacheUtils;
+import com.gitee.dbswitch.admin.util.ServletUtils;
+import com.gitee.dbswitch.admin.util.TokenUtils;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -110,11 +110,11 @@ public class LogAdviceAspect {
       SystemLogEntity systemLogEntity = SystemLogEntity.builder()
           .type(LogTypeEnum.ACCESS_LOG.getValue())
           .username(this.getUsernameFromToken())
-          .ipAddress(ServletUtil.getIpAddr())
+          .ipAddress(ServletUtils.getIpAddr())
           .moduleName(moduleName)
           .content(description)
-          .urlPath(ServletUtil.getPathUri())
-          .userAgent(ServletUtil.getUserAgent())
+          .urlPath(ServletUtils.getPathUri())
+          .userAgent(ServletUtils.getUserAgent())
           .failed(Boolean.FALSE)
           .exception(null)
           .elapseSeconds(elapse)
@@ -167,11 +167,11 @@ public class LogAdviceAspect {
       SystemLogEntity systemLogEntity = SystemLogEntity.builder()
           .type(LogTypeEnum.OPERRATE_LOG.getValue())
           .username(this.getUsernameFromToken())
-          .ipAddress(ServletUtil.getIpAddr())
+          .ipAddress(ServletUtils.getIpAddr())
           .moduleName(moduleName)
           .content(description)
-          .urlPath(ServletUtil.getPathUri())
-          .userAgent(ServletUtil.getUserAgent())
+          .urlPath(ServletUtils.getPathUri())
+          .userAgent(ServletUtils.getUserAgent())
           .failed(Boolean.FALSE)
           .exception(null)
           .elapseSeconds(elapse)
@@ -181,11 +181,11 @@ public class LogAdviceAspect {
       SystemLogEntity systemLogEntity = SystemLogEntity.builder()
           .type(LogTypeEnum.OPERRATE_LOG.getValue())
           .username(this.getUsernameFromToken())
-          .ipAddress(ServletUtil.getIpAddr())
+          .ipAddress(ServletUtils.getIpAddr())
           .moduleName(moduleName)
           .content(description)
-          .urlPath(ServletUtil.getPathUri())
-          .userAgent(ServletUtil.getUserAgent())
+          .urlPath(ServletUtils.getPathUri())
+          .userAgent(ServletUtils.getUserAgent())
           .failed(Boolean.TRUE)
           .exception(ExceptionUtil.stacktraceToString(throwable))
           .elapseSeconds(elapse)
@@ -195,13 +195,13 @@ public class LogAdviceAspect {
   }
 
   private String getUsernameFromToken() {
-    HttpServletRequest request = ServletUtil.getHttpServletRequest();
-    String token = TokenUtil.getRequestToken(request);
+    HttpServletRequest request = ServletUtils.getHttpServletRequest();
+    String token = TokenUtils.getRequestToken(request);
     if (Objects.isNull(token)) {
       return null;
     }
 
-    Object cache = CacheUtil.get(token);
+    Object cache = CacheUtils.get(token);
     if (!Objects.isNull(cache)) {
       SystemUserEntity systemUserEntity = (SystemUserEntity) cache;
       return systemUserEntity.getUsername();

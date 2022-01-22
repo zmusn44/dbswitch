@@ -11,7 +11,7 @@ package com.gitee.dbswitch.sql.service.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.sql.service.ISqlGeneratorService;
 import com.gitee.dbswitch.sql.ddl.AbstractDatabaseDialect;
 import com.gitee.dbswitch.sql.ddl.AbstractSqlDdlOperator;

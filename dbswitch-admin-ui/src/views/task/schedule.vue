@@ -35,8 +35,13 @@
                   <el-form-item label="执行状态:">
                     <span>{{ props.row.jobStatus }}</span>
                   </el-form-item>
-                  <el-form-item label="">
-                    <span></span>
+                  <el-form-item label="操作:">
+                      <el-button size="small"
+                       type="danger"
+                       v-if="props.row.status=='1'"
+                       @click="handleCancelJob(props.row.jobId)">
+                       停止
+                      </el-button>
                   </el-form-item>
                   <el-form-item label="异常日志:">
                     <el-input type="textarea"
@@ -147,6 +152,18 @@ export default {
       this.taskId = taskId;
       this.loadJobsData();
     },
+    handleCancelJob: function(jobId){
+      this.$http.get(
+        "/dbswitch/admin/api/v1/ops/job/cancel?id=" + jobId
+      ).then(res => {
+        if (0 === res.data.code) {
+          this.$message("停止JOB成功");
+          this.loadJobsData();
+        } else {
+          alert("JOB停止失败," + res.data.message);
+        }
+      });
+    }
   },
   created () {
     this.loadAllTaskAssignments();

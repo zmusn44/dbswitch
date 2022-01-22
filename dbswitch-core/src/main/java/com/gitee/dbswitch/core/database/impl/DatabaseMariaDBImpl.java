@@ -9,25 +9,24 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import java.util.List;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
+import java.util.List;
 
 /**
  * 支持MariaDB数据库的元信息实现
- * 
- * @author tang
  *
+ * @author tang
  */
 public class DatabaseMariaDBImpl extends DatabaseMysqlImpl {
 
-	public DatabaseMariaDBImpl() {
-		super("org.mariadb.jdbc.Driver");
-	}
-	
-	@Override
-	public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
-		String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
-		return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.MARIADB);
-	}
+  public DatabaseMariaDBImpl() {
+    super("org.mariadb.jdbc.Driver");
+  }
+
+  @Override
+  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+    String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
+    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.MARIADB);
+  }
 }

@@ -17,10 +17,15 @@ import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentJobEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
 import com.gitee.dbswitch.admin.type.JobStatusEnum;
-import com.gitee.dbswitch.admin.util.JsonUtil;
+import com.gitee.dbswitch.admin.util.JsonUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
-import com.gitee.dbswitch.data.core.MainService;
+import com.gitee.dbswitch.data.service.MigrationService;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.sql.Timestamp;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
@@ -45,14 +50,23 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 public class JobExecutorService extends QuartzJobBean implements InterruptableJob {
 
   public final static String GROUP = "dbswitch";
-
   public final static String TASK_ID = "taskId";
   public final static String SCHEDULE = "schedule";
+
+  // 相同taskId的任务限制并发执行的粒度锁缓存对象
+  private static Cache<String, ReentrantLock> mutexes = CacheBuilder.newBuilder()
+      .expireAfterWrite(24 * 60L, TimeUnit.MINUTES)
+      .build();
 
   /**
    * 作为一个是否被中断的标识
    */
   private boolean interrupted = false;
+
+  /**
+   * 记录当前线程
+   */
+  private Thread currentThread;
 
   /**
    * 因为在QuartzConfig中进行了注入配置，所以 Quartz会将数据注入到jobKey变量中
@@ -81,7 +95,15 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
   }
 
   @Override
+  public void interrupt() throws UnableToInterruptJobException {
+    log.info("Quartz Schedule Task job is interrupting : taskId={} ", taskId);
+    interrupted = true;
+    currentThread.interrupt();
+  }
+
+  @Override
   public void executeInternal(JobExecutionContext context) throws JobExecutionException {
+    currentThread = Thread.currentThread();
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     if (interrupted) {
       log.info("Quartz task id:{} interrupted", jobDataMap.getLong(TASK_ID));
@@ -94,57 +116,60 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
     AssignmentJobEntity assignmentJobEntity = assignmentJobDAO
         .newAssignmentJob(taskId, schedule, key.getName());
 
-    log.info("Execute Quartz Job, and task id is : {} , job id is: {}", taskId,
-        assignmentJobEntity.getId());
-
-    AssignmentTaskEntity task = assignmentTaskDAO.getById(taskId);
-    AssignmentConfigEntity assignmentConfigEntity = assignmentConfigDAO
-        .getByAssignmentTaskId(task.getId());
-
-    log.info("Execute Assignment [taskId={}],Task Name: {} ,configuration properties：{}",
-        task.getId(),
-        task.getName(),
-        task.getContent());
-
     try {
-      DbswichProperties properties = JsonUtil
-          .toBeanObject(task.getContent(), DbswichProperties.class);
-      if (!assignmentConfigEntity.getFirstFlag()) {
-        properties.getTarget().setTargetDrop(false);
-        properties.getTarget().setChangeDataSynch(true);
+      ReentrantLock lock = mutexes.get(taskId.toString(), ReentrantLock::new);
+      lock.lock();
+      try {
+        log.info("Execute Quartz Job, and task id is : {} , job id is: {}", taskId,
+            assignmentJobEntity.getId());
+
+        AssignmentTaskEntity task = assignmentTaskDAO.getById(taskId);
+        AssignmentConfigEntity assignmentConfigEntity = assignmentConfigDAO
+            .getByAssignmentTaskId(task.getId());
+
+        log.info("Execute Assignment [taskId={}],Task Name: {} ,configuration properties：{}",
+            task.getId(),
+            task.getName(),
+            task.getContent());
+
+        try {
+          DbswichProperties properties = JsonUtils.toBeanObject(
+              task.getContent(), DbswichProperties.class);
+          if (!assignmentConfigEntity.getFirstFlag()) {
+            properties.getTarget().setTargetDrop(false);
+            properties.getTarget().setChangeDataSync(true);
+          }
+
+          MigrationService mainService = new MigrationService(properties);
+          mainService.run();
+
+          if (assignmentConfigEntity.getFirstFlag()) {
+            AssignmentConfigEntity config = new AssignmentConfigEntity();
+            config.setId(assignmentConfigEntity.getId());
+            config.setTargetDropTable(Boolean.FALSE);
+            config.setFirstFlag(Boolean.FALSE);
+            assignmentConfigDAO.updateSelective(config);
+          }
+
+          assignmentJobEntity.setStatus(JobStatusEnum.PASS.getValue());
+          log.info("Execute Assignment Success [taskId={},jobId={}],Task Name: {}",
+              task.getId(), assignmentJobEntity.getId(), task.getName());
+        } catch (Throwable e) {
+          assignmentJobEntity.setStatus(JobStatusEnum.FAIL.getValue());
+          assignmentJobEntity.setErrorLog(ExceptionUtil.stacktraceToString(e));
+          log.info("Execute Assignment Failed [taskId={},jobId={}],Task Name: {}",
+              task.getId(), assignmentJobEntity.getId(), task.getName(), e);
+        } finally {
+          assignmentJobEntity.setFinishTime(new Timestamp(System.currentTimeMillis()));
+          assignmentJobDAO.updateSelective(assignmentJobEntity);
+        }
+      } finally {
+        lock.unlock();
       }
-
-      MainService mainService = new MainService(properties);
-      mainService.run();
-
-      if (assignmentConfigEntity.getFirstFlag()) {
-        AssignmentConfigEntity config = new AssignmentConfigEntity();
-        config.setId(assignmentConfigEntity.getId());
-        config.setTargetDropTable(Boolean.FALSE);
-        config.setFirstFlag(Boolean.FALSE);
-        assignmentConfigDAO.updateSelective(config);
-      }
-
-      assignmentJobEntity.setStatus(JobStatusEnum.PASS.getValue());
-      log.info("Execute Assignment Success [taskId={}],Task Name: {}", task.getId(),
-          task.getName());
-    } catch (Throwable e) {
-      assignmentJobEntity.setStatus(JobStatusEnum.FAIL.getValue());
-      assignmentJobEntity.setErrorLog(ExceptionUtil.stacktraceToString(e));
-      log.info("Execute Assignment Failed [taskId={},JobId={}],Task Name: {}",
-          task.getId(),
-          task.getName(), e);
-    } finally {
-      assignmentJobEntity.setFinishTime(new Timestamp(System.currentTimeMillis()));
-      assignmentJobDAO.updateSelective(assignmentJobEntity);
+    } catch (ExecutionException e) {
+      throw new RuntimeException(e);
     }
 
-  }
-
-  @Override
-  public void interrupt() throws UnableToInterruptJobException {
-    log.info("Quartz Schedule Task job is interrupting : taskId={} ", taskId);
-    interrupted = true;
   }
 
 }

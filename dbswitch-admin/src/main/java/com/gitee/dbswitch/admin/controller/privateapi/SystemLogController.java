@@ -33,14 +33,17 @@ public class SystemLogController {
 
   @ApiOperation(value = "日志列表")
   @GetMapping(value = "/list/{type}/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public PageResult<SystemLogDetailResponse> listAll(@PathVariable("type") Integer type,
-      @PathVariable("page") Integer page, @PathVariable("size") Integer size) {
+  public PageResult<SystemLogDetailResponse> listAll(
+      @PathVariable("type") Integer type,
+      @PathVariable("page") Integer page,
+      @PathVariable("size") Integer size) {
     return systemLogService.listAll(type, page, size);
   }
 
   @ApiOperation(value = "日志详情")
   @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result<SystemLogDetailResponse> getDetail(@PathVariable("id") Long id) {
+  public Result<SystemLogDetailResponse> getDetail(
+      @PathVariable("id") Long id) {
     return systemLogService.getDetailById(id);
   }
 

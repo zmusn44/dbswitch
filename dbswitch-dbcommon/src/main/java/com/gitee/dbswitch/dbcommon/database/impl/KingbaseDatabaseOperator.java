@@ -13,15 +13,14 @@ package com.gitee.dbswitch.dbcommon.database.impl;
  * Kingbase8数据库实现类
  *
  * @author tang
- *
  */
+
 import javax.sql.DataSource;
-import com.gitee.dbswitch.dbcommon.database.IDatabaseOperator;
 
-public class KingbaseDatabaseOperator extends PostgreSqlDatabaseOperator implements IDatabaseOperator {
+public class KingbaseDatabaseOperator extends PostgreSqlDatabaseOperator {
 
-	public KingbaseDatabaseOperator(DataSource dataSource) {
-		super(dataSource);
-	}
+  public KingbaseDatabaseOperator(DataSource dataSource) {
+    super(dataSource);
+  }
 
 }

@@ -11,28 +11,27 @@ package com.gitee.dbswitch.core.constant;
 
 /**
  * 数据库表类型:视图表、物理表
- * 
- * @author tang
  *
+ * @author tang
  */
 public enum DBTableType {
-	/**
-	 * 物理表
-	 */
-	TABLE(0),
-	
-	/**
-	 * 视图表
-	 */
-	VIEW(1);
+  /**
+   * 物理表
+   */
+  TABLE(0),
 
-	private int index;
+  /**
+   * 视图表
+   */
+  VIEW(1);
 
-	DBTableType(int idx) {
-		this.index = idx;
-	}
+  private int index;
 
-	public int getIndex() {
-		return index;
-	}
+  DBTableType(int idx) {
+    this.index = idx;
+  }
+
+  public int getIndex() {
+    return index;
+  }
 }

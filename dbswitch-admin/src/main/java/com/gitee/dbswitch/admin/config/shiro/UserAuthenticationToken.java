@@ -18,7 +18,7 @@ public class UserAuthenticationToken implements AuthenticationToken {
   private String accessToken;
 
   public UserAuthenticationToken(String accessToken) {
-    this.accessToken=accessToken;
+    this.accessToken = accessToken;
   }
 
   @Override

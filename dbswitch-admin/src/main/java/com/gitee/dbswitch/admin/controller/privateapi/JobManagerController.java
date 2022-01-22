@@ -41,9 +41,15 @@ public class JobManagerController {
   }
 
   @ApiOperation(value = "根据作业的ID查询执行记录")
-  @GetMapping(value = "/job/detail/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result<TaskJobDetailResponse> detailJob(@RequestParam("id") Long jobId) {
-    return opsManagerService.detailJob(jobId);
+  @GetMapping(value = "/job/detail", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result<TaskJobDetailResponse> detailJob(@RequestParam("id") Long id) {
+    return opsManagerService.detailJob(id);
+  }
+
+  @ApiOperation(value = "根据作业的ID取消JOB作业")
+  @GetMapping(value = "/job/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result<Boolean> cancelJob(@RequestParam("id") Long id) {
+    return opsManagerService.cancelJob(id);
   }
 
 }

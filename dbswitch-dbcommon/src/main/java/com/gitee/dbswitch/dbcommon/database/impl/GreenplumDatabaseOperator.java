@@ -13,13 +13,12 @@ import javax.sql.DataSource;
 
 /**
  * Greenplum数据库实现类
- * 
- * @author tang
  *
+ * @author tang
  */
 public class GreenplumDatabaseOperator extends PostgreSqlDatabaseOperator {
 
-	public GreenplumDatabaseOperator(DataSource dataSource) {
-		super(dataSource);
-	}
+  public GreenplumDatabaseOperator(DataSource dataSource) {
+    super(dataSource);
+  }
 }

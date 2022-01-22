@@ -57,5 +57,5 @@ public class SystemUserEntity {
 
   @Column(name = "update_time", insertable = false, updatable = false)
   private Timestamp updateTime;
-  
+
 }

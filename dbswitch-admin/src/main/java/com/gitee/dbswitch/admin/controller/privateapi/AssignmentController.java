@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,28 +66,31 @@ public class AssignmentController {
 
   @ApiOperation(value = "任务列表")
   @GetMapping(value = "/list/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public PageResult<AssignmentInfoResponse> listAssignment(@PathVariable("page") Integer page,
+  public PageResult<AssignmentInfoResponse> listAssignment(
+      @PathVariable("page") Integer page,
       @PathVariable("size") Integer size) {
     return assignmentService.listAll(null, page, size);
   }
 
   @ApiOperation(value = "任务详情")
   @GetMapping(value = "/detail/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result<AssignmentDetailResponse> detailAssignment(@PathVariable("id") Long id) {
+  public Result<AssignmentDetailResponse> detailAssignment(
+      @PathVariable("id") Long id) {
     return assignmentService.detailAssignment(id);
   }
 
   @OperateLog(name = "发布任务", description = "'发布任务的ID为：'+#ids")
   @ApiOperation(value = "发布")
   @PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result deployAssignments(@RequestParam(value = "ids") List<Long> ids) {
+  public Result deployAssignments(
+      @RequestParam(value = "ids") List<Long> ids) {
     assignmentService.deployAssignments(ids);
     return Result.success();
   }
 
   @OperateLog(name = "手动执行任务", description = "'手动执行任务的ID为：'+#ids")
   @ApiOperation(value = "手动执行")
-  @RequestMapping(value = "/run", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+  @PostMapping(value = "/run", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result runAssignments(@RequestBody List<Long> ids) {
     assignmentService.runAssignments(ids);
     return Result.success();

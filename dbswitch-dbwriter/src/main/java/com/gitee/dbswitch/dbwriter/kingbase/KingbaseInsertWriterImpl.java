@@ -9,19 +9,24 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.kingbase;
 
-import javax.sql.DataSource;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.gpdb.GreenplumInsertWriterImpl;
+import javax.sql.DataSource;
 
 /**
  * Kingbase8数据库Insert写入实现类
  *
  * @author tang
- *
  */
-public class KingbaseInsertWriterImpl  extends GreenplumInsertWriterImpl implements IDatabaseWriter {
+public class KingbaseInsertWriterImpl extends GreenplumInsertWriterImpl implements IDatabaseWriter {
 
-	public KingbaseInsertWriterImpl(DataSource dataSource) {
-		super(dataSource);
-	}
+  public KingbaseInsertWriterImpl(DataSource dataSource) {
+    super(dataSource);
+  }
+
+  @Override
+  protected String getDatabaseProductName() {
+    return "Kingbase";
+  }
+
 }

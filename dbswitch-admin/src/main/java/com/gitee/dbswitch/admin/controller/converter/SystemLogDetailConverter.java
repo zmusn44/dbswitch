@@ -10,8 +10,8 @@
 package com.gitee.dbswitch.admin.controller.converter;
 
 import com.gitee.dbswitch.admin.common.converter.AbstractConverter;
-import com.gitee.dbswitch.admin.model.response.SystemLogDetailResponse;
 import com.gitee.dbswitch.admin.entity.SystemLogEntity;
+import com.gitee.dbswitch.admin.model.response.SystemLogDetailResponse;
 import java.util.Objects;
 
 public class SystemLogDetailConverter extends

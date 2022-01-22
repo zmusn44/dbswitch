@@ -71,7 +71,8 @@
   **JDK**:>=1.8
  
   **maven**:>=3.6
- 
+> Maven 仓库默认在国外， 国内使用难免很慢，可以更换为阿里云的仓库。 参考教程： [配置阿里云的仓库教程](https://www.runoob.com/maven/maven-repositories.html)
+
 - 编译命令:
 
 **(1) windows下：**
@@ -155,7 +156,7 @@ dbswitch:
     ## Only usefull for PostgreSQL/Greenplum database
     writer-engine-insert: false
     ## whether use change data synchronize to target database table
-    change-data-synch: true
+    change-data-sync: true
 ```
 
 | 配置参数 | 配置说明 | 示例 | 备注 |
@@ -177,7 +178,7 @@ dbswitch:
 | dbswitch.target.target-drop | 是否执行先drop表然后create表命令,当target.datasource-target.drop=true时有效 | true | 可选值为：true、false |
 | dbswitch.target.create-table-auto-increment | 是否执启用支持create表时主键自增 | true | 可选值为：true、false |
 | dbswitch.target.writer-engine-insert | 是否使用insert写入数据 | false | 可选值为：true为insert写入、false为copy写入，只针对目的端数据库为PostgreSQL/Greenplum的有效 |
-| dbswitch.target.change-data-synch | 是否启用增量变更同步，dbswitch.target.target-drop为false时且表有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
+| dbswitch.target.change-data-sync | 是否启用增量变更同步，dbswitch.target.target-drop为false时且表有主键情况下有效,千万级以上数据量建议设为false | false | 可选值为：true、false |
 
 
  **注意:**
@@ -288,15 +289,15 @@ dbswitch.target.writer-engine-insert=true
 
 - 4、关于增量变更同步方式的使用说明
 
-> 步骤A：先通过设置```dbswitch.target.target-drop=true```，```dbswitch.target.change-data-synch=false```；启动程序进行表结构和数据的全量同步;
+> 步骤A：先通过设置```dbswitch.target.target-drop=true```，```dbswitch.target.change-data-sync=false```；启动程序进行表结构和数据的全量同步;
 
-> 步骤B：然后设置```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；再启动程序对（有主键表）数据进行增量变更同步。
+> 步骤B：然后设置```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-sync=true```；再启动程序对（有主键表）数据进行增量变更同步。
 
 > 注：如果待同步的两端表结构已经一致或源端字段是目的端字段的子集，也可直接用步骤B配置进行变更同步
 
 ### 2、基于conf/application.yml配置启动的WEB使用方式
 
-#### (1)、准备一个MySQL数据库
+#### (1)、准备一个MySQL(建议为：版本为 5.7+ )的数据库
 
 #### (2)、配置conf/application.yml
 

@@ -15,26 +15,25 @@ import com.gitee.dbswitch.sql.ddl.pojo.TableDefinition;
 
 /**
  * Truncate语句操作类
- * 
- * @author tang
  *
+ * @author tang
  */
 public class DdlSqlTruncateTable extends AbstractSqlDdlOperator {
 
-	private TableDefinition table;
-	
-	public DdlSqlTruncateTable(TableDefinition t) {
-		super("TRUNCATE TABLE ");
-		this.table=t;
-	}
+  private TableDefinition table;
 
-	@Override
-	public String toSqlString(AbstractDatabaseDialect dialect) {
-		StringBuilder sb=new StringBuilder();
-		sb.append(this.getName());
-		String fullTableName=dialect.getSchemaTableName(table.getSchemaName(), table.getTableName());
-		sb.append(fullTableName);
-		return sb.toString();
-	}
+  public DdlSqlTruncateTable(TableDefinition t) {
+    super("TRUNCATE TABLE ");
+    this.table = t;
+  }
+
+  @Override
+  public String toSqlString(AbstractDatabaseDialect dialect) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.getName());
+    String fullTableName = dialect.getSchemaTableName(table.getSchemaName(), table.getTableName());
+    sb.append(fullTableName);
+    return sb.toString();
+  }
 
 }

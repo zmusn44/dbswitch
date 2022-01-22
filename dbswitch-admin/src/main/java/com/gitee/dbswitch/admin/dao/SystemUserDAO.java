@@ -20,15 +20,15 @@ public class SystemUserDAO {
   @Resource
   private SystemUserMapper systemUserMapper;
 
-  public SystemUserEntity getById(Long id){
+  public SystemUserEntity getById(Long id) {
     return systemUserMapper.selectByPrimaryKey(id);
   }
 
-  public SystemUserEntity findByUsername(String username){
+  public SystemUserEntity findByUsername(String username) {
     return systemUserMapper.findByUsername(username);
   }
 
-  public void updateUserPassword(String username,String newPassword){
-    systemUserMapper.updateUserPassword(username,newPassword);
+  public void updateUserPassword(String username, String newPassword) {
+    systemUserMapper.updateUserPassword(username, newPassword);
   }
 }

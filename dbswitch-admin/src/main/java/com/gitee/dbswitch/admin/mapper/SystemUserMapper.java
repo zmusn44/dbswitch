@@ -22,5 +22,5 @@ public interface SystemUserMapper extends Mapper<SystemUserEntity> {
 
   @Update("update `DBSWITCH_SYSTEM_USER` set password=#{password} where username=#{username} ")
   void updateUserPassword(@Param("username") String username, @Param("password") String password);
-  
+
 }

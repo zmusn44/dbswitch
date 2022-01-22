@@ -14,19 +14,19 @@ create table `DBSWITCH_SYSTEM_USER`  (
 ) engine = innodb auto_increment = 1 character set = utf8 comment = '系统用户表';
 
 create table `DBSWITCH_SYSTEM_LOG` (
-	`id`                  bigint(20)   unsigned not null auto_increment            comment '主键',
-	`type`                smallint              not null default 0                 comment '日志类型:0-访问日志;1-操作日志',
-	`username`            varchar(64)           not null default ''                comment '操作用户',
-	`ip_address`          varchar(64)           not null default ''                comment '客户端ip',
-	`module_name`         varchar(64)           not null default ''                comment '模块名',
-	`content`             text                                                     comment '日志描述',
-	`url_path`            varchar(64)           not null default ''                comment 'path路径',
-	`user_agent`          varchar(255)          not null default ''                comment '客户端agent',
-	`failed`              tinyint(1)            not null default 0                 comment '是否异常(0:否 1:是)',
-	`exception`           longtext                                                 comment '异常堆栈信息',
-	`elapse_seconds`      bigint(20)   unsigned not null default 0                 comment '执行时间（单位毫秒）',
-	`create_time`         timestamp             not null default current_timestamp comment '创建时间',
-	primary key (`id`)
+  `id`                  bigint(20)   unsigned not null auto_increment            comment '主键',
+  `type`                smallint              not null default 0                 comment '日志类型:0-访问日志;1-操作日志',
+  `username`            varchar(64)           not null default ''                comment '操作用户',
+  `ip_address`          varchar(64)           not null default ''                comment '客户端ip',
+  `module_name`         varchar(64)           not null default ''                comment '模块名',
+  `content`             text                                                     comment '日志描述',
+  `url_path`            varchar(64)           not null default ''                comment 'path路径',
+  `user_agent`          varchar(255)          not null default ''                comment '客户端agent',
+  `failed`              tinyint(1)            not null default 0                 comment '是否异常(0:否 1:是)',
+  `exception`           longtext                                                 comment '异常堆栈信息',
+  `elapse_seconds`      bigint(20)   unsigned not null default 0                 comment '执行时间（单位毫秒）',
+  `create_time`         timestamp             not null default current_timestamp comment '创建时间',
+primary key (`id`)
 ) engine=innodb auto_increment=1 default charset=utf8 comment='操作日志';
 
 create table `DBSWITCH_DATABASE_CONNECTION` (
@@ -60,11 +60,14 @@ create table `DBSWITCH_ASSIGNMENT_CONFIG` (
   `id`                          bigint(20)   unsigned not null auto_increment comment '主键',
   `assignment_id`               bigint(20)   unsigned not null                comment '任务ID',
   `source_connection_id`        bigint(20)   unsigned not null                comment '来源端连接ID',
-  `source_schemas`              varchar(1024)         not null default '[]'   comment '来源端的schema列表',
+  `source_schema`               varchar(1024)         not null default ''     comment '来源端的schema',
+  `source_tables`               longtext                                      comment '来源端的table列表',
+  `excluded`                    tinyint(1)            not null default 0      comment '是否排除(0:否 1:是)',
   `target_connection_id`        bigint(20)   unsigned not null                comment '目的端连接ID',
   `target_schema`               varchar(200)          not null default ''     comment '目的端的schema(一个)',
   `table_prefix`                varchar(200)          not null default ''     comment '生成的目的地表前缀',
   `target_drop_table`           tinyint(1)            not null default 0      comment '同步前是否先删除目的表(0:否 1:是)',
+  `batch_size`                  bigint(20)   unsigned not null default 10000  comment '处理批次大小',
   `first_flag`                  tinyint(1)            not null default 1      comment '首次加载数据',
   `create_time`                 timestamp             not null default current_timestamp comment '创建时间',
   primary key (`id`),
@@ -88,4 +91,3 @@ create table `DBSWITCH_ASSIGNMENT_JOB` (
   primary key (`id`),
   foreign key (`assignment_id`) references `DBSWITCH_ASSIGNMENT_TASK` (`id`) on delete cascade on update cascade
 ) engine=innodb auto_increment=1 default charset=utf8 comment='JOB日志表';
-

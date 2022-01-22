@@ -9,8 +9,6 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbchange;
 
-import com.gitee.dbswitch.dbchange.pojo.TaskParamBean;
-
 /**
  * 变化量计算器接口定义
  *
@@ -66,5 +64,5 @@ public interface IDatabaseChangeCaculator {
    * @param task    任务描述实体对象
    * @param handler 计算结果回调处理器
    */
-  void executeCalculate(TaskParamBean task, IDatabaseRowHandler handler);
+  void executeCalculate(TaskParamEntity task, IDatabaseRowHandler handler);
 }

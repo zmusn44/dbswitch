@@ -16,7 +16,8 @@ import com.gitee.dbswitch.admin.type.JobStatusEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import java.util.Objects;
 
-public class TaskJobDetailConverter extends AbstractConverter<AssignmentJobEntity, TaskJobDetailResponse> {
+public class TaskJobDetailConverter extends
+    AbstractConverter<AssignmentJobEntity, TaskJobDetailResponse> {
 
   @Override
   public TaskJobDetailResponse convert(AssignmentJobEntity assignmentJobEntity) {
@@ -35,7 +36,8 @@ public class TaskJobDetailConverter extends AbstractConverter<AssignmentJobEntit
           (System.currentTimeMillis() - assignmentJobEntity.getStartTime().getTime()) / 1000);
     } else {
       response.setDuration(
-          (assignmentJobEntity.getFinishTime().getTime() - assignmentJobEntity.getStartTime().getTime())
+          (assignmentJobEntity.getFinishTime().getTime() - assignmentJobEntity.getStartTime()
+              .getTime())
               / 1000);
     }
     response.setStatus(assignmentJobEntity.getStatus());

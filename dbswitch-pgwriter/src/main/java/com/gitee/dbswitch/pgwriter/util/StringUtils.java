@@ -5,23 +5,24 @@ import java.nio.charset.StandardCharsets;
 
 public class StringUtils {
 
-	private static Charset utf8Charset = StandardCharsets.UTF_8;
+  private static Charset utf8Charset = StandardCharsets.UTF_8;
 
-    private StringUtils() {}
+  private StringUtils() {
+  }
 
-    public static boolean isNullOrWhiteSpace(String input) {
-        return input == null || input.trim().length() == 0;
+  public static boolean isNullOrWhiteSpace(String input) {
+    return input == null || input.trim().length() == 0;
+  }
+
+  public static byte[] getUtf8Bytes(String value) {
+    return value.getBytes(utf8Charset);
+  }
+
+  public static String removeNullCharacter(String data) {
+    if (data == null) {
+      return data;
     }
 
-    public static byte[] getUtf8Bytes(String value) {
-        return value.getBytes(utf8Charset);
-    }
-
-    public static String removeNullCharacter(String data) {
-		if (data == null) {
-			return data;
-		}
-
-		return data.replaceAll("\u0000", "");
-	}
+    return data.replaceAll("\u0000", "");
+  }
 }
