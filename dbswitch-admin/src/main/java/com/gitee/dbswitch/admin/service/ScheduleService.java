@@ -13,10 +13,13 @@ import com.gitee.dbswitch.admin.dao.AssignmentJobDAO;
 import com.gitee.dbswitch.admin.dao.AssignmentTaskDAO;
 import com.gitee.dbswitch.admin.entity.AssignmentJobEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
+import com.gitee.dbswitch.admin.type.JobStatusEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
-import com.gitee.dbswitch.admin.util.UuidUtil;
+import com.gitee.dbswitch.admin.util.UuidUtils;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -80,7 +83,7 @@ public class ScheduleService {
 
   public void scheduleTask(Long taskId, ScheduleModeEnum scheduleMode) {
     /** 准备JobDetail */
-    String jobName = UuidUtil.generateUuid() + "@" + taskId.toString();
+    String jobName = UuidUtils.generateUuid() + "@" + taskId.toString();
     String jobGroup = JobExecutorService.GROUP;
     JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
 
@@ -116,6 +119,9 @@ public class ScheduleService {
 
   public boolean cancelJob(Long jobId) {
     AssignmentJobEntity assignmentJobEntity = assignmentJobDAO.getById(jobId);
+    if (Objects.isNull(assignmentJobEntity)) {
+      return true;
+    }
 
     String jobName = assignmentJobEntity.getJobKey();
     String jobGroup = JobExecutorService.GROUP;
@@ -133,6 +139,11 @@ public class ScheduleService {
       return scheduler.unscheduleJob(triggerKey) && scheduler.deleteJob(jobKey);
     } catch (SchedulerException e) {
       log.error("Quartz stop task job failed. JobKey: {}", jobKey);
+    } finally {
+      assignmentJobEntity.setStatus(JobStatusEnum.FAIL.getValue());
+      assignmentJobEntity.setFinishTime(new Timestamp(System.currentTimeMillis()));
+      assignmentJobEntity.setErrorLog("Job was canceled!!!!");
+      assignmentJobDAO.updateSelective(assignmentJobEntity);
     }
 
     return false;

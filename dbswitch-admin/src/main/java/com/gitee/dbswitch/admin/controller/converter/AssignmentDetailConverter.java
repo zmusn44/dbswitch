@@ -16,8 +16,8 @@ import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
 import com.gitee.dbswitch.admin.entity.DatabaseConnectionEntity;
 import com.gitee.dbswitch.admin.model.response.AssignmentDetailResponse;
-import com.gitee.dbswitch.admin.util.JsonUtil;
-import com.gitee.dbswitch.admin.util.SpringUtil;
+import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
+import com.gitee.dbswitch.admin.util.SpringUtils;
 import java.util.Objects;
 
 public class AssignmentDetailConverter extends
@@ -29,21 +29,28 @@ public class AssignmentDetailConverter extends
       return null;
     }
 
-    DatabaseConnectionDAO databaseConnectionDAO = SpringUtil.getBean(DatabaseConnectionDAO.class);
-    AssignmentConfigDAO assignmentConfigDAO = SpringUtil.getBean(AssignmentConfigDAO.class);
+    DatabaseConnectionDAO databaseConnectionDAO = SpringUtils.getBean(DatabaseConnectionDAO.class);
+    AssignmentConfigDAO assignmentConfigDAO = SpringUtils.getBean(AssignmentConfigDAO.class);
     AssignmentConfigEntity taskConfig = assignmentConfigDAO.getByAssignmentTaskId(
         assignmentTaskEntity.getId());
-    DatabaseConnectionEntity srcConn = databaseConnectionDAO.getById(taskConfig.getSourceConnectionId());
-    DatabaseConnectionEntity dstConn = databaseConnectionDAO.getById(taskConfig.getTargetConnectionId());
+    DatabaseConnectionEntity srcConn = databaseConnectionDAO
+        .getById(taskConfig.getSourceConnectionId());
+    DatabaseConnectionEntity dstConn = databaseConnectionDAO
+        .getById(taskConfig.getTargetConnectionId());
 
     AssignmentDetailResponse.Configuration config = new AssignmentDetailResponse.Configuration();
     config.setSourceConnectionId(srcConn.getId());
     config.setSourceConnectionName(srcConn.getName());
-    config.setSourceSchemas(JsonUtil.toBeanList(taskConfig.getSourceSchemas(), String.class));
+    config.setSourceSchema(taskConfig.getSourceSchema());
+    config.setIncludeOrExclude(taskConfig.getExcluded()
+        ? IncludeExcludeEnum.EXCLUDE
+        : IncludeExcludeEnum.INCLUDE);
+    config.setSourceTables(taskConfig.getSourceTables());
     config.setTargetConnectionId(dstConn.getId());
     config.setTargetConnectionName(dstConn.getName());
     config.setTargetSchema(taskConfig.getTargetSchema());
     config.setTablePrefix(taskConfig.getTablePrefix());
+    config.setBatchSize(taskConfig.getBatchSize());
 
     AssignmentDetailResponse detailResponse = new AssignmentDetailResponse();
     detailResponse.setId(assignmentTaskEntity.getId());

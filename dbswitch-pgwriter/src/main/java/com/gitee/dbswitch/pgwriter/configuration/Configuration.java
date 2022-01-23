@@ -2,18 +2,18 @@ package com.gitee.dbswitch.pgwriter.configuration;
 
 public class Configuration implements IConfiguration {
 
-    private final int bufferSize;
+  private final int bufferSize;
 
-    public Configuration() {
-        this(65536);
-    }
+  public Configuration() {
+    this(65536);
+  }
 
-    public Configuration(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
+  public Configuration(int bufferSize) {
+    this.bufferSize = bufferSize;
+  }
 
-    @Override
-    public int getBufferSize() {
-        return bufferSize;
-    }
+  @Override
+  public int getBufferSize() {
+    return bufferSize;
+  }
 }

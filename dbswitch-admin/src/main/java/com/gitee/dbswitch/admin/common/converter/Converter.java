@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.common.converter;
 
-public interface Converter<U,V> {
+public interface Converter<U, V> {
+
   V convert(U u);
 }

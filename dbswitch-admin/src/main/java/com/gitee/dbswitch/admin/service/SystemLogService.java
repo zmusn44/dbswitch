@@ -18,7 +18,7 @@ import com.gitee.dbswitch.admin.dao.SystemLogDAO;
 import com.gitee.dbswitch.admin.entity.SystemLogEntity;
 import com.gitee.dbswitch.admin.model.response.SystemLogDetailResponse;
 import com.gitee.dbswitch.admin.type.LogTypeEnum;
-import com.gitee.dbswitch.admin.util.PageUtil;
+import com.gitee.dbswitch.admin.util.PageUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -39,7 +39,7 @@ public class SystemLogService {
           systemLogEntities);
     };
 
-    return PageUtil.getPage(method, page, size);
+    return PageUtils.getPage(method, page, size);
   }
 
   public Result<SystemLogDetailResponse> getDetailById(Long id) {

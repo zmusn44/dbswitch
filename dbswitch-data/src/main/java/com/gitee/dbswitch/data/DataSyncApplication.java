@@ -9,8 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data;
 
-import com.gitee.dbswitch.data.config.DbswichProperties;
-import com.gitee.dbswitch.data.core.MainService;
+import com.gitee.dbswitch.data.service.MigrationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
@@ -34,15 +33,12 @@ public class DataSyncApplication {
     springApplication.setBannerMode(Banner.Mode.OFF);
     ConfigurableApplicationContext applicationContext = springApplication.run(args);
     try {
-      DbswichProperties properties = applicationContext.getBean(DbswichProperties.class);
-      MainService mainService = new MainService(properties);
-      mainService.run();
+      applicationContext.getBean(MigrationService.class).run();
     } catch (Exception e) {
       log.error("error:", e);
     } finally {
       applicationContext.close();
     }
-
   }
 
 }

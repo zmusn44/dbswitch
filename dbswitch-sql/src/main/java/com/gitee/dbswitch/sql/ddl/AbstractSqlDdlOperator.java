@@ -13,26 +13,25 @@ import java.util.Objects;
 
 /**
  * DDL操作抽象类
- * 
- * @author tang
  *
+ * @author tang
  */
 public abstract class AbstractSqlDdlOperator {
 
-	private String name;
+  private String name;
 
-	public AbstractSqlDdlOperator(String name) {
-		this.name = Objects.requireNonNull(name);
-	}
+  public AbstractSqlDdlOperator(String name) {
+    this.name = Objects.requireNonNull(name);
+  }
 
-	public String getName() {
-		return this.name;
-	}
+  public String getName() {
+    return this.name;
+  }
 
-	@Override
-	public String toString() {
-		return this.name;
-	}
+  @Override
+  public String toString() {
+    return this.name;
+  }
 
-	public abstract String toSqlString(AbstractDatabaseDialect dialect);
+  public abstract String toSqlString(AbstractDatabaseDialect dialect);
 }

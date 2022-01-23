@@ -13,10 +13,11 @@ import com.gitee.dbswitch.admin.common.excption.DbswitchException;
 import com.gitee.dbswitch.admin.common.response.ResultCode;
 import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
-import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import com.gitee.dbswitch.admin.service.ScheduleService;
-import com.gitee.dbswitch.admin.util.JsonUtil;
+import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
+import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import java.util.List;
+import java.util.Objects;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -35,19 +36,22 @@ public class AssigmentCreateRequest {
   public static class AssigmentCreateConfig {
 
     private Long sourceConnectionId;
-    private List<String> sourceSchemas;
+    private String sourceSchema;
+    private IncludeExcludeEnum includeOrExclude;
+    private List<String> sourceTables;
     private Long targetConnectionId;
     private String targetSchema;
     private String tablePrefix;
     private Boolean targetDropTable;
+    private Integer batchSize;
   }
 
   public AssignmentTaskEntity toAssignmentTask() {
     AssignmentTaskEntity assignment = new AssignmentTaskEntity();
     assignment.setId(null);
-    assignment.setName(this.getName());
-    assignment.setDescription(this.getDescription());
-    assignment.setScheduleMode(this.getScheduleMode());
+    assignment.setName(name);
+    assignment.setDescription(description);
+    assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
       if (!ScheduleService.checkCronExpressionValid(this.getCronExpression())) {
         throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT, this.getCronExpression());
@@ -59,17 +63,28 @@ public class AssigmentCreateRequest {
     return assignment;
   }
 
-
   public AssignmentConfigEntity toAssignmentConfig(Long assignmentId) {
+    if (config.getSourceConnectionId().equals(config.getTargetConnectionId())) {
+      throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "源端与目标端不能相同");
+    }
+
     AssignmentConfigEntity assignmentConfigEntity = new AssignmentConfigEntity();
     assignmentConfigEntity.setAssignmentId(assignmentId);
     assignmentConfigEntity.setSourceConnectionId(this.getConfig().getSourceConnectionId());
-    assignmentConfigEntity
-        .setSourceSchemas(JsonUtil.toJsonString(this.getConfig().getSourceSchemas()));
+    assignmentConfigEntity.setSourceSchema(this.getConfig().getSourceSchema());
+    assignmentConfigEntity.setSourceTables(this.getConfig().getSourceTables());
+    assignmentConfigEntity.setExcluded(
+        this.getConfig().getIncludeOrExclude() == IncludeExcludeEnum.EXCLUDE
+    );
     assignmentConfigEntity.setTargetConnectionId(this.getConfig().getTargetConnectionId());
     assignmentConfigEntity.setTargetSchema(this.getConfig().getTargetSchema());
     assignmentConfigEntity.setTablePrefix(this.getConfig().getTablePrefix());
     assignmentConfigEntity.setTargetDropTable(this.getConfig().getTargetDropTable());
+    assignmentConfigEntity.setBatchSize(
+        Objects.isNull(this.config.getBatchSize())
+            ? 10000
+            : this.config.getBatchSize()
+    );
     assignmentConfigEntity.setFirstFlag(Boolean.TRUE);
 
     return assignmentConfigEntity;

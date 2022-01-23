@@ -10,12 +10,8 @@
 package com.gitee.dbswitch.admin.mapper;
 
 import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
-import org.apache.ibatis.annotations.Select;
 import tk.mybatis.mapper.common.Mapper;
 
 public interface AssignmentConfigMapper extends Mapper<AssignmentConfigEntity> {
-
-  @Select("select * from DBSWITCH_ASSIGNMENT_CONFIG where assignment_id=#{assignmentId} LIMIT 1 ")
-  AssignmentConfigEntity getByAssignmentId(Long assignmentId);
 
 }

@@ -28,12 +28,12 @@ public class DbConnectionCreateRequest {
   public DatabaseConnectionEntity toDatabaseConnection() {
     DatabaseConnectionEntity databaseConnectionEntity = new DatabaseConnectionEntity();
     databaseConnectionEntity.setId(null);
-    databaseConnectionEntity.setName(this.getName());
-    databaseConnectionEntity.setType(this.getType());
-    databaseConnectionEntity.setDriver(this.getDriver());
-    databaseConnectionEntity.setUrl(this.getUrl());
-    databaseConnectionEntity.setUsername(this.getUsername());
-    databaseConnectionEntity.setPassword(this.getPassword());
+    databaseConnectionEntity.setName(name);
+    databaseConnectionEntity.setType(type);
+    databaseConnectionEntity.setDriver(driver);
+    databaseConnectionEntity.setUrl(url);
+    databaseConnectionEntity.setUsername(username);
+    databaseConnectionEntity.setPassword(password);
 
     return databaseConnectionEntity;
   }

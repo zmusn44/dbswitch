@@ -24,13 +24,14 @@ import com.gitee.dbswitch.admin.model.response.DbConnectionDetailResponse;
 import com.gitee.dbswitch.admin.model.response.DbConnectionNameResponse;
 import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
 import com.gitee.dbswitch.admin.util.JDBCURL;
-import com.gitee.dbswitch.admin.util.PageUtil;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.admin.util.PageUtils;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.service.IMetaDataService;
 import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -59,9 +60,9 @@ public class DbConnectionService {
     return lists;
   }
 
-  public PageResult<DbConnectionDetailResponse> listAll(DbConnectionSearchRequest request,
-      Integer page,
-      Integer size) {
+  public PageResult<DbConnectionDetailResponse> listAll(
+      DbConnectionSearchRequest request,
+      Integer page, Integer size) {
     Supplier<List<DbConnectionDetailResponse>> method = () -> {
       List<DatabaseConnectionEntity> databaseConnectionEntities = databaseConnectionDAO
           .listAll(request.getSearchText());
@@ -69,7 +70,7 @@ public class DbConnectionService {
           .convert(databaseConnectionEntities);
     };
 
-    return PageUtil.getPage(method, page, size);
+    return PageUtils.getPage(method, page, size);
   }
 
   public DbConnectionDetailResponse getDetailById(Long id) {
@@ -127,9 +128,30 @@ public class DbConnectionService {
     DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
     IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
     metaDataService.setDatabaseConnection(dbType);
-    List<String> schemas = metaDataService
-        .querySchemaList(dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword());
+    List<String> schemas = metaDataService.querySchemaList(
+        dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword());
     return Result.success(schemas);
+  }
+
+  public Result<List<String>> getSchemaTables(Long id, String schema) {
+    DatabaseConnectionEntity dbConn = databaseConnectionDAO.getById(id);
+    if (Objects.isNull(dbConn)) {
+      return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
+    }
+
+    DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
+    IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
+    metaDataService.setDatabaseConnection(dbType);
+    List<String> tables = Optional.ofNullable(
+        metaDataService.queryTableList(dbConn.getUrl(),
+            dbConn.getUsername(),
+            dbConn.getPassword(),
+            schema))
+        .orElseGet(ArrayList::new).stream()
+        .filter(t -> "TABLE".equals(t.getTableType()))
+        .map(t -> t.getTableName())
+        .collect(Collectors.toList());
+    return Result.success(tables);
   }
 
   public Result<DbConnectionDetailResponse> addDatabaseConnection(

@@ -11,7 +11,7 @@ package com.gitee.dbswitch.core.service.impl;
 
 import java.util.List;
 import java.util.Objects;
-import com.gitee.dbswitch.common.constant.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;

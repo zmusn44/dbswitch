@@ -13,98 +13,100 @@ import java.util.Objects;
 
 /**
  * 类定义实体类
- * 
- * @author tang
  *
+ * @author tang
  */
 public class ColumnDefinition {
-	private String columnName;
-	private String columnType;
-	private String columnComment;
-	private Integer lengthOrPrecision;
-	private Integer scale;
-	private boolean primaryKey;
-	private boolean autoIncrement;
-	private boolean nullable;
-	private String defaultValue;
 
-	public String getColumnName() {
-		return columnName;
-	}
+  private String columnName;
+  private String columnType;
+  private String columnComment;
+  private Integer lengthOrPrecision;
+  private Integer scale;
+  private boolean primaryKey;
+  private boolean autoIncrement;
+  private boolean nullable;
+  private String defaultValue;
 
-	public void setColumnName(String columnName) {
-		this.columnName = Objects.requireNonNull(columnName);
-	}
+  public String getColumnName() {
+    return columnName;
+  }
 
-	public String getColumnType() {
-		return columnType;
-	}
+  public void setColumnName(String columnName) {
+    this.columnName = Objects.requireNonNull(columnName);
+  }
 
-	public void setColumnType(String columnType) {
-		this.columnType = Objects.requireNonNull(columnType);
-	}
+  public String getColumnType() {
+    return columnType;
+  }
 
-	public String getColumnComment() {
-		return columnComment;
-	}
+  public void setColumnType(String columnType) {
+    this.columnType = Objects.requireNonNull(columnType);
+  }
 
-	public void setColumnComment(String columnComment) {
-		this.columnComment = columnComment;
-	}
+  public String getColumnComment() {
+    return columnComment;
+  }
 
-	public Integer getLengthOrPrecision() {
-		return lengthOrPrecision;
-	}
+  public void setColumnComment(String columnComment) {
+    this.columnComment = columnComment;
+  }
 
-	public void setLengthOrPrecision(Integer lenOrPre) {
-		this.lengthOrPrecision = Objects.requireNonNull(lenOrPre);
-	}
+  public Integer getLengthOrPrecision() {
+    return lengthOrPrecision;
+  }
 
-	public Integer getScale() {
-		return scale;
-	}
+  public void setLengthOrPrecision(Integer lenOrPre) {
+    this.lengthOrPrecision = Objects.requireNonNull(lenOrPre);
+  }
 
-	public void setScale(Integer scale) {
-		this.scale = scale;
-	}
+  public Integer getScale() {
+    return scale;
+  }
 
-	public boolean isPrimaryKey() {
-		return primaryKey;
-	}
+  public void setScale(Integer scale) {
+    this.scale = scale;
+  }
 
-	public void setPrimaryKey(boolean primaryKey) {
-		this.primaryKey = primaryKey;
-	}
+  public boolean isPrimaryKey() {
+    return primaryKey;
+  }
 
-	public boolean isAutoIncrement() {
-		return this.autoIncrement;
-	}
+  public void setPrimaryKey(boolean primaryKey) {
+    this.primaryKey = primaryKey;
+  }
 
-	public void setAutoIncrement(boolean autoIncrement) {
-		this.autoIncrement = autoIncrement;
-	}
+  public boolean isAutoIncrement() {
+    return this.autoIncrement;
+  }
 
-	public boolean isNullable() {
-		return nullable;
-	}
+  public void setAutoIncrement(boolean autoIncrement) {
+    this.autoIncrement = autoIncrement;
+  }
 
-	public void setNullable(boolean nullable) {
-		this.nullable = nullable;
-	}
+  public boolean isNullable() {
+    return nullable;
+  }
 
-	public String getDefaultValue() {
-		return defaultValue;
-	}
+  public void setNullable(boolean nullable) {
+    this.nullable = nullable;
+  }
 
-	public void setDefaultValue(String defaultValue) {
-		this.defaultValue = defaultValue;
-	}
+  public String getDefaultValue() {
+    return defaultValue;
+  }
 
-	@Override
-	public String toString() {
-		return "ColumnDefinition [columnName=" + columnName + ", columnType=" + columnType + ", columnComment="
-				+ columnComment + ", lengthOrPrecision=" + lengthOrPrecision + ", scale=" + scale + ", primaryKey="
-				+ primaryKey + ", nullable=" + nullable + ", defaultValue=" + defaultValue + "]";
-	}
+  public void setDefaultValue(String defaultValue) {
+    this.defaultValue = defaultValue;
+  }
+
+  @Override
+  public String toString() {
+    return "ColumnDefinition [columnName=" + columnName + ", columnType=" + columnType
+        + ", columnComment="
+        + columnComment + ", lengthOrPrecision=" + lengthOrPrecision + ", scale=" + scale
+        + ", primaryKey="
+        + primaryKey + ", nullable=" + nullable + ", defaultValue=" + defaultValue + "]";
+  }
 
 }

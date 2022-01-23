@@ -9,20 +9,24 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.dm;
 
-import javax.sql.DataSource;
-import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
+import javax.sql.DataSource;
 
 /**
  * DM数据库写入实现类
  *
  * @author tang
- *
  */
 public class DmWriterImpl extends OracleWriterImpl implements IDatabaseWriter {
 
-	public DmWriterImpl(DataSource dataSource) {
-		super(dataSource);
-	}
+  public DmWriterImpl(DataSource dataSource) {
+    super(dataSource);
+  }
+
+  @Override
+  protected String getDatabaseProductName() {
+    return "DM";
+  }
 
 }

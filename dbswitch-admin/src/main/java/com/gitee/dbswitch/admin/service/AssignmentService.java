@@ -27,8 +27,8 @@ import com.gitee.dbswitch.admin.model.request.AssigmentUpdateRequest;
 import com.gitee.dbswitch.admin.model.response.AssignmentDetailResponse;
 import com.gitee.dbswitch.admin.model.response.AssignmentInfoResponse;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
-import com.gitee.dbswitch.admin.util.JsonUtil;
-import com.gitee.dbswitch.admin.util.PageUtil;
+import com.gitee.dbswitch.admin.util.JsonUtils;
+import com.gitee.dbswitch.admin.util.PageUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
 import com.gitee.dbswitch.data.config.DbswichProperties.SourceDataSourceProperties;
 import com.gitee.dbswitch.data.config.DbswichProperties.TargetDataSourceProperties;
@@ -97,7 +97,7 @@ public class AssignmentService {
         ConverterFactory.getConverter(AssignmentInfoConverter.class)
             .convert(assignmentTaskDAO.listAll(searchText));
 
-    return PageUtil.getPage(method, page, size);
+    return PageUtils.getPage(method, page, size);
   }
 
   public Result<AssignmentDetailResponse> detailAssignment(Long id) {
@@ -114,8 +114,6 @@ public class AssignmentService {
   @Transactional(rollbackFor = Exception.class)
   public void deployAssignments(List<Long> ids) {
     checkAssignmentAllExist(ids);
-
-    //检查是否有已经发布过
     ids.forEach(id -> {
       AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(id);
       if (assignmentTaskEntity.getPublished()) {
@@ -134,7 +132,7 @@ public class AssignmentService {
       properties.setTarget(this.getTargetDataSourceProperties(assignmentConfigEntity));
 
       assignmentTaskEntity.setPublished(Boolean.TRUE);
-      assignmentTaskEntity.setContent(JsonUtil.toJsonString(properties));
+      assignmentTaskEntity.setContent(JsonUtils.toJsonString(properties));
       assignmentTaskDAO.updateById(assignmentTaskEntity);
 
       ScheduleModeEnum systemScheduled = ScheduleModeEnum.SYSTEM_SCHEDULED;
@@ -148,8 +146,6 @@ public class AssignmentService {
   @Transactional(rollbackFor = Exception.class)
   public void runAssignments(List<Long> ids) {
     checkAssignmentAllExist(ids);
-
-    //检查是否有已经都发布了
     List<AssignmentTaskEntity> tasks = new ArrayList<>();
     for (Long id : ids) {
       AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(id);
@@ -171,14 +167,13 @@ public class AssignmentService {
     checkAssignmentAllExist(ids);
     for (Long id : ids) {
       AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(id);
-      if (Objects.nonNull(assignmentTaskEntity.getPublished()) &&
-          assignmentTaskEntity.getPublished()) {
+      if (Objects.nonNull(assignmentTaskEntity.getPublished())
+          && assignmentTaskEntity.getPublished()) {
         scheduleService.cancelJobByTaskId(id);
         assignmentTaskEntity.setPublished(Boolean.FALSE);
         assignmentTaskEntity.setContent("{}");
         assignmentTaskDAO.updateById(assignmentTaskEntity);
       }
-
     }
   }
 
@@ -193,18 +188,37 @@ public class AssignmentService {
   private SourceDataSourceProperties getSourceDataSourceProperties(
       AssignmentConfigEntity assignmentConfigEntity) {
     SourceDataSourceProperties sourceDataSourceProperties = new SourceDataSourceProperties();
-    DatabaseConnectionEntity sourceDatabaseConnectionEntity = databaseConnectionDAO
-        .getById(assignmentConfigEntity.getSourceConnectionId());
+    DatabaseConnectionEntity sourceDatabaseConnectionEntity = databaseConnectionDAO.getById(
+        assignmentConfigEntity.getSourceConnectionId()
+    );
     sourceDataSourceProperties.setUrl(sourceDatabaseConnectionEntity.getUrl());
     sourceDataSourceProperties.setDriverClassName(sourceDatabaseConnectionEntity.getDriver());
     sourceDataSourceProperties.setUsername(sourceDatabaseConnectionEntity.getUsername());
     sourceDataSourceProperties.setPassword(sourceDatabaseConnectionEntity.getPassword());
 
-    String sourceSchemas = assignmentConfigEntity.getSourceSchemas();
-    List<String> schemas = JsonUtil.toBeanList(sourceSchemas, String.class);
-    sourceDataSourceProperties.setSourceSchema(schemas.stream().collect(Collectors.joining(",")));
+    String sourceSchema = assignmentConfigEntity.getSourceSchema();
+    if (assignmentConfigEntity.getExcluded()) {
+      if (assignmentConfigEntity.getSourceTables().isEmpty()) {
+        sourceDataSourceProperties.setSourceExcludes("");
+      } else {
+        sourceDataSourceProperties.setSourceExcludes(
+            assignmentConfigEntity.getSourceTables()
+                .stream().collect(Collectors.joining(","))
+        );
+      }
+    } else {
+      if (assignmentConfigEntity.getSourceTables().isEmpty()) {
+        sourceDataSourceProperties.setSourceIncludes("");
+      } else {
+        sourceDataSourceProperties.setSourceIncludes(
+            assignmentConfigEntity.getSourceTables()
+                .stream().collect(Collectors.joining(","))
+        );
+      }
+    }
+    sourceDataSourceProperties.setSourceSchema(sourceSchema);
     sourceDataSourceProperties.setPrefixTable(assignmentConfigEntity.getTablePrefix());
-    sourceDataSourceProperties.setFetchSize(10000);
+    sourceDataSourceProperties.setFetchSize(assignmentConfigEntity.getBatchSize());
     return sourceDataSourceProperties;
   }
 
@@ -220,10 +234,10 @@ public class AssignmentService {
     targetDataSourceProperties.setTargetSchema(assignmentConfigEntity.getTargetSchema());
     if (assignmentConfigEntity.getTargetDropTable()) {
       targetDataSourceProperties.setTargetDrop(Boolean.TRUE);
-      targetDataSourceProperties.setChangeDataSynch(Boolean.FALSE);
+      targetDataSourceProperties.setChangeDataSync(Boolean.FALSE);
     } else {
       targetDataSourceProperties.setTargetDrop(Boolean.FALSE);
-      targetDataSourceProperties.setChangeDataSynch(Boolean.TRUE);
+      targetDataSourceProperties.setChangeDataSync(Boolean.TRUE);
     }
 
     return targetDataSourceProperties;

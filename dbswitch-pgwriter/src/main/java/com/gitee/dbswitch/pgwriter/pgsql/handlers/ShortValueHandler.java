@@ -5,14 +5,14 @@ import java.io.IOException;
 
 public class ShortValueHandler<T extends Number> extends BaseValueHandler<T> {
 
-    @Override
-    protected void internalHandle(DataOutputStream buffer, final T value) throws IOException {
-        buffer.writeInt(2);
-        buffer.writeShort(value.shortValue());
-    }
+  @Override
+  protected void internalHandle(DataOutputStream buffer, final T value) throws IOException {
+    buffer.writeInt(2);
+    buffer.writeShort(value.shortValue());
+  }
 
-    @Override
-    public int getLength(T value) {
-        return 2;
-    }
+  @Override
+  public int getLength(T value) {
+    return 2;
+  }
 }
