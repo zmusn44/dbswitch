@@ -157,7 +157,7 @@ export default {
                 this.y2AxisData.push(lists[i].countOfTask);
               }
               this.refreshEchartOption();
-              if (this.myChart) {
+              if (this.myChart && typeof this.myChart.setOption == 'function') {
                 this.myChart.setOption(this.echartOption, true);
               }
             }
