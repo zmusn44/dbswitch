@@ -84,7 +84,7 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
       String v = o.toString();
       String a = o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
       if (a.length() == v.length() && StringUtils.equals(a, v)) {
-        log.warn("Unsupported type for convert {} to java.lang.String");
+        log.warn("Unsupported type for convert {} to java.lang.String", o.getClass().getName());
         return null;
       }
 
