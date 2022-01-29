@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -113,15 +114,11 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
 
     try {
       int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
-      int affectCount = 0;
-      for (int i : affects) {
-        affectCount += i;
-      }
-
+      int affectCount = Arrays.stream(affects).sum();
       recordValues.clear();
       transactionManager.commit(status);
       if (log.isDebugEnabled()) {
-        log.debug("{} insert write data  affect count:{}", getDatabaseProductName(), affectCount);
+        log.debug("{} insert data affect count: {}", getDatabaseProductName(), affectCount);
       }
       return affectCount;
     } catch (TransactionException e) {
