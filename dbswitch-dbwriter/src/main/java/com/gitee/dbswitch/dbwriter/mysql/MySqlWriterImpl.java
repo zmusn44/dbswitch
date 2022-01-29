@@ -11,6 +11,7 @@ package com.gitee.dbswitch.dbwriter.mysql;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
@@ -73,9 +74,10 @@ public class MySqlWriterImpl extends AbstractDatabaseWriter implements IDatabase
     Integer ret = transactionTemplate.execute((TransactionStatus transactionStatus) -> {
       try {
         int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
-        int affectCount = 0;
-        for (int i : affects) {
-          affectCount += i;
+        int affectCount = Arrays.stream(affects).sum();
+        recordValues.clear();
+        if (log.isDebugEnabled()) {
+          log.debug("{} insert data affect count: {}", getDatabaseProductName(), affectCount);
         }
         return affectCount;
       } catch (Throwable t) {

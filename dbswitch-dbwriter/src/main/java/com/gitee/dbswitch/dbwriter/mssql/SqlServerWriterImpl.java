@@ -11,6 +11,7 @@ package com.gitee.dbswitch.dbwriter.mssql;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.sql.DataSource;
@@ -68,15 +69,11 @@ public class SqlServerWriterImpl extends AbstractDatabaseWriter implements IData
 
     try {
       int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
-      int affectCount = 0;
-      for (int i : affects) {
-        affectCount += i;
-      }
-
+      int affectCount = Arrays.stream(affects).sum();
       recordValues.clear();
       transactionManager.commit(status);
       if (log.isDebugEnabled()) {
-        log.debug("SQL Server insert data affect count: {}", affectCount);
+        log.debug("{} insert data affect count: {}", getDatabaseProductName(), affectCount);
       }
       return affectCount;
     } catch (TransactionException e) {
