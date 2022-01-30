@@ -75,7 +75,6 @@ public class MySqlWriterImpl extends AbstractDatabaseWriter implements IDatabase
       try {
         int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
         int affectCount = Arrays.stream(affects).sum();
-        recordValues.clear();
         if (log.isDebugEnabled()) {
           log.debug("{} insert data affect count: {}", getDatabaseProductName(), affectCount);
         }

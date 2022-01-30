@@ -11,31 +11,22 @@ package com.gitee.dbswitch.dbwriter.gpdb;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
 import com.gitee.dbswitch.pgwriter.row.SimpleRow;
 import com.gitee.dbswitch.pgwriter.row.SimpleRowWriter;
 import com.gitee.dbswitch.pgwriter.util.PostgreSqlUtils;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.support.JdbcUtils;
 
 /**
  * Greenplum数据库Copy写入实现类
@@ -45,7 +36,13 @@ import org.springframework.jdbc.support.JdbcUtils;
 @Slf4j
 public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements IDatabaseWriter {
 
-  protected Map<String, Integer> columnType;
+  private static Set<String> unsupportedClassTypeName;
+
+  static {
+    unsupportedClassTypeName = new HashSet<>();
+    unsupportedClassTypeName.add("oracle.sql.TIMESTAMPLTZ");
+    unsupportedClassTypeName.add("oracle.sql.TIMESTAMPTZ");
+  }
 
   public GreenplumCopyWriterImpl(DataSource dataSource) {
     super(dataSource);
@@ -58,16 +55,14 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
 
   @Override
   public long write(List<String> fieldNames, List<Object[]> recordValues) {
-    if (null == this.columnType || this.columnType.isEmpty()) {
-      throw new RuntimeException("请先调用prepareWrite()函数，或者出现内部代码集成调用错误！");
+    if (recordValues.isEmpty()) {
+      return 0;
     }
-
     if (fieldNames.isEmpty()) {
       throw new IllegalArgumentException("第一个参数[fieldNames]为空,无效!");
     }
-
-    if (recordValues.isEmpty()) {
-      return 0;
+    if (null == this.columnType || this.columnType.isEmpty()) {
+      throw new RuntimeException("请先调用prepareWrite()函数，或者出现内部代码集成调用错误！");
     }
 
     String[] columnNames = new String[fieldNames.size()];
@@ -81,1208 +76,339 @@ public class GreenplumCopyWriterImpl extends AbstractDatabaseWriter implements I
       columnNames[i] = s;
     }
 
-    String schemaName = Objects.requireNonNull(this.schemaName, "schema-name名称为空，不合法!");
-    String tableName = Objects.requireNonNull(this.tableName, "table-name名称为空，不合法!");
     SimpleRowWriter.Table table = new SimpleRowWriter.Table(schemaName, tableName, columnNames);
-
-    Connection connection = null;
-    try {
-      connection = dataSource.getConnection();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-
-    try (SimpleRowWriter pgwriter = new SimpleRowWriter(table,
-        PostgreSqlUtils.getPGConnection(connection),
-        true);) {
+    try (Connection connection = dataSource.getConnection();
+        SimpleRowWriter pgwriter =
+            new SimpleRowWriter(table, PostgreSqlUtils.getPGConnection(connection), true)) {
       pgwriter.enableNullCharacterHandler();
-
-      long count = recordValues.size();
       for (Object[] objects : recordValues) {
         if (fieldNames.size() != objects.length) {
           throw new RuntimeException(
               String.format("传入的参数有误，字段列数%d与记录中的值个数%d不相符合", fieldNames.size(), objects.length));
         }
 
-        /**
-         * 数据类型转换参考
-         * <p>
-         * 1. spring-jdbc: {@code org.springframework.jdbc.core.StatementCreatorUtils}
-         * </p>
-         * <p>
-         * 2. postgresql-driver: {@code org.postgresql.jdbc.PgPreparedStatement}
-         * </p>
-         */
-        pgwriter.startRow(new Consumer<SimpleRow>() {
-
-          @Override
-          public void accept(SimpleRow row) {
-            for (int i = 0; i < objects.length; ++i) {
-              String fieldName = fieldNames.get(i);
-              Object fieldValue = objects[i];
-              Integer fieldType = columnType.get(fieldName);
-              switch (fieldType) {
-                case Types.CHAR:
-                case Types.NCHAR:
-                case Types.VARCHAR:
-                case Types.LONGVARCHAR:
-                case Types.NVARCHAR:
-                case Types.LONGNVARCHAR:
-                  if (null == fieldValue) {
-                    row.setVarChar(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-                    row.setVarChar(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-                    row.setVarChar(i, null);
-                  } else {
-                    String val = castToString(fieldValue);
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.String/java.sql.Clob，而实际的数据类型为%s",
-                          schemaName, tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setVarChar(i, val);
-                  }
-                  break;
-                case Types.CLOB:
-                case Types.NCLOB:
-                  if (null == fieldValue) {
-                    row.setText(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-                    row.setText(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-                    row.setText(i, null);
-                  } else {
-                    String val = castToString(fieldValue);
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.String/java.sql.Clob，而实际的数据类型为%s",
-                          schemaName, tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setText(i, val);
-                  }
-                  break;
-                case Types.TINYINT:
-                  if (null == fieldValue) {
-                    row.setByte(i, null);
-                  } else {
-                    Byte val = null;
-                    try {
-                      val = castToByte(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转错误，应该为java.lang.Byte，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setByte(i, val);
-                  }
-                  break;
-                case Types.SMALLINT:
-                  if (null == fieldValue) {
-                    row.setShort(i, null);
-                  } else {
-                    Short val = null;
-                    try {
-                      val = castToShort(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Short，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setShort(i, val);
-                  }
-                  break;
-                case Types.INTEGER:
-                  if (null == fieldValue) {
-                    row.setInteger(i, null);
-                  } else {
-                    Integer val = null;
-                    try {
-                      val = castToInteger(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Integer，而实际的数据类型为%s",
-                          schemaName, tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setInteger(i, val);
-                  }
-                  break;
-                case Types.BIGINT:
-                  if (null == fieldValue) {
-                    row.setLong(i, null);
-                  } else {
-                    Long val = null;
-                    try {
-                      val = castToLong(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Long，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setLong(i, val);
-                  }
-                  break;
-                case Types.NUMERIC:
-                case Types.DECIMAL:
-                  if (null == fieldValue) {
-                    row.setNumeric(i, null);
-                  } else {
-                    Number val = null;
-                    try {
-                      val = castToNumeric(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Number，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setNumeric(i, val);
-                  }
-                  break;
-                case Types.FLOAT:
-                case Types.REAL:
-                  if (null == fieldValue) {
-                    row.setFloat(i, null);
-                  } else {
-                    Float val = null;
-                    try {
-                      val = castToFloat(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Float，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setFloat(i, val);
-                  }
-                  break;
-                case Types.DOUBLE:
-                  if (null == fieldValue) {
-                    row.setDouble(i, null);
-                  } else {
-                    Double val = null;
-                    try {
-                      val = castToDouble(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Double，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-                    row.setDouble(i, val);
-                  }
-                  break;
-                case Types.BOOLEAN:
-                case Types.BIT:
-                  if (null == fieldValue) {
-                    row.setBoolean(i, null);
-                  } else {
-                    Boolean val = null;
-                    try {
-                      val = castToBoolean(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型错误，应该为java.lang.Boolean，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-                    row.setBoolean(i, val);
-                  }
-                  break;
-                case Types.TIME:
-                  if (null == fieldValue) {
-                    row.setTime(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-                    row.setTime(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-                    row.setTime(i, null);
-                  } else {
-                    LocalTime val = null;
-                    try {
-                      val = castToLocalTime(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.sql.Time，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-                    row.setTime(i, val);
-                  }
-                  break;
-                case Types.DATE:
-                  if (null == fieldValue) {
-                    row.setDate(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-                    row.setDate(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-                    row.setDate(i, null);
-                  } else {
-                    LocalDate val = null;
-                    try {
-                      val = castToLocalDate(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.sql.Date，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-                    row.setDate(i, val);
-                  }
-                  break;
-                case Types.TIMESTAMP:
-                  if (null == fieldValue) {
-                    row.setTimeStamp(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-                    row.setTimeStamp(i, null);
-                  } else if (fieldValue.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-                    row.setTimeStamp(i, null);
-                  } else {
-                    LocalDateTime val = null;
-                    try {
-                      val = castToLocalDateTime(fieldValue);
-                    } catch (RuntimeException e) {
-                      throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
-                          schemaName, tableName, fieldName, e.getMessage()));
-                    }
-
-                    if (null == val) {
-                      throw new RuntimeException(String.format(
-                          "表名[%s.%s]的字段名[%s]数据类型错误，应该为java.sql.Timestamp，而实际的数据类型为%s", schemaName,
-                          tableName, fieldName, fieldValue.getClass().getName()));
-                    }
-
-                    row.setTimeStamp(i, val);
-                  }
-                  break;
-                case Types.BINARY:
-                case Types.VARBINARY:
-                case Types.BLOB:
-                case Types.LONGVARBINARY:
-                  if (null == fieldValue) {
-                    row.setByteArray(i, null);
-                  } else {
-                    row.setByteArray(i, castToByteArray(fieldValue));
-                  }
-                  break;
-                case Types.NULL:
-                case Types.OTHER:
-                  if (null == fieldValue) {
-                    row.setText(i, null);
-                  } else {
-                    row.setText(i, fieldValue.toString());
-                  }
-                  break;
-                default:
-                  throw new RuntimeException(
-                      String.format("不支持的数据库字段类型,表名[%s.%s] 字段名[%s].", schemaName,
-                          tableName, fieldName));
-              }
-            }
-          }
-        });
+        pgwriter.startRow(this.getConsumer(fieldNames, objects));
       }
 
-      return count;
+      return recordValues.size();
     } catch (SQLException e) {
       throw new RuntimeException(e);
-    } finally {
-      JdbcUtils.closeConnection(connection);
-    }
-
-  }
-
-  /**
-   * 将java.sql.Clob类型转换为java.lang.String类型
-   *
-   * @param clob java.sql.Clob类型对象
-   * @return java.lang.String类型数据
-   */
-  private String clob2Str(java.sql.Clob clob) {
-    if (null == clob) {
-      return null;
-    }
-
-    try (java.io.Reader is = clob.getCharacterStream();
-        java.io.BufferedReader reader = new java.io.BufferedReader(is);) {
-      String line = reader.readLine();
-      StringBuilder sb = new StringBuilder();
-      while (line != null) {
-        sb.append(line);
-        line = reader.readLine();
-      }
-      return sb.toString();
-    } catch (SQLException | java.io.IOException e) {
-      throw new RuntimeException(e);
     }
   }
 
   /**
-   * 将java.sql.Blob类型转换为byte数组
-   *
-   * @param blob java.sql.Blob类型对象
-   * @return byte数组
+   * 数据类型转换参考
+   * <p>
+   * 1. spring-jdbc: {@code org.springframework.jdbc.core.StatementCreatorUtils}
+   * <p>
+   * 2. postgresql-driver: {@code org.postgresql.jdbc.PgPreparedStatement}
    */
-  private byte[] blob2Bytes(java.sql.Blob blob) {
-    if (null == blob) {
-      return null;
-    }
+  private Consumer<SimpleRow> getConsumer(List<String> fieldNames, Object[] objects) {
+    return (row) -> {
+      for (int i = 0; i < objects.length; ++i) {
+        String fieldName = fieldNames.get(i);
+        Object fieldValue = objects[i];
+        Integer fieldType = columnType.get(fieldName);
+        switch (fieldType) {
+          case Types.CHAR:
+          case Types.NCHAR:
+          case Types.VARCHAR:
+          case Types.LONGVARCHAR:
+          case Types.NVARCHAR:
+          case Types.LONGNVARCHAR:
+            if (null == fieldValue) {
+              row.setVarChar(i, null);
+            } else if (unsupportedClassTypeName.contains(fieldValue.getClass().getName())) {
+              row.setVarChar(i, null);
+            } else {
+              String val = ObjectCastUtils.castToString(fieldValue);
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.String/java.sql.Clob，而实际的数据类型为%s",
+                    schemaName, tableName, fieldName, fieldValue.getClass().getName()));
+              }
 
-    try {
-      java.io.InputStream inputStream = blob.getBinaryStream();
-      try (java.io.BufferedInputStream is = new java.io.BufferedInputStream(inputStream)) {
-        byte[] bytes = new byte[(int) blob.length()];
-        int len = bytes.length;
-        int offset = 0;
-        int read = 0;
-        while (offset < len && (read = is.read(bytes, offset, len - offset)) >= 0) {
-          offset += read;
+              row.setVarChar(i, val);
+            }
+            break;
+          case Types.CLOB:
+          case Types.NCLOB:
+            if (null == fieldValue) {
+              row.setText(i, null);
+            } else if (unsupportedClassTypeName.contains(fieldValue.getClass().getName())) {
+              row.setText(i, null);
+            } else {
+              String val = ObjectCastUtils.castToString(fieldValue);
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.String/java.sql.Clob，而实际的数据类型为%s",
+                    schemaName, tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setText(i, val);
+            }
+            break;
+          case Types.TINYINT:
+            if (null == fieldValue) {
+              row.setByte(i, null);
+            } else {
+              Byte val = null;
+              try {
+                val = ObjectCastUtils.castToByte(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转错误，应该为java.lang.Byte，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setByte(i, val);
+            }
+            break;
+          case Types.SMALLINT:
+            if (null == fieldValue) {
+              row.setShort(i, null);
+            } else {
+              Short val = null;
+              try {
+                val = ObjectCastUtils.castToShort(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Short，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setShort(i, val);
+            }
+            break;
+          case Types.INTEGER:
+            if (null == fieldValue) {
+              row.setInteger(i, null);
+            } else {
+              Integer val = null;
+              try {
+                val = ObjectCastUtils.castToInteger(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Integer，而实际的数据类型为%s",
+                    schemaName, tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setInteger(i, val);
+            }
+            break;
+          case Types.BIGINT:
+            if (null == fieldValue) {
+              row.setLong(i, null);
+            } else {
+              Long val = null;
+              try {
+                val = ObjectCastUtils.castToLong(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Long，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setLong(i, val);
+            }
+            break;
+          case Types.NUMERIC:
+          case Types.DECIMAL:
+            if (null == fieldValue) {
+              row.setNumeric(i, null);
+            } else {
+              Number val = null;
+              try {
+                val = ObjectCastUtils.castToNumeric(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Number，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setNumeric(i, val);
+            }
+            break;
+          case Types.FLOAT:
+          case Types.REAL:
+            if (null == fieldValue) {
+              row.setFloat(i, null);
+            } else {
+              Float val = null;
+              try {
+                val = ObjectCastUtils.castToFloat(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Float，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setFloat(i, val);
+            }
+            break;
+          case Types.DOUBLE:
+            if (null == fieldValue) {
+              row.setDouble(i, null);
+            } else {
+              Double val = null;
+              try {
+                val = ObjectCastUtils.castToDouble(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.lang.Double，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+              row.setDouble(i, val);
+            }
+            break;
+          case Types.BOOLEAN:
+          case Types.BIT:
+            if (null == fieldValue) {
+              row.setBoolean(i, null);
+            } else {
+              Boolean val = null;
+              try {
+                val = ObjectCastUtils.castToBoolean(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型错误，应该为java.lang.Boolean，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+              row.setBoolean(i, val);
+            }
+            break;
+          case Types.TIME:
+            if (null == fieldValue) {
+              row.setTime(i, null);
+            } else if (unsupportedClassTypeName.contains(fieldValue.getClass().getName())) {
+              row.setTime(i, null);
+            } else {
+              LocalTime val = null;
+              try {
+                val = ObjectCastUtils.castToLocalTime(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.sql.Time，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+              row.setTime(i, val);
+            }
+            break;
+          case Types.DATE:
+            if (null == fieldValue) {
+              row.setDate(i, null);
+            } else if (unsupportedClassTypeName.contains(fieldValue.getClass().getName())) {
+              row.setDate(i, null);
+            } else {
+              LocalDate val = null;
+              try {
+                val = ObjectCastUtils.castToLocalDate(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型转换错误，应该为java.sql.Date，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+              row.setDate(i, val);
+            }
+            break;
+          case Types.TIMESTAMP:
+            if (null == fieldValue) {
+              row.setTimeStamp(i, null);
+            } else if (unsupportedClassTypeName.contains(fieldValue.getClass().getName())) {
+              row.setTimeStamp(i, null);
+            } else {
+              LocalDateTime val = null;
+              try {
+                val = ObjectCastUtils.castToLocalDateTime(fieldValue);
+              } catch (RuntimeException e) {
+                throw new RuntimeException(String.format("表名[%s.%s]的字段名[%s]数据类型转错误，%s",
+                    schemaName, tableName, fieldName, e.getMessage()));
+              }
+
+              if (null == val) {
+                throw new RuntimeException(String.format(
+                    "表名[%s.%s]的字段名[%s]数据类型错误，应该为java.sql.Timestamp，而实际的数据类型为%s", schemaName,
+                    tableName, fieldName, fieldValue.getClass().getName()));
+              }
+
+              row.setTimeStamp(i, val);
+            }
+            break;
+          case Types.BINARY:
+          case Types.VARBINARY:
+          case Types.BLOB:
+          case Types.LONGVARBINARY:
+            if (null == fieldValue) {
+              row.setByteArray(i, null);
+            } else {
+              row.setByteArray(i, ObjectCastUtils.castToByteArray(fieldValue));
+            }
+            break;
+          case Types.NULL:
+          case Types.OTHER:
+            if (null == fieldValue) {
+              row.setText(i, null);
+            } else {
+              row.setText(i, fieldValue.toString());
+            }
+            break;
+          default:
+            throw new RuntimeException(
+                String.format("不支持的数据库字段类型,表名[%s.%s] 字段名[%s].", schemaName,
+                    tableName, fieldName));
         }
-        return bytes;
       }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * 将Object对象转换为字节数组
-   *
-   * @param obj 对象
-   * @return 字节数组
-   */
-  private byte[] toByteArray(Object obj) {
-    if (null == obj) {
-      return null;
-    }
-
-    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-      oos.writeObject(obj);
-      oos.flush();
-      return bos.toByteArray();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * 将任意类型转换为java.lang.String类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.String类型
-   */
-  private String castToString(final Object in) {
-    if (in instanceof java.lang.Character) {
-      return in.toString();
-    } else if (in instanceof java.lang.String) {
-      return in.toString();
-    } else if (in instanceof java.lang.Character) {
-      return in.toString();
-    } else if (in instanceof java.sql.Clob) {
-      return clob2Str((java.sql.Clob) in);
-    } else if (in instanceof java.lang.Number) {
-      return in.toString();
-    } else if (in instanceof java.sql.RowId) {
-      return in.toString();
-    } else if (in instanceof java.lang.Boolean) {
-      return in.toString();
-    } else if (in instanceof java.util.Date) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalDate) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalTime) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return in.toString();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return in.toString();
-    } else if (in instanceof java.util.UUID) {
-      return in.toString();
-    } else if (in instanceof org.postgresql.util.PGobject) {
-      return in.toString();
-    } else if (in instanceof org.postgresql.jdbc.PgSQLXML) {
-      try {
-        return ((org.postgresql.jdbc.PgSQLXML) in).getString();
-      } catch (Exception e) {
-        return "";
-      }
-    } else if (in instanceof java.sql.SQLXML) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.INTERVALDS")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.INTERVALYM")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.BFILE")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method methodFileExists = clz.getMethod("fileExists");
-        boolean exists = (boolean) methodFileExists.invoke(in);
-        if (!exists) {
-          return "";
-        }
-
-        Method methodOpenFile = clz.getMethod("openFile");
-        methodOpenFile.invoke(in);
-
-        try {
-          Method methodCharacterStreamValue = clz.getMethod("getBinaryStream");
-          java.io.InputStream is = (java.io.InputStream) methodCharacterStreamValue.invoke(in);
-
-          String line;
-          StringBuilder sb = new StringBuilder();
-
-          java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is));
-          while ((line = br.readLine()) != null) {
-            sb.append(line);
-          }
-
-          return sb.toString();
-        } finally {
-          Method methodCloseFile = clz.getMethod("closeFile");
-          methodCloseFile.invoke(in);
-        }
-      } catch (java.lang.reflect.InvocationTargetException ex) {
-        log.warn("Error for handle oracle.sql.BFILE: ", ex);
-        return "";
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
-      return in.toString();
-    } else if (in instanceof byte[]) {
-      return new String((byte[]) in);
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Byte类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Byte类型
-   */
-  private Byte castToByte(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).byteValue();
-    } else if (in instanceof java.util.Date) {
-      return Long.valueOf(((java.util.Date) in).getTime()).byteValue();
-    } else if (in instanceof java.lang.String) {
-      try {
-        return Byte.parseByte(in.toString());
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Byte类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Character) {
-      try {
-        return Byte.parseByte(in.toString());
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.Character类型转换为java.lang.Byte类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        return Byte.parseByte(clob2Str((java.sql.Clob) in));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Byte类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? (byte) 1 : (byte) 0;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Short类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Short类型
-   */
-  private Short castToShort(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).shortValue();
-    } else if (in instanceof java.lang.Byte) {
-      return (short) (((byte) in) & 0xff);
-    } else if (in instanceof java.util.Date) {
-      return (short) ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return (short) ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return (short) java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return (short) java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Short.valueOf((short) 1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Short.valueOf((short) 0);
-        } else {
-          return Short.parseShort(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Short类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Short.valueOf((short) 1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Short.valueOf((short) 0);
-        } else {
-          return Short.parseShort(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Short类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? (short) 1 : (short) 0;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Integer类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Integer类型
-   */
-  private Integer castToInteger(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).intValue();
-    } else if (in instanceof java.lang.Byte) {
-      return (((byte) in) & 0xff);
-    } else if (in instanceof java.util.Date) {
-      return (int) ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return (int) ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return (int) java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return (int) java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Integer.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Integer.valueOf(0);
-        } else {
-          return Integer.parseInt(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Integer类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Integer.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Integer.valueOf(0);
-        } else {
-          return Integer.parseInt(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Integer类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? (int) 1 : (int) 0;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Long类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Long类型
-   */
-  private Long castToLong(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).longValue();
-    } else if (in instanceof java.lang.Byte) {
-      return (long) (((byte) in) & 0xff);
-    } else if (in instanceof java.util.Date) {
-      return ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Long.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Long.valueOf(0);
-        } else {
-          return Long.parseLong(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Long类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Long.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Long.valueOf(0);
-        } else {
-          return Long.parseLong(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Long类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? (long) 1 : (long) 0;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Number类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Number类型
-   */
-  private Number castToNumeric(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return (java.lang.Number) in;
-    } else if (in instanceof java.util.Date) {
-      return ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Integer.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Integer.valueOf(0);
-        } else {
-          return new java.math.BigDecimal(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Number类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Integer.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Integer.valueOf(0);
-        } else {
-          return new java.math.BigDecimal(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Number类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? (long) 1 : (long) 0;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Float类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Float类型
-   */
-  private Float castToFloat(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).floatValue();
-    } else if (in instanceof java.util.Date) {
-      return (float) ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return (float) ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return (float) java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return (float) java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Float.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Float.valueOf(0);
-        } else {
-          return Float.parseFloat(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Float类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Float.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Float.valueOf(0);
-        } else {
-          return Float.parseFloat(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Float类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? 1f : 0f;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.lang.Double类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.lang.Double类型
-   */
-  private Double castToDouble(final Object in) {
-    if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).doubleValue();
-    } else if (in instanceof java.util.Date) {
-      return (double) ((java.util.Date) in).getTime();
-    } else if (in instanceof java.util.Calendar) {
-      return (double) ((java.util.Calendar) in).getTime().getTime();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return (double) java.sql.Timestamp.valueOf((java.time.LocalDateTime) in).getTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return (double) java.sql.Timestamp.valueOf(((java.time.OffsetDateTime) in).toLocalDateTime())
-          .getTime();
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        String s = in.toString().trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Double.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Double.valueOf(0);
-        } else {
-          return Double.parseDouble(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将将java.lang.String类型转换为java.lang.Double类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        String s = clob2Str((java.sql.Clob) in).trim();
-        if (s.equalsIgnoreCase("true")) {
-          return Double.valueOf(1);
-        } else if (s.equalsIgnoreCase("false")) {
-          return Double.valueOf(0);
-        } else {
-          return Double.parseDouble(s);
-        }
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Double类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in ? 1d : 0d;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.time.LocalDate类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.time.LocalDate类型
-   */
-  private LocalDate castToLocalDate(final Object in) {
-    if (in instanceof java.sql.Time) {
-      java.sql.Time date = (java.sql.Time) in;
-      LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-          .toLocalDate();
-      return localDate;
-    } else if (in instanceof java.sql.Timestamp) {
-      java.sql.Timestamp t = (java.sql.Timestamp) in;
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime.toLocalDate();
-    } else if (in instanceof java.util.Date) {
-      java.util.Date date = (java.util.Date) in;
-      LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-          .toLocalDate();
-      return localDate;
-    } else if (in instanceof java.util.Calendar) {
-      java.sql.Date date = new java.sql.Date(((java.util.Calendar) in).getTime().getTime());
-      LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-          .toLocalDate();
-      return localDate;
-    } else if (in instanceof java.time.LocalDate) {
-      return (java.time.LocalDate) in;
-    } else if (in instanceof java.time.LocalTime) {
-      return java.time.LocalDate.MIN;
-    } else if (in instanceof java.time.LocalDateTime) {
-      return ((java.time.LocalDateTime) in).toLocalDate();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return ((java.time.OffsetDateTime) in).toLocalDate();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMP")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("timestampValue");
-        java.sql.Timestamp date = (java.sql.Timestamp) m.invoke(in);
-        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return localDate;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("getTimestamp");
-        java.sql.Timestamp t = (java.sql.Timestamp) m.invoke(in);
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime.toLocalDate();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        java.sql.Time date = java.sql.Time.valueOf(in.toString());
-        LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-            .toLocalDate();
-        return localDate;
-      } catch (IllegalArgumentException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.sql.Time类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        java.sql.Time date = java.sql.Time.valueOf(clob2Str((java.sql.Clob) in));
-        LocalDate localDate = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-            .toLocalDate();
-        return localDate;
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.sql.Time类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Number) {
-      java.sql.Timestamp t = new java.sql.Timestamp(((java.lang.Number) in).longValue());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime.toLocalDate();
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.time.LocalTime类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.time.LocalDate类型
-   */
-  private LocalTime castToLocalTime(final Object in) {
-    if (in instanceof java.sql.Time) {
-      java.sql.Time date = (java.sql.Time) in;
-      LocalTime localTime = Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault())
-          .toLocalTime();
-      return localTime;
-    } else if (in instanceof java.sql.Timestamp) {
-      java.sql.Timestamp t = (java.sql.Timestamp) in;
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime.toLocalTime();
-    } else if (in instanceof java.util.Date) {
-      return LocalTime.of(0, 0, 0);
-    } else if (in instanceof java.util.Calendar) {
-      java.sql.Date date = new java.sql.Date(((java.util.Calendar) in).getTime().getTime());
-      LocalDateTime localDateTime = Instant.ofEpochMilli(date.getTime())
-          .atZone(ZoneId.systemDefault())
-          .toLocalDateTime();
-      return localDateTime.toLocalTime();
-    } else if (in instanceof java.time.LocalDate) {
-      return LocalTime.of(0, 0, 0);
-    } else if (in instanceof java.time.LocalTime) {
-      return (java.time.LocalTime) in;
-    } else if (in instanceof java.time.LocalDateTime) {
-      return ((java.time.LocalDateTime) in).toLocalTime();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return ((java.time.OffsetDateTime) in).toLocalTime();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMP")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("timestampValue");
-        java.sql.Timestamp date = (java.sql.Timestamp) m.invoke(in);
-        LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault())
-            .toLocalDateTime();
-        return localDateTime.toLocalTime();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("getTimestamp");
-        java.sql.Timestamp t = (java.sql.Timestamp) m.invoke(in);
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime.toLocalTime();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        java.sql.Time date = java.sql.Time.valueOf(in.toString());
-        return LocalTime.ofSecondOfDay(date.getTime());
-      } catch (IllegalArgumentException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.sql.Time类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        java.sql.Time date = java.sql.Time.valueOf(clob2Str((java.sql.Clob) in));
-        return LocalTime.ofSecondOfDay(date.getTime());
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.sql.Time类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Number) {
-      java.sql.Timestamp t = new java.sql.Timestamp(((java.lang.Number) in).longValue());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime.toLocalTime();
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为java.time.LocalDateTime类型
-   *
-   * @param in 任意类型的对象实例
-   * @return java.time.LocalDateTime类型
-   */
-  private LocalDateTime castToLocalDateTime(final Object in) {
-    if (in instanceof java.sql.Timestamp) {
-      java.sql.Timestamp t = (java.sql.Timestamp) in;
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime;
-    } else if (in instanceof java.sql.Date) {
-      java.sql.Date date = (java.sql.Date) in;
-      LocalDate localDate = date.toLocalDate();
-      LocalTime localTime = LocalTime.of(0, 0, 0);
-      LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
-      return localDateTime;
-    } else if (in instanceof java.sql.Time) {
-      java.sql.Time date = (java.sql.Time) in;
-      java.sql.Timestamp t = new java.sql.Timestamp(date.getTime());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime;
-    } else if (in instanceof java.util.Date) {
-      java.sql.Timestamp t = new java.sql.Timestamp(((java.util.Date) in).getTime());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime;
-    } else if (in instanceof java.util.Calendar) {
-      java.sql.Timestamp t = new java.sql.Timestamp(((java.util.Calendar) in).getTime().getTime());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime;
-    } else if (in instanceof java.time.LocalDate) {
-      LocalDate localDate = (java.time.LocalDate) in;
-      LocalTime localTime = LocalTime.of(0, 0, 0);
-      LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
-      return localDateTime;
-    } else if (in instanceof java.time.LocalTime) {
-      LocalDate localDate = java.time.LocalDate.MIN;
-      LocalTime localTime = (java.time.LocalTime) in;
-      LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime);
-      return localDateTime;
-    } else if (in instanceof java.time.LocalDateTime) {
-      return (java.time.LocalDateTime) in;
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return ((java.time.OffsetDateTime) in).toLocalDateTime();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMP")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("timestampValue");
-        java.sql.Timestamp t = (java.sql.Timestamp) m.invoke(in);
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method m = clz.getMethod("getTimestamp");
-        java.sql.Timestamp t = (java.sql.Timestamp) m.invoke(in);
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        java.sql.Timestamp t = java.sql.Timestamp.valueOf(in.toString());
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime;
-      } catch (IllegalArgumentException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.sql.TimeStamp类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        java.sql.Timestamp t = java.sql.Timestamp.valueOf(clob2Str((java.sql.Clob) in));
-        LocalDateTime localDateTime = LocalDateTime
-            .ofInstant(t.toInstant(), ZoneId.systemDefault());
-        return localDateTime;
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.sql.TimeStamp类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.lang.Number) {
-      java.sql.Timestamp t = new java.sql.Timestamp(((java.lang.Number) in).longValue());
-      LocalDateTime localDateTime = LocalDateTime.ofInstant(t.toInstant(), ZoneId.systemDefault());
-      return localDateTime;
-    }
-
-    return null;
-  }
-
-  /**
-   * 将任意类型转换为byte[]类型
-   *
-   * @param in 任意类型的对象实例
-   * @return byte[]类型
-   */
-  private byte[] castToByteArray(final Object in) {
-    if (in instanceof byte[]) {
-      return (byte[]) in;
-    } else if (in instanceof java.util.Date) {
-      return in.toString().getBytes();
-    } else if (in instanceof java.sql.Blob) {
-      return blob2Bytes((java.sql.Blob) in);
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      return in.toString().getBytes();
-    } else if (in instanceof java.sql.Clob) {
-      return clob2Str((java.sql.Clob) in).toString().getBytes();
-    } else {
-      return toByteArray(in);
-    }
-  }
-
-  /**
-   * 将任意类型转换为Boolean类型
-   *
-   * @param in 任意类型的对象实例
-   * @return Boolean类型
-   */
-  private Boolean castToBoolean(final Object in) {
-    if (in instanceof java.lang.Boolean) {
-      return (java.lang.Boolean) in;
-    } else if (in instanceof java.lang.Number) {
-      return ((java.lang.Number) in).intValue() != 0;
-    } else if (in instanceof java.lang.String || in instanceof java.lang.Character) {
-      try {
-        return Boolean.parseBoolean(in.toString());
-      } catch (IllegalArgumentException e) {
-        throw new RuntimeException(
-            String.format("无法将java.lang.String类型转换为java.lang.Boolean类型:%s", e.getMessage()));
-      }
-    } else if (in instanceof java.sql.Clob) {
-      try {
-        return Boolean.parseBoolean(clob2Str((java.sql.Clob) in));
-      } catch (NumberFormatException e) {
-        throw new RuntimeException(
-            String.format("无法将java.sql.Clob类型转换为java.lang.Boolean类型:%s", e.getMessage()));
-      }
-    }
-
-    return null;
+    };
   }
 
 }

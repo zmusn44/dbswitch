@@ -10,12 +10,8 @@
 package com.gitee.dbswitch.admin.mapper;
 
 import com.gitee.dbswitch.admin.entity.DatabaseConnectionEntity;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import tk.mybatis.mapper.common.Mapper;
 
 public interface DatabaseConnectionMapper extends Mapper<DatabaseConnectionEntity> {
 
-  @Select("select * from DBSWITCH_DATABASE_CONNECTION where name=#{name} limit 1 ")
-  DatabaseConnectionEntity getByName(@Param("name") String name);
 }
