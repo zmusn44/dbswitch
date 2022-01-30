@@ -75,7 +75,8 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
       } catch (SQLException | java.io.IOException e) {
         throw new RuntimeException(e);
       }
-    } else if (o instanceof java.sql.Array) {
+    } else if (o instanceof java.sql.Array
+        || o instanceof java.sql.SQLXML) {
       /**
        * 将java.sql.Array 类型转换为java.lang.String
        * <p>
@@ -89,6 +90,9 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
       }
 
       return v;
+    } else if (o instanceof java.sql.Struct) {
+      log.warn("Unsupported type for convert {} to java.lang.String", o.getClass().getName());
+      return null;
     } else {
       return o;
     }

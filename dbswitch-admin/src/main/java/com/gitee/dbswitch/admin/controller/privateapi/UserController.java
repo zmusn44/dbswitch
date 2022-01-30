@@ -43,7 +43,8 @@ public class UserController {
 
   @ApiOperation(value = "用户详情", notes = "根据用户名获取用户详情")
   @ApiImplicitParams({
-      @ApiImplicitParam(paramType = "query", name = "username", value = "账号登陆名", required = true, dataTypeClass = String.class)})
+      @ApiImplicitParam(paramType = "query", name = "username", value = "账号登陆名", required = true, dataTypeClass = String.class)
+  })
   @GetMapping(value = "/detail/name", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<SystemUserDetailResponse> getUserByName(@RequestParam("username") String username) {
     return systemUserService.getUserDetailByUsername(username);
@@ -54,7 +55,8 @@ public class UserController {
   @ApiOperation(value = "修改密码", notes = "用户修改自己的密码")
   @ApiImplicitParams({
       @ApiImplicitParam(paramType = "query", name = "oldPassword", value = "旧密码", required = true, dataTypeClass = String.class),
-      @ApiImplicitParam(paramType = "query", name = "newPassword", value = "新密码", required = true, dataTypeClass = String.class)})
+      @ApiImplicitParam(paramType = "query", name = "newPassword", value = "新密码", required = true, dataTypeClass = String.class)
+  })
   public Result changeOwnPassword(@RequestParam("oldPassword") String oldPassword,
       @RequestParam("newPassword") String newPassword) {
     return systemUserService.changeOwnPassword(oldPassword, newPassword);

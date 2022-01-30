@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum IncludeExcludeEnum {
-  INCLUDE("包含"),
-  EXCLUDE("排除"),
+  INCLUDE("精确包含"),
+  EXCLUDE("精确排除"),
   ;
 
   private String name;

@@ -33,7 +33,9 @@ public class DatabaseConnectionDAO {
   }
 
   public DatabaseConnectionEntity getByName(String name) {
-    return databaseConnectionMapper.getByName(name);
+    DatabaseConnectionEntity record = new DatabaseConnectionEntity();
+    record.setName(name);
+    return databaseConnectionMapper.selectOne(record);
   }
 
   public List<DatabaseConnectionEntity> listAll(String searchText) {
