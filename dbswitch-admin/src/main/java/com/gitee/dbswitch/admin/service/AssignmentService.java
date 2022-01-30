@@ -39,6 +39,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -198,7 +199,7 @@ public class AssignmentService {
 
     String sourceSchema = assignmentConfigEntity.getSourceSchema();
     if (assignmentConfigEntity.getExcluded()) {
-      if (assignmentConfigEntity.getSourceTables().isEmpty()) {
+      if (CollectionUtils.isEmpty(assignmentConfigEntity.getSourceTables())) {
         sourceDataSourceProperties.setSourceExcludes("");
       } else {
         sourceDataSourceProperties.setSourceExcludes(
@@ -207,7 +208,7 @@ public class AssignmentService {
         );
       }
     } else {
-      if (assignmentConfigEntity.getSourceTables().isEmpty()) {
+      if (CollectionUtils.isEmpty(assignmentConfigEntity.getSourceTables())) {
         sourceDataSourceProperties.setSourceIncludes("");
       } else {
         sourceDataSourceProperties.setSourceIncludes(

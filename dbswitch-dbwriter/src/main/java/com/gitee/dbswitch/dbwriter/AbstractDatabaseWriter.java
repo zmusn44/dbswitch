@@ -94,6 +94,10 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
 
   @Override
   public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    if (recordValues.isEmpty()) {
+      return 0;
+    }
+
     String sqlInsert = String.format("INSERT INTO \"%s\".\"%s\" ( \"%s\" ) VALUES ( %s )",
         schemaName, tableName,
         StringUtils.join(fieldNames, "\",\""),
@@ -113,10 +117,12 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
     TransactionStatus status = transactionManager.getTransaction(definition);
 
     try {
-      int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
-      int affectCount = Arrays.stream(affects).sum();
-      recordValues.clear();
+      //int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
+      //int affectCount = Arrays.stream(affects).sum();
+      jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);
       transactionManager.commit(status);
+      int affectCount = recordValues.size();
+      recordValues.clear();
       if (log.isDebugEnabled()) {
         log.debug("{} insert data affect count: {}", getDatabaseProductName(), affectCount);
       }
