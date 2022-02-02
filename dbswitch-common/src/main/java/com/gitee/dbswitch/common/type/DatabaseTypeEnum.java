@@ -68,7 +68,13 @@ public enum DatabaseTypeEnum {
   /**
    * Kingbase数据库类型
    */
-  KINGBASE(10);
+  KINGBASE(10),
+
+  /**
+   * HIVE数据库
+   */
+  HIVE(11),
+  ;
 
   private int index;
 

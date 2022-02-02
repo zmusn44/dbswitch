@@ -22,19 +22,19 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为DM的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DM的迁移(**支持绝大多数常规类型字段...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
 ### 4、结构设计
   
@@ -254,6 +254,13 @@ jdbc驱动名称：com.kingbase8.Driver
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5866/highgo
 jdbc驱动名称：org.postgresql.Driver
+```
+
+**Apache Hive数据库**
+ 
+```
+jdbc连接地址：jdbc:hive2://172.17.2.12:10000/default
+jdbc驱动名称：org.apache.hive.jdbc.HiveDriver
 ```
 
 #### (2)、启动方法

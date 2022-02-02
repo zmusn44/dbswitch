@@ -204,9 +204,9 @@ public class MigrationHandler implements Supplier<Long> {
         .getDatabaseProduceName(sourceDataSource);
     String fullTableName = CommonUtils.getTableFullNameByDatabase(sourceDatabaseType,
         tableDescription.getSchemaName(), tableDescription.getTableName());
-    Map<String, Integer> columnMetaData = JdbcTemplateUtils
-        .getColumnMetaData(new JdbcTemplate(sourceDataSource),
-            fullTableName);
+    Map<String, Integer> columnMetaData = JdbcTemplateUtils.getColumnMetaData(
+        sourceDataSource, sourceDatabaseType, tableDescription.getSchemaName(),
+        tableDescription.getTableName());
 
     List<String> fields = new ArrayList<>(columnMetaData.keySet());
     StatementResultSet srs = sourceOperator

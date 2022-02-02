@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.constant.Const;
+import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 支持MySQL数据库的元信息实现
@@ -131,7 +130,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:
       case ColumnMetaData.TYPE_BIGNUMBER:
-        if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
+        if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
           if (useAutoInc) {
             retval += "BIGINT AUTO_INCREMENT NOT NULL";
           } else {
@@ -174,7 +173,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
             retval += "CHAR(1)";
           } else if (length < 256) {
             retval += "VARCHAR(" + length + ")";
-          } else if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
+          } else if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
             /*
              * MySQL5.6中varchar字段为主键时最大长度为254,例如如下的建表语句在MySQL5.7下能通过，但在MySQL5.6下无法通过：
              *	create table `t_test`(
@@ -212,7 +211,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 
   @Override
   public String getPrimaryKeyAsString(List<String> pks) {
-    if (!CollectionUtils.isEmpty(pks)) {
+    if (null != pks && !pks.isEmpty()) {
       StringBuilder sb = new StringBuilder();
       sb.append("`");
       sb.append(StringUtils.join(pks, "` , `"));

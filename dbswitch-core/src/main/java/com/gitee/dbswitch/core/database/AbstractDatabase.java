@@ -16,7 +16,6 @@ import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -140,7 +139,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
         String columnName = columns.getString("COLUMN_NAME");
         String remarks = columns.getString("REMARKS");
         for (ColumnDescription cd : ret) {
-          if (columnName.equalsIgnoreCase(cd.getFieldName())) {
+          if (columnName.equals(cd.getFieldName())) {
             cd.setRemarks(remarks);
           }
         }
@@ -212,57 +211,60 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   protected abstract String getTestQuerySQL(String sql);
 
-  protected List<ColumnDescription> getSelectSqlColumnMeta(String querySQL,
-      DatabaseTypeEnum type) {
+  protected List<ColumnDescription> getSelectSqlColumnMeta(String querySQL, DatabaseTypeEnum type) {
     List<ColumnDescription> ret = new ArrayList<>();
-    try (PreparedStatement ps = connection.prepareStatement(querySQL);
-        ResultSet rs = ps.executeQuery();
-    ) {
-      ResultSetMetaData m = rs.getMetaData();
-      int columns = m.getColumnCount();
-      for (int i = 1; i <= columns; i++) {
-        String name = m.getColumnLabel(i);
-        if (null == name) {
-          name = m.getColumnName(i);
-        }
-
-        ColumnDescription cd = new ColumnDescription();
-        cd.setFieldName(name);
-        cd.setLabelName(name);
-        cd.setFieldType(m.getColumnType(i));
-        if (0 != cd.getFieldType()) {
-          cd.setFieldTypeName(m.getColumnTypeName(i));
-          cd.setFiledTypeClassName(m.getColumnClassName(i));
-          cd.setDisplaySize(m.getColumnDisplaySize(i));
-          cd.setPrecisionSize(m.getPrecision(i));
-          cd.setScaleSize(m.getScale(i));
-          cd.setAutoIncrement(m.isAutoIncrement(i));
-          cd.setNullable(m.isNullable(i) != ResultSetMetaData.columnNoNulls);
-        } else {
-          // 处理视图中NULL as fieldName的情况
-          cd.setFieldTypeName("CHAR");
-          cd.setFiledTypeClassName(String.class.getName());
-          cd.setDisplaySize(1);
-          cd.setPrecisionSize(1);
-          cd.setScaleSize(0);
-          cd.setAutoIncrement(false);
-          cd.setNullable(true);
-        }
-
-        boolean signed = false;
-        try {
-          signed = m.isSigned(i);
-        } catch (Exception ignored) {
-          // This JDBC Driver doesn't support the isSigned method
-          // nothing more we can do here by catch the exception.
-        }
-        cd.setSigned(signed);
-        cd.setDbType(type);
-
-        ret.add(cd);
+    try (Statement st = connection.createStatement()) {
+      if (DatabaseTypeEnum.HIVE == type) {
+        st.execute("set hive.resultset.use.unique.column.names=false");
       }
 
-      return ret;
+      try (ResultSet rs = st.executeQuery(querySQL)) {
+        ResultSetMetaData m = rs.getMetaData();
+        int columns = m.getColumnCount();
+        for (int i = 1; i <= columns; i++) {
+          String name = m.getColumnLabel(i);
+          if (null == name) {
+            name = m.getColumnName(i);
+          }
+
+          ColumnDescription cd = new ColumnDescription();
+          cd.setFieldName(name);
+          cd.setLabelName(name);
+          cd.setFieldType(m.getColumnType(i));
+          if (0 != cd.getFieldType()) {
+            cd.setFieldTypeName(m.getColumnTypeName(i));
+            cd.setFiledTypeClassName(m.getColumnClassName(i));
+            cd.setDisplaySize(m.getColumnDisplaySize(i));
+            cd.setPrecisionSize(m.getPrecision(i));
+            cd.setScaleSize(m.getScale(i));
+            cd.setAutoIncrement(m.isAutoIncrement(i));
+            cd.setNullable(m.isNullable(i) != ResultSetMetaData.columnNoNulls);
+          } else {
+            // 处理视图中NULL as fieldName的情况
+            cd.setFieldTypeName("CHAR");
+            cd.setFiledTypeClassName(String.class.getName());
+            cd.setDisplaySize(1);
+            cd.setPrecisionSize(1);
+            cd.setScaleSize(0);
+            cd.setAutoIncrement(false);
+            cd.setNullable(true);
+          }
+
+          boolean signed = false;
+          try {
+            signed = m.isSigned(i);
+          } catch (Exception ignored) {
+            // This JDBC Driver doesn't support the isSigned method
+            // nothing more we can do here by catch the exception.
+          }
+          cd.setSigned(signed);
+          cd.setDbType(type);
+
+          ret.add(cd);
+        }
+
+        return ret;
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

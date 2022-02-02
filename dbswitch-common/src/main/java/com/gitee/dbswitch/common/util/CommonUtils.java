@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.common.util;
 
-import java.util.List;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import java.util.List;
 
 /**
  * 普通工具类
@@ -32,12 +32,19 @@ public final class CommonUtils {
    */
   public static String getTableFullNameByDatabase(DatabaseTypeEnum dbType, String schema,
       String table) {
-    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB) {
-      return String.format("`%s`.`%s`", schema, table);
+    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
+        || dbType == DatabaseTypeEnum.HIVE) {
+      return String.format("`%s`.`%s`",
+          schema.replace("`", "``"),
+          table.replace("`", "``"));
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
-      return String.format("[%s].[%s]", schema, table);
+      return String.format("[%s].[%s]",
+          schema,
+          table);
     } else {
-      return String.format("\"%s\".\"%s\"", schema, table);
+      return String.format("\"%s\".\"%s\"",
+          schema.replace("\"", "\"\""),
+          table.replace("\"", "\"\""));
     }
   }
 
@@ -74,12 +81,13 @@ public final class CommonUtils {
   }
 
   private static String quoteString(DatabaseTypeEnum dbType, String keyName) {
-    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB) {
-      return String.format("`%s`", keyName);
+    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
+        || dbType == DatabaseTypeEnum.HIVE) {
+      return String.format("`%s`", keyName.replace("`", "``"));
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
       return String.format("[%s]", keyName);
     } else {
-      return String.format("\"%s\"", keyName);
+      return String.format("\"%s\"", keyName.replace("\"", "\"\""));
     }
   }
 

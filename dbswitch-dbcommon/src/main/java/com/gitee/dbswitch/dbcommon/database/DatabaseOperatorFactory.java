@@ -12,6 +12,7 @@ package com.gitee.dbswitch.dbcommon.database;
 import com.gitee.dbswitch.dbcommon.database.impl.DB2DatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.DmDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.GreenplumDatabaseOperator;
+import com.gitee.dbswitch.dbcommon.database.impl.HiveDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.KingbaseDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.MysqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.OracleDatabaseOperator;
@@ -43,6 +44,7 @@ public final class DatabaseOperatorFactory {
       put("DB2", DB2DatabaseOperator::new);
       put("DM", DmDatabaseOperator::new);
       put("KINGBASE", KingbaseDatabaseOperator::new);
+      put("HIVE", HiveDatabaseOperator::new);
     }
   };
 
@@ -56,7 +58,7 @@ public final class DatabaseOperatorFactory {
     String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
     if (!DATABASE_OPERATOR_MAPPER.containsKey(type)) {
       throw new RuntimeException(
-          String.format("[dbcommon] Unknown Supported database type (%s)", type));
+          String.format("[dbcommon] Unsupported database type (%s)", type));
     }
 
     return DATABASE_OPERATOR_MAPPER.get(type).apply(dataSource);
