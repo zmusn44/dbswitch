@@ -4,7 +4,8 @@
       <div align="right"
            style="margin:10px 5px;"
            width="95%">
-        <el-button type="primary" icon="el-icon-document-add"
+        <el-button type="primary"
+                   icon="el-icon-document-add"
                    @click="createFormVisible=true">添加</el-button>
       </div>
       <el-table :data="tableData"
@@ -21,6 +22,7 @@
                          min-width="10%"></el-table-column>
         <el-table-column prop="url"
                          label="JDBC连接串"
+                         show-overflow-tooltip
                          min-width="30%"></el-table-column>
         <el-table-column prop="username"
                          label="账号名称"
@@ -101,7 +103,8 @@
           <el-form-item label="连接密码"
                         label-width="120px"
                         style="width:85%">
-            <el-input v-model="queryForm.password"
+            <el-input type="password"
+                      v-model="queryForm.password"
                       auto-complete="off"
                       :readonly=true></el-input>
           </el-form-item>
@@ -154,7 +157,6 @@
           </el-form-item>
           <el-form-item label="账号名称"
                         label-width="120px"
-                        :required=true
                         prop="username"
                         style="width:85%">
             <el-input v-model="createform.username"
@@ -163,7 +165,8 @@
           <el-form-item label="连接密码"
                         label-width="120px"
                         style="width:85%">
-            <el-input v-model="createform.password"
+            <el-input type="password"
+                      v-model="createform.password"
                       auto-complete="off"></el-input>
           </el-form-item>
         </el-form>
@@ -218,7 +221,6 @@
           </el-form-item>
           <el-form-item label="账号名称"
                         label-width="120px"
-                        :required=true
                         prop="username"
                         style="width:85%">
             <el-input v-model="updateform.username"
@@ -227,7 +229,8 @@
           <el-form-item label="连接密码"
                         label-width="120px"
                         style="width:85%">
-            <el-input v-model="updateform.password"
+            <el-input type="password"
+                      v-model="updateform.password"
                       auto-complete="off"></el-input>
           </el-form-item>
         </el-form>
@@ -302,7 +305,7 @@ export default {
         ],
         username: [
           {
-            required: true,
+            required: false,
             message: "连接账号名必须提供",
             trigger: "blur"
           }

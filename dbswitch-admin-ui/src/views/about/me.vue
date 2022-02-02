@@ -67,6 +67,8 @@
                 </li>
                 <li>翰高数据库HighGo
                 </li>
+                <li>Apache Hive(只支持为源端)
+                </li>
               </ul>
             </div>
           </el-card>
@@ -140,7 +142,7 @@ export default {
   },
   methods: {
     handleClick (tab, event) {
-      console.log(tab, event);
+      //console.log(tab, event);
     }
   }
 }
