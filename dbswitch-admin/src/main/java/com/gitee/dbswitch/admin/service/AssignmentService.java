@@ -27,6 +27,7 @@ import com.gitee.dbswitch.admin.model.request.AssigmentUpdateRequest;
 import com.gitee.dbswitch.admin.model.response.AssignmentDetailResponse;
 import com.gitee.dbswitch.admin.model.response.AssignmentInfoResponse;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
+import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
 import com.gitee.dbswitch.admin.util.JsonUtils;
 import com.gitee.dbswitch.admin.util.PageUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
@@ -65,6 +66,12 @@ public class AssignmentService {
 
     AssignmentConfigEntity assignmentConfigEntity = request.toAssignmentConfig(assignment.getId());
     assignmentConfigDAO.insert(assignmentConfigEntity);
+
+    Long targetConnectionId = assignmentConfigEntity.getTargetConnectionId();
+    DatabaseConnectionEntity entity = databaseConnectionDAO.getById(targetConnectionId);
+    if (SupportDbTypeEnum.HIVE == entity.getType()) {
+      throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "不支持目的端数据源为Hive");
+    }
 
     return ConverterFactory.getConverter(AssignmentInfoConverter.class)
         .convert(assignmentTaskDAO.getById(assignment.getId()));
