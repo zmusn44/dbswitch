@@ -36,12 +36,12 @@
                     <span>{{ props.row.jobStatus }}</span>
                   </el-form-item>
                   <el-form-item label="操作:">
-                      <el-button size="small"
-                       type="danger"
-                       v-if="props.row.status=='1'"
-                       @click="handleCancelJob(props.row.jobId)">
-                       停止
-                      </el-button>
+                    <el-button size="small"
+                               type="danger"
+                               v-if="props.row.status=='1'"
+                               @click="handleCancelJob(props.row.jobId)">
+                      停止
+                    </el-button>
                   </el-form-item>
                   <el-form-item label="异常日志:">
                     <el-input type="textarea"
@@ -152,7 +152,7 @@ export default {
       this.taskId = taskId;
       this.loadJobsData();
     },
-    handleCancelJob: function(jobId){
+    handleCancelJob: function (jobId) {
       this.$http.get(
         "/dbswitch/admin/api/v1/ops/job/cancel?id=" + jobId
       ).then(res => {
@@ -205,7 +205,11 @@ export default {
 
 .container {
   display: flex;
-  height: 600px;
+  height: 100%;
+}
+
+.container > * {
+    float: left; /* 水平排列 */
 }
 
 .container .navsBox {
@@ -219,6 +223,9 @@ export default {
 
 .container .navsBox ul li {
   list-style: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrop;
   cursor: pointer; /*鼠标悬停变小手*/
   padding: 10px 0;
   border-bottom: 1px solid #e0e0e0;
@@ -232,5 +239,6 @@ export default {
 
 .container .contentBox {
   padding: 10px;
+  width: calc(100% - 250px);
 }
 </style>

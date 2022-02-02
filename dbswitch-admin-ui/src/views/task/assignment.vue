@@ -16,6 +16,7 @@
                          min-width="8%"></el-table-column>
         <el-table-column prop="name"
                          label="名称"
+                         show-overflow-tooltip
                          min-width="30%"></el-table-column>
         <el-table-column prop="scheduleMode"
                          label="调度"
@@ -165,7 +166,13 @@
                         label-width="120px"
                         :required=false
                         prop="sourceTables"
-                        style="width:65%">
+                        style="width:85%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                当为包含表时，选择所要精确包含的表名，如果不选则代表选择所有；当为排除表时，选择索要精确排除的表名。
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-select placeholder="请选择表名"
                        multiple
                        v-model="createform.sourceTables">
@@ -214,12 +221,12 @@
                         prop="batchSize"
                         style="width:85%">
             <el-select v-model="createform.batchSize">
-              <el-option label="1000"
-                         value="1000"></el-option>
-              <el-option label="5000"
-                         value="5000"></el-option>
-              <el-option label="10000"
-                         value="10000"></el-option>
+              <el-option label=1000
+                         :value=1000></el-option>
+              <el-option label=5000
+                         :value=5000></el-option>
+              <el-option label=10000
+                         :value=10000></el-option>
             </el-select>
           </el-form-item>
         </el-form>
@@ -328,9 +335,15 @@
           </el-form-item>
           <el-form-item label="表名配置"
                         label-width="120px"
-                        :required=true
+                        :required=false
                         prop="sourceTables"
-                        style="width:65%">
+                        style="width:85%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                当为包含表时，选择所要精确包含的表名，如果不选则代表选择所有；当为排除表时，选择索要精确排除的表名。
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-select placeholder="请选择表名"
                        multiple
                        v-model="updateform.sourceTables">
@@ -379,12 +392,12 @@
                         prop="batchSize"
                         style="width:85%">
             <el-select v-model="updateform.batchSize">
-              <el-option label="1000"
-                         value="1000"></el-option>
-              <el-option label="5000"
-                         value="5000"></el-option>
-              <el-option label="10000"
-                         value="10000"></el-option>
+              <el-option label=1000
+                         :value=1000></el-option>
+              <el-option label=5000
+                         :value=5000></el-option>
+              <el-option label=10000
+                         :value=10000></el-option>
             </el-select>
           </el-form-item>
         </el-form>
@@ -400,8 +413,8 @@
 </template>
 
 <script>
-
 export default {
+
   data () {
     return {
       loading: true,
@@ -423,7 +436,7 @@ export default {
         targetConnectionId: 0,
         targetDropTable: true,
         targetSchema: "",
-        batchSize: "10000"
+        batchSize: 5000
       },
       updateform: {
         id: 0,
@@ -439,7 +452,7 @@ export default {
         targetConnectionId: 0,
         targetDropTable: true,
         targetSchema: "",
-        batchSize: "10000"
+        batchSize: 5000
       },
       rules: {
         name: [
@@ -508,7 +521,7 @@ export default {
         batchSize: [
           {
             required: true,
-            type: 'string',
+            type: 'integer',
             message: "必选选择一个批大小",
             trigger: "change"
           }
