@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.model;
 
-import com.gitee.dbswitch.core.constant.DBTableType;
+import com.gitee.dbswitch.common.type.DBTableType;
 
 /**
  * 数据库表描述符信息定义(Table Description)

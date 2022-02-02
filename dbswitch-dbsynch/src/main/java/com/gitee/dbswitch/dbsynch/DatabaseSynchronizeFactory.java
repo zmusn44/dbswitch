@@ -56,7 +56,7 @@ public final class DatabaseSynchronizeFactory {
     String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
     if (!DATABASE_SYNC_MAPPER.containsKey(type)) {
       throw new RuntimeException(
-          String.format("[dbsynch] Unknown Supported database type (%s)", type));
+          String.format("[dbsynch] Unsupported database type (%s)", type));
     }
 
     return DATABASE_SYNC_MAPPER.get(type).apply(dataSource);

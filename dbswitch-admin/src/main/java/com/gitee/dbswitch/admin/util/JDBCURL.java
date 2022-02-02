@@ -283,12 +283,32 @@ public class JDBCURL {
       System.out.println("error for db2!");
     }
 
-    // 9、SQLite数据库
-    // jdbc:sqlite:/tmp/phone.db
-    final Matcher matcher9 = JDBCURL.getPattern("jdbc:sqlite:{file}")
-        .matcher("jdbc:sqlite:D:\\Project\\Test\\phone.db");
+    // 10、Hive数据库
+    // jdbc:hive2://172.17.2.10:10000/test?useUnicode=true&useSSL=false
+    final Matcher matcher9 = JDBCURL
+        .getPattern("jdbc:hive2://{host}[:{port}]/[{database}][\\?{params}]")
+        .matcher("jdbc:hive2://127.0.0.1:10000/default?useUnicode=true&useSSL=false");
     if (matcher9.matches()) {
-      System.out.println("sqlite file:" + matcher9.group("file"));
+      System.out.println("hive host:" + matcher3.group("host"));
+      System.out.println("hive port:" + matcher3.group("port"));
+      System.out.println("hive database:" + matcher3.group("database"));
+      String params = matcher9.group("params");
+      if (null != params) {
+        String[] pairs = params.split("&");
+        for (String pair : pairs) {
+          System.out.println("mysql params:" + pair);
+        }
+      }
+    } else {
+      System.out.println("error for hive!");
+    }
+
+    // 11、SQLite数据库
+    // jdbc:sqlite:/tmp/phone.db
+    final Matcher matcher10 = JDBCURL.getPattern("jdbc:sqlite:{file}")
+        .matcher("jdbc:sqlite:D:\\Project\\Test\\phone.db");
+    if (matcher10.matches()) {
+      System.out.println("sqlite file:" + matcher10.group("file"));
     } else {
       System.out.println("error for sqlite!");
     }

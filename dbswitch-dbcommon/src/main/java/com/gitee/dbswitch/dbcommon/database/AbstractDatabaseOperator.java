@@ -12,9 +12,9 @@ package com.gitee.dbswitch.dbcommon.database;
 import com.gitee.dbswitch.dbcommon.constant.Constants;
 import com.gitee.dbswitch.dbcommon.domain.StatementResultSet;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Objects;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -94,8 +94,8 @@ public abstract class AbstractDatabaseOperator implements IDatabaseOperator {
       log.debug("Execute sql :{}", sql);
     }
     try (Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement(sql)) {
-      return ps.executeUpdate();
+        Statement st = connection.createStatement()) {
+      return st.executeUpdate(sql);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

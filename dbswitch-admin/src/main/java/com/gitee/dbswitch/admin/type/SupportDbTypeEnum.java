@@ -34,6 +34,8 @@ public enum SupportDbTypeEnum {
       new String[]{"jdbc:dm://{host}:{port}[/{database}][\\?{params}]"}),
   KINGBASE(8, "kingbase", "com.kingbase8.Driver", 54321, "SELECT 1",
       new String[]{"jdbc:kingbase8://{host}[:{port}]/[{database}][\\?{params}]"}),
+  HIVE(1, "hive", "org.apache.hive.jdbc.HiveDriver", 10000, "SELECT 1",
+      new String[]{"jdbc:hive2://{host}[:{port}]/[{database}][\\?{params}]"}),
   ;
 
   private int id;

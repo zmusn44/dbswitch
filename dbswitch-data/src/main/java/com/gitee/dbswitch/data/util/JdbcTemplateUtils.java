@@ -10,10 +10,13 @@
 package com.gitee.dbswitch.data.util;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.util.CommonUtils;
 import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
+import com.gitee.dbswitch.common.util.HivePrepareUtils;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +51,8 @@ public final class JdbcTemplateUtils {
       return DatabaseTypeEnum.DM;
     } else if (productName.equalsIgnoreCase("Kingbase")) {
       return DatabaseTypeEnum.KINGBASE;
+    } else if (productName.equalsIgnoreCase("Hive")) {
+      return DatabaseTypeEnum.HIVE;
     } else {
       DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
       if (DatabaseDriver.MARIADB == databaseDriver) {
@@ -71,30 +76,36 @@ public final class JdbcTemplateUtils {
   /**
    * 获取表字段的元信息
    *
-   * @param sourceJdbcTemplate JdbcTemplate
-   * @param fullTableName      表的全名
+   * @param dataSource   DataSource
+   * @param databaseType databaseType
+   * @param schemaName   schemaName
+   * @param tableName    tableName
    * @return Map<String, Integer>
    */
   public static Map<String, Integer> getColumnMetaData(
-      JdbcTemplate sourceJdbcTemplate,
-      String fullTableName) {
+      DataSource dataSource, DatabaseTypeEnum databaseType,
+      String schemaName, String tableName) {
+    String fullTableName = CommonUtils.getTableFullNameByDatabase(databaseType,
+        schemaName, tableName);
     final String sql = String.format("select * from %s where 1=2", fullTableName);
     Map<String, Integer> columnMetaData = new HashMap<>();
-    sourceJdbcTemplate.execute((Connection connection) -> {
-      try (Statement stmt = connection.createStatement();
-          ResultSet rs = stmt.executeQuery(sql)) {
-        ResultSetMetaData rsMetaData = rs.getMetaData();
-        for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
-          columnMetaData.put(rsMetaData.getColumnName(i + 1), rsMetaData.getColumnType(i + 1));
+    try (Connection connection = dataSource.getConnection()) {
+      try (Statement stmt = connection.createStatement()) {
+        if (connection.getMetaData().getDatabaseProductName().contains("Hive")) {
+          HivePrepareUtils.prepare(connection, schemaName, tableName);
         }
-        return true;
-      } catch (Exception e) {
-        throw new RuntimeException(
-            String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", fullTableName), e);
+        try (ResultSet rs = stmt.executeQuery(sql)) {
+          ResultSetMetaData rsMetaData = rs.getMetaData();
+          for (int i = 0, len = rsMetaData.getColumnCount(); i < len; i++) {
+            columnMetaData.put(rsMetaData.getColumnName(i + 1), rsMetaData.getColumnType(i + 1));
+          }
+          return columnMetaData;
+        }
       }
-    });
-
-    return columnMetaData;
+    } catch (SQLException e) {
+      throw new RuntimeException(
+          String.format("获取表:%s 的字段的元信息时失败. 请联系 DBA 核查该库、表信息.", fullTableName), e);
+    }
   }
 
   /**
@@ -112,7 +123,8 @@ public final class JdbcTemplateUtils {
     String sql = "SELECT count(*) as total FROM information_schema.tables "
         + "WHERE table_schema=? AND table_name=? AND ENGINE='InnoDB'";
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    return jdbcTemplate.queryForObject(sql, new Object[]{schemaName, tableName}, Integer.class) > 0;
+    return jdbcTemplate.queryForObject(sql, new Object[]{schemaName, tableName}, Integer.class)
+        > 0;
   }
 
 }

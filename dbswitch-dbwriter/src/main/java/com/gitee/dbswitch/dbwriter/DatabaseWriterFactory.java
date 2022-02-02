@@ -66,7 +66,7 @@ public class DatabaseWriterFactory {
 
     if (!DATABASE_WRITER_MAPPER.containsKey(type.trim())) {
       throw new RuntimeException(
-          String.format("[dbwrite] Unknown Supported database type (%s)", type));
+          String.format("[dbwrite] Unsupported database type (%s)", type));
     }
 
     return DATABASE_WRITER_MAPPER.get(type.trim()).apply(dataSource);
