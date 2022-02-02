@@ -34,11 +34,17 @@ public final class CommonUtils {
       String table) {
     if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
         || dbType == DatabaseTypeEnum.HIVE) {
-      return String.format("`%s`.`%s`", schema, table);
+      return String.format("`%s`.`%s`",
+          schema.replace("`", "``"),
+          table.replace("`", "``"));
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
-      return String.format("[%s].[%s]", schema, table);
+      return String.format("[%s].[%s]",
+          schema,
+          table);
     } else {
-      return String.format("\"%s\".\"%s\"", schema, table);
+      return String.format("\"%s\".\"%s\"",
+          schema.replace("\"", "\"\""),
+          table.replace("\"", "\"\""));
     }
   }
 
@@ -77,11 +83,11 @@ public final class CommonUtils {
   private static String quoteString(DatabaseTypeEnum dbType, String keyName) {
     if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
         || dbType == DatabaseTypeEnum.HIVE) {
-      return String.format("`%s`", keyName);
+      return String.format("`%s`", keyName.replace("`", "``"));
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
       return String.format("[%s]", keyName);
     } else {
-      return String.format("\"%s\"", keyName);
+      return String.format("\"%s\"", keyName.replace("\"", "\"\""));
     }
   }
 
