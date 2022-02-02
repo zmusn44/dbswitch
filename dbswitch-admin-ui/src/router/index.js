@@ -43,7 +43,7 @@ const constantRouter = new Router({
             {
               path: '/task/schedule',
               name: '调度记录',
-              icon: "el-icon-s-check",
+              icon: "el-icon-pie-chart",
               component: () => import('@/views/task/schedule')
             }
           ]
