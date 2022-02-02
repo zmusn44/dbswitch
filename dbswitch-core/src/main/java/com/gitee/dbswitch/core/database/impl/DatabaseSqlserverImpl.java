@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.constant.Const;
+import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 支持SQLServer数据库的元信息实现
@@ -195,7 +194,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:
       case ColumnMetaData.TYPE_BIGNUMBER:
-        if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
+        if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
           if (useAutoInc) {
             retval += "BIGINT IDENTITY(0,1)";
           } else {
@@ -255,7 +254,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 
   @Override
   public String getPrimaryKeyAsString(List<String> pks) {
-    if (!CollectionUtils.isEmpty(pks)) {
+    if (null != pks && !pks.isEmpty()) {
       StringBuilder sb = new StringBuilder();
       sb.append("[");
       sb.append(StringUtils.join(pks, "] , ["));

@@ -10,13 +10,12 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.constant.Const;
+import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import java.util.List;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 支持Kingbase数据库的元信息实现
@@ -71,7 +70,7 @@ public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseI
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:
       case ColumnMetaData.TYPE_BIGNUMBER:
-        if (!CollectionUtils.isEmpty(pks) && pks.contains(fieldname)) {
+        if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
           if (useAutoInc) {
             retval += "BIGSERIAL";
           } else {

@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.util;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.constant.Const;
+import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;

@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.common.util;
 
-import java.util.List;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import java.util.List;
 
 /**
  * 普通工具类
@@ -32,7 +32,8 @@ public final class CommonUtils {
    */
   public static String getTableFullNameByDatabase(DatabaseTypeEnum dbType, String schema,
       String table) {
-    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB) {
+    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
+        || dbType == DatabaseTypeEnum.HIVE) {
       return String.format("`%s`.`%s`", schema, table);
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
       return String.format("[%s].[%s]", schema, table);
@@ -74,7 +75,8 @@ public final class CommonUtils {
   }
 
   private static String quoteString(DatabaseTypeEnum dbType, String keyName) {
-    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB) {
+    if (dbType == DatabaseTypeEnum.MYSQL || dbType == DatabaseTypeEnum.MARIADB
+        || dbType == DatabaseTypeEnum.HIVE) {
       return String.format("`%s`", keyName);
     } else if (dbType == DatabaseTypeEnum.SQLSERVER || dbType == DatabaseTypeEnum.SQLSERVER2000) {
       return String.format("[%s]", keyName);

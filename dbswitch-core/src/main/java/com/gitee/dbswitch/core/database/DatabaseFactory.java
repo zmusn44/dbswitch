@@ -13,6 +13,7 @@ import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.impl.DatabaseDB2Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseDmImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseGreenplumImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseHiveImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseKingbaseImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMariaDBImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMysqlImpl;
@@ -45,6 +46,7 @@ public final class DatabaseFactory {
       put(DatabaseTypeEnum.DB2, DatabaseDB2Impl.class.getName());
       put(DatabaseTypeEnum.DM, DatabaseDmImpl.class.getName());
       put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl.class.getName());
+      put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl.class.getName());
     }
   };
 
@@ -64,4 +66,5 @@ public final class DatabaseFactory {
 
   private DatabaseFactory() {
   }
+
 }

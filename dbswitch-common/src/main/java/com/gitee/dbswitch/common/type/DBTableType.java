@@ -7,7 +7,7 @@
 // Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
-package com.gitee.dbswitch.core.constant;
+package com.gitee.dbswitch.common.type;
 
 /**
  * 数据库表类型:视图表、物理表

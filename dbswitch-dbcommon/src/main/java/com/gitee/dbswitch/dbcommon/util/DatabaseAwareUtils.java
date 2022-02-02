@@ -45,6 +45,8 @@ public final class DatabaseAwareUtils {
         return "kingbase";
       } else if (productName.equalsIgnoreCase("DM DBMS")) {
         return "dm";
+      } else if (productName.equalsIgnoreCase("Apache Hive")) {
+        return "hive";
       }
 
       DatabaseDriver databaseDriver = DatabaseDriver.fromProductName(productName);
