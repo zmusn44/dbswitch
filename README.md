@@ -14,7 +14,7 @@
 
 基于JDBC的分批次读取源端数据库数据，并基于insert/copy方式将数据分批次写入目的数据库。
 
-支持有主键表的 **增量变更同步** （变化数据计算Change Data Calculate）功能(千万级以上数据量慎用)
+支持有主键表的 **增量变更同步** （变化数据计算Change Data Calculate）功能(千万级以上数据量的性能尚需在生产环境验证)
 
 ### 2、功能设计
 
@@ -36,6 +36,8 @@
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
+** 注:** 目前Hive只支持账号密码方式认证。
+
 ### 4、结构设计
   
 - 模块结构设计
@@ -56,7 +58,7 @@
     ├── dbswitch-dbsynch   // 将dbchange模块计算的变更数据同步入库模块
     ├── dbswitch-data      // 工具入口模块，读取配置文件中的参数执行异构迁移同步
     ├── dbswitch-admin     // 在以上模块的基础上引入Quartz的调度服务与接口
-    ├── dbswitch-admin-ui  // 基于Vue的前段WEB交互页面
+    ├── dbswitch-admin-ui  // 基于Vue2的前段WEB交互页面
     ├── package-tool       // 基于maven-assembly-plugin插件的项目打包模块
 ```
  
