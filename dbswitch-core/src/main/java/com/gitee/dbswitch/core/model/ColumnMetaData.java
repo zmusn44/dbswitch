@@ -356,6 +356,14 @@ public class ColumnMetaData {
             }
           }
 
+          // If we're dealing with Hive and double precision types
+          if (desc.getDbType() == DatabaseTypeEnum.HIVE && type == java.sql.Types.DOUBLE
+              && precision >= 15
+              && length >= 15) {
+            precision = 6;
+            length = 25;
+          }
+
           // if the length or precision needs a BIGNUMBER
           //if (length > 15 || precision > 15) {
           //	valtype = ColumnMetaData.TYPE_BIGNUMBER;
