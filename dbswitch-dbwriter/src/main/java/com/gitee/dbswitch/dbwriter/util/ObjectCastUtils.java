@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 public final class ObjectCastUtils {
@@ -133,6 +134,8 @@ public final class ObjectCastUtils {
         return "";
       }
     } else if (in instanceof java.sql.SQLXML) {
+      return in.toString();
+    } else if (in instanceof java.sql.Array) {
       return in.toString();
     } else if (in.getClass().getName().equals("oracle.sql.INTERVALDS")) {
       return in.toString();
@@ -858,4 +861,46 @@ public final class ObjectCastUtils {
 
     return null;
   }
+
+  public static Object castByDetermine(final Object in) {
+    if (null == in) {
+      return null;
+    }
+
+    if (in instanceof java.sql.Clob) {
+      return ObjectCastUtils.clob2Str((java.sql.Clob) in);
+    } else if (in instanceof java.sql.Array
+        || in instanceof java.sql.SQLXML) {
+      try {
+        return ObjectCastUtils.objectToString(in);
+      } catch (Exception e) {
+        log.warn("Unsupported type for convert {} to java.lang.String", in.getClass().getName());
+        return null;
+      }
+    } else if (in instanceof java.sql.Blob) {
+      try {
+        return ObjectCastUtils.blob2Bytes((java.sql.Blob) in);
+      } catch (Exception e) {
+        log.warn("Unsupported type for convert {} to byte[] ", in.getClass().getName());
+        return null;
+      }
+    } else if (in instanceof java.sql.Struct) {
+      log.warn("Unsupported type for convert {} to java.lang.String", in.getClass().getName());
+      return null;
+    }
+
+    return in;
+  }
+
+  public static String objectToString(final Object in) {
+    String v = in.toString();
+    String a = in.getClass().getName() + "@" + Integer.toHexString(in.hashCode());
+    if (a.length() == v.length() && StringUtils.equals(a, v)) {
+      throw new UnsupportedOperationException("Unsupported convert "
+          + in.getClass().getName() + " to java.lang.String");
+    }
+
+    return v;
+  }
+
 }
