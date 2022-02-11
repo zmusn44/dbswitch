@@ -11,6 +11,7 @@ package com.gitee.dbswitch.dbwriter.mssql;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,20 @@ public class SqlServerWriterImpl extends AbstractDatabaseWriter implements IData
 
   @Override
   public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    if (recordValues.isEmpty()) {
+      return 0;
+    }
+
+    recordValues.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = ObjectCastUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
     List<String> placeHolders = Collections.nCopies(fieldNames.size(), "?");
     String sqlInsert = String.format("INSERT INTO [%s].[%s] ( [%s] ) VALUES ( %s )",
         schemaName, tableName,
