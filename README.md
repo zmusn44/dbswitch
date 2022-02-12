@@ -108,7 +108,12 @@ sh ./docker-maven-build.sh
 
 (1) 当编译打包命令执行完成后，会在dbswitch/target/目录下生成dbswitch-relase-x.x.x.tar.gz的打包文件，将文件拷贝到已安装JRE的部署机器上解压即可。
 
-(2) 提供基于docker-compose在linux下的一键部署，详见文档: [build-docker/install/README.md](build-docker/install)
+(2) 基于docker-compose提供linux联网环境下的**一键安装**：
+
+```
+curl -sSL https://gitee.com/inrgihc/dbswitch/attach_files/965057/download | sh
+```
+详见文档: [build-docker/install/README.md](build-docker/install) 
 
 ## 三、工具使用
 
@@ -420,6 +425,8 @@ bin/startup.sh
 （3）https://blog.csdn.net/inrgihc/article/details/103932231
 
 （4）https://blog.csdn.net/inrgihc/article/details/103738656
+
+（5）https://blog.csdn.net/inrgihc/article/details/121447417
 
 ## 六、问题反馈
 
