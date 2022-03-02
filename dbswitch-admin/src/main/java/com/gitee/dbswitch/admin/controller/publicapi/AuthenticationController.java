@@ -9,9 +9,9 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.publicapi;
 
-import com.gitee.dbswitch.admin.common.annotation.AccessLog;
-import com.gitee.dbswitch.admin.common.annotation.NoToken;
-import com.gitee.dbswitch.admin.common.annotation.OperateLog;
+import com.gitee.dbswitch.admin.common.annotation.LogAccess;
+import com.gitee.dbswitch.admin.common.annotation.LogOperate;
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
 import com.gitee.dbswitch.admin.service.AuthenticationService;
@@ -34,8 +34,7 @@ public class AuthenticationController {
   @Resource
   private AuthenticationService authenticationService;
 
-  @NoToken
-  @AccessLog(value = "认证登陆", description = "'认证登陆的用户名为：'+#username")
+  @LogAccess(value = "认证登陆", description = "'认证登陆的用户名为：'+#username")
   @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiOperation(value = "账号登录", notes = "使用一个账号密码登录")
   @ApiImplicitParams({
@@ -46,7 +45,8 @@ public class AuthenticationController {
     return authenticationService.login(username, password);
   }
 
-  @OperateLog(name = "退出登录")
+  @TokenCheck
+  @LogOperate(name = "退出登录")
   @GetMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
   @ApiOperation(value = "认证登出", notes = "登出系统")
   @ApiImplicitParams({

@@ -9,8 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.util;
 
-import org.apache.shiro.crypto.hash.SimpleHash;
-import org.apache.shiro.util.ByteSource;
+import cn.hutool.crypto.digest.BCrypt;
 
 public final class PasswordUtils {
 
@@ -26,18 +25,20 @@ public final class PasswordUtils {
 
   public static String encryptPassword(String password, String credentialsSalt,
       String algorithmName, int hashIterations) {
-    String newPassword = new SimpleHash(algorithmName, password,
-        ByteSource.Util.bytes(credentialsSalt),
-        hashIterations).toHex();
+    String newPassword = BCrypt.hashpw(password, credentialsSalt);
+    //String newPassword = new SimpleHash(algorithmName, password,
+    //    ByteSource.Util.bytes(credentialsSalt),
+    //    hashIterations).toHex();
 
     return newPassword;
   }
 
   public static void main(String[] args) {
     String password = "123456";
-    String credentialsSalt = "test";
+    String credentialsSalt = "$2a$10$eUanVjvzV27BBxAb4zuBCu";//BCrypt.gensalt();
     String newPassword = encryptPassword(password, credentialsSalt);
     System.out.println(newPassword);
+    System.out.println(credentialsSalt);
   }
 
 }

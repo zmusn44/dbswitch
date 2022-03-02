@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.TableDescription;
@@ -30,6 +31,11 @@ public class DatabaseSqlserver2000Impl extends DatabaseSqlserverImpl implements 
     super("com.microsoft.jdbc.sqlserver.SQLServerDriver");
   }
 
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.SQLSERVER2000;
+  }
+  
   @Override
   public List<TableDescription> queryTableList(String schemaName) {
     List<TableDescription> ret = new ArrayList<>();

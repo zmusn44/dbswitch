@@ -28,7 +28,7 @@ public class TokenUtils {
     String authorization = httpRequest.getHeader("Authorization");
     if (!StringUtils.isEmpty(authorization)) {
       String[] splitString = authorization.split(" ");
-      if (splitString.length == 2 && "Bearer".equals(splitString[0])) {
+      if (splitString.length == 2 && "Bearer".equalsIgnoreCase(splitString[0])) {
         return splitString[1];
       }
     }

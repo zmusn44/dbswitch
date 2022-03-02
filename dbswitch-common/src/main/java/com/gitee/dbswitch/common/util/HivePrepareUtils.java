@@ -14,6 +14,11 @@ public final class HivePrepareUtils {
   private HivePrepareUtils() {
   }
 
+  public static void setResultSetColumnNameNotUnique(Connection connection)
+      throws SQLException {
+    executeWithoutResultSet(connection, HIVE_SQL_1);
+  }
+
   public static void prepare(Connection connection, String schema, String table)
       throws SQLException {
     executeWithoutResultSet(connection, HIVE_SQL_1);

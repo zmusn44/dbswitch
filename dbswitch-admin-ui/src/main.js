@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import axios from './assets/axios.js';
 import ElementUI from 'element-ui';
+import './assets/iconfont/iconfont.css'
 import 'element-ui/lib/theme-chalk/index.css';
 import VueCron from 'vue-cron'
 import echarts from 'echarts'

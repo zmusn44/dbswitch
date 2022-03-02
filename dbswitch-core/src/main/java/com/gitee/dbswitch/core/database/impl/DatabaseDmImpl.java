@@ -9,13 +9,16 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import java.util.List;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
 
 /**
  * 支持DM数据库的元信息实现
@@ -24,15 +27,61 @@ import com.gitee.dbswitch.core.model.ColumnMetaData;
  */
 public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static final String SHOW_CREATE_TABLE_SQL =
+      "SELECT DBMS_METADATA.GET_DDL('TABLE','%s','%s') FROM DUAL ";
+  private static final String SHOW_CREATE_VIEW_SQL =
+      "SELECT DBMS_METADATA.GET_DDL('VIEW','%s','%s') FROM DUAL ";
+
   public DatabaseDmImpl() {
     super("dm.jdbc.driver.DmDriver");
+  }
+
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.DM;
+  }
+
+  @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_TABLE_SQL, tableName, schemaName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_VIEW_SQL, tableName, schemaName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
   }
 
   @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String
         .format("SELECT * from (%s) tmp where ROWNUM<=1 ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.DM);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override

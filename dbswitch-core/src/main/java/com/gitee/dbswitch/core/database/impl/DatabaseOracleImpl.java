@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -19,6 +19,7 @@ import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,8 +44,18 @@ import java.util.Set;
  */
 public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static final String SHOW_CREATE_TABLE_SQL =
+      "SELECT DBMS_METADATA.GET_DDL('TABLE','%s','%s') FROM DUAL ";
+  private static final String SHOW_CREATE_VIEW_SQL =
+      "SELECT DBMS_METADATA.GET_DDL('VIEW','%s','%s') FROM DUAL ";
+
   public DatabaseOracleImpl() {
     super("oracle.jdbc.driver.OracleDriver");
+  }
+
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.ORACLE;
   }
 
   @Override
@@ -76,6 +87,42 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_TABLE_SQL, tableName, schemaName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_VIEW_SQL, tableName, schemaName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
   public List<String> queryTablePrimaryKeys(String schemaName, String tableName) {
     // Oracle表的主键可以使用如下命令设置主键是否生效
     // 使主键失效：alter table tableName disable primary key;
@@ -103,7 +150,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String.format("SELECT * from (%s) tmp where ROWNUM<=1 ",
         sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.ORACLE);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override

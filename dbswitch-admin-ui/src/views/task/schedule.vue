@@ -2,19 +2,29 @@
   <div>
     <el-card>
       <div class="container">
+        <el-card class="box-card">
+          <div slot="header"
+               class="clearfix">
+            <span>任务安排列表</span>
+          </div>
+          <div class="navsBox">
+            <ul>
+              <li v-for="(item,index) in allTaskAssignments"
+                  :key="index"
+                  @click="handleChooseClick(item.id,index)"
+                  :class="{active:index==isActive}">[{{item.id}}]{{item.name}}</li>
+            </ul>
+          </div>
+        </el-card>
 
-        <div class="navsBox">
-          <ul>
-            <li v-for="(item,index) in allTaskAssignments"
-                :key="index"
-                @click="handleChooseClick(item.id,index)"
-                :class="{active:index==isActive}">[{{item.id}}]{{item.name}}</li>
-          </ul>
-        </div>
         <div class="contentBox">
-          <el-table :data="jobTableData"
+          <el-table :header-cell-style="{background:'#eef1f6',color:'#606266'}"
+                    :data="jobTableData"
                     size="small"
                     border>
+                    <template slot="empty">
+                      <span>单击左侧任务列表记录来查看作业调度记录</span>
+                    </template>
             <el-table-column type="expand">
               <template slot-scope="props">
                 <el-form label-position="left"
@@ -209,11 +219,19 @@ export default {
 }
 
 .container > * {
-    float: left; /* 水平排列 */
+  float: left; /* 水平排列 */
 }
 
-.container .navsBox {
-  background: #f2f2f2;
+.container .el-card {
+  width: 50%;
+  height: 100%;
+  overflow: auto;
+}
+
+.container .el-card__header {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ebeef5;
+  box-sizing: border-box;
 }
 
 .container .navsBox ul {
@@ -229,7 +247,7 @@ export default {
   cursor: pointer; /*鼠标悬停变小手*/
   padding: 10px 0;
   border-bottom: 1px solid #e0e0e0;
-  width: 250px;
+  width: 100%;
 }
 
 .container .navsBox .active {

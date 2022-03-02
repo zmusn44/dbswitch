@@ -9,7 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.privateapi;
 
-import com.gitee.dbswitch.admin.common.annotation.OperateLog;
+import com.gitee.dbswitch.admin.common.annotation.LogOperate;
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
@@ -40,7 +41,8 @@ public class AssignmentController {
   @Resource
   private AssignmentService assignmentService;
 
-  @OperateLog(name = "创建任务", description = "'创建任务的名称为：'+#request.name")
+  @TokenCheck
+  @LogOperate(name = "创建任务", description = "'创建任务的名称为：'+#request.name")
   @ApiOperation(value = "创建")
   @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<AssignmentInfoResponse> createAssignment(
@@ -48,7 +50,8 @@ public class AssignmentController {
     return Result.success(assignmentService.createAssignment(request));
   }
 
-  @OperateLog(name = "修改任务", description = "'修改任务的名称为：'+#request.name")
+  @TokenCheck
+  @LogOperate(name = "修改任务", description = "'修改任务的名称为：'+#request.name")
   @ApiOperation(value = "修改")
   @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result updateAssignment(@RequestBody AssigmentUpdateRequest request) {
@@ -56,7 +59,8 @@ public class AssignmentController {
     return Result.success();
   }
 
-  @OperateLog(name = "删除任务", description = "'删除任务的ID为：'+#id")
+  @TokenCheck
+  @LogOperate(name = "删除任务", description = "'删除任务的ID为：'+#id")
   @ApiOperation(value = "删除")
   @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result deleteAssignment(@PathVariable("id") Long id) {
@@ -64,6 +68,7 @@ public class AssignmentController {
     return Result.success();
   }
 
+  @TokenCheck
   @ApiOperation(value = "任务列表")
   @GetMapping(value = "/list/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PageResult<AssignmentInfoResponse> listAssignment(
@@ -72,6 +77,7 @@ public class AssignmentController {
     return assignmentService.listAll(null, page, size);
   }
 
+  @TokenCheck
   @ApiOperation(value = "任务详情")
   @GetMapping(value = "/detail/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<AssignmentDetailResponse> detailAssignment(
@@ -79,7 +85,8 @@ public class AssignmentController {
     return assignmentService.detailAssignment(id);
   }
 
-  @OperateLog(name = "发布任务", description = "'发布任务的ID为：'+#ids")
+  @TokenCheck
+  @LogOperate(name = "发布任务", description = "'发布任务的ID为：'+#ids")
   @ApiOperation(value = "发布")
   @PostMapping(value = "/deploy", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result deployAssignments(
@@ -88,7 +95,8 @@ public class AssignmentController {
     return Result.success();
   }
 
-  @OperateLog(name = "手动执行任务", description = "'手动执行任务的ID为：'+#ids")
+  @TokenCheck
+  @LogOperate(name = "手动执行任务", description = "'手动执行任务的ID为：'+#ids")
   @ApiOperation(value = "手动执行")
   @PostMapping(value = "/run", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result runAssignments(@RequestBody List<Long> ids) {
@@ -96,7 +104,8 @@ public class AssignmentController {
     return Result.success();
   }
 
-  @OperateLog(name = "下线任务", description = "'下线任务的ID为：'+#ids")
+  @TokenCheck
+  @LogOperate(name = "下线任务", description = "'下线任务的ID为：'+#ids")
   @ApiOperation(value = "下线")
   @PostMapping(value = "/retire", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result retireAssignments(@RequestParam(value = "ids") List<Long> ids) {

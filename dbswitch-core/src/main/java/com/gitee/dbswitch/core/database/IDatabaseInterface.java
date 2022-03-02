@@ -9,8 +9,10 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database;
 
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import java.util.List;
 
@@ -20,6 +22,13 @@ import java.util.List;
  * @author tang
  */
 public interface IDatabaseInterface extends AutoCloseable {
+
+  /**
+   * 获取数据库类型
+   *
+   * @return 数据库类型
+   */
+  DatabaseTypeEnum getDatabaseType();
 
   /**
    * 建立数据库连接
@@ -52,6 +61,34 @@ public interface IDatabaseInterface extends AutoCloseable {
   List<TableDescription> queryTableList(String schemaName);
 
   /**
+   * 精确获取表或视图的元数据
+   *
+   * @param schemaName 模式名称
+   * @param tableName  表或视图名称
+   *
+   * @return
+   */
+  TableDescription queryTableMeta(String schemaName, String tableName);
+
+  /**
+   * 获取指定物理表的DDL语句
+   *
+   * @param schemaName 模式名称
+   * @param tableName  表或视图名称
+   * @return 字段元信息列表
+   */
+  String getTableDDL(String schemaName, String tableName);
+
+  /**
+   * 获取指定视图表的DDL语句
+   *
+   * @param schemaName 模式名称
+   * @param tableName  表或视图名称
+   * @return 字段元信息列表
+   */
+  String getViewDDL(String schemaName, String tableName);
+
+  /**
    * 获取指定模式表的元信息
    *
    * @param schemaName 模式名称
@@ -76,6 +113,16 @@ public interface IDatabaseInterface extends AutoCloseable {
    * @return 主键字段名称列表
    */
   List<String> queryTablePrimaryKeys(String schemaName, String tableName);
+
+  /**
+   * 获取指定模式表内的数据
+   *
+   * @param schemaName 模式名称
+   * @param tableName  表名称
+   * @param rowCount   记录的行数
+   * @return 数据内容
+   */
+  SchemaTableData queryTableData(String schemaName, String tableName, int rowCount);
 
   /**
    * 测试查询SQL语句的有效性
