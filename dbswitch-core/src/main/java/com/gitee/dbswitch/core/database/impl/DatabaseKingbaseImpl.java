@@ -9,12 +9,16 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
+import com.gitee.dbswitch.core.database.constant.PostgresqlConst;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
@@ -24,14 +28,62 @@ import java.util.List;
  */
 public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static final String SHOW_CREATE_VIEW_SQL =
+      "SELECT pg_get_viewdef((select pg_class.relfilenode from pg_catalog.pg_class \n"
+          + "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid \n"
+          + "where pg_namespace.nspname='%s' and pg_class.relname ='%s'),true) ";
+
   public DatabaseKingbaseImpl() {
     super("com.kingbase8.Driver");
   }
 
   @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.KINGBASE;
+  }
+
+  @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = PostgresqlConst.CREATE_TABLE_SQL_TPL
+        .replace(PostgresqlConst.TPL_KEY_SCHEMA, schemaName)
+        .replace(PostgresqlConst.TPL_KEY_TABLE, tableName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.KINGBASE);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override

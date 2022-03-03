@@ -8,7 +8,8 @@
                    icon="el-icon-document-add"
                    @click="createFormVisible=true">添加</el-button>
       </div>
-      <el-table :data="tableData"
+      <el-table :header-cell-style="{background:'#eef1f6',color:'#606266'}"
+                :data="tableData"
                 size="small"
                 border>
         <el-table-column prop="id"
@@ -16,6 +17,9 @@
                          min-width="5%"></el-table-column>
         <el-table-column prop="name"
                          label="连接名称"
+                         min-width="20%"></el-table-column>
+        <el-table-column prop="createTime"
+                         label="创建时间"
                          min-width="20%"></el-table-column>
         <el-table-column prop="type"
                          label="数据库类型"
@@ -25,7 +29,7 @@
                          show-overflow-tooltip
                          min-width="30%"></el-table-column>
         <el-table-column prop="username"
-                         label="账号名称"
+                         label="账号"
                          min-width="10%"></el-table-column>
         <el-table-column label="操作"
                          min-width="30%">
@@ -164,6 +168,7 @@
           </el-form-item>
           <el-form-item label="连接密码"
                         label-width="120px"
+                        prop="password"
                         style="width:85%">
             <el-input type="password"
                       v-model="createform.password"
@@ -228,6 +233,7 @@
           </el-form-item>
           <el-form-item label="连接密码"
                         label-width="120px"
+                        prop="password"
                         style="width:85%">
             <el-input type="password"
                       v-model="updateform.password"
@@ -305,8 +311,15 @@ export default {
         ],
         username: [
           {
-            required: false,
+            required: true,
             message: "连接账号名必须提供",
+            trigger: "blur"
+          }
+        ],
+        password: [
+          {
+            required: true,
+            message: "连接密码必须提供",
             trigger: "blur"
           }
         ]
@@ -358,7 +371,6 @@ export default {
       );
     },
     handleClose (done) {
-
     },
     handleDelete: function (index, row) {
       this.$confirm(

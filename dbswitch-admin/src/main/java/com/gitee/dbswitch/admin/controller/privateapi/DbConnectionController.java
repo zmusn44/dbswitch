@@ -9,7 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.privateapi;
 
-import com.gitee.dbswitch.admin.common.annotation.OperateLog;
+import com.gitee.dbswitch.admin.common.annotation.LogOperate;
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
@@ -40,37 +41,44 @@ public class DbConnectionController {
   @Resource
   private DbConnectionService databaseConnectionService;
 
+  @TokenCheck
   @ApiOperation(value = "数据库类型")
   @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result types() {
     return Result.success(databaseConnectionService.listTypeAll());
   }
 
+  @TokenCheck
   @ApiOperation(value = "连接列表")
   @GetMapping(value = "/list/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PageResult<DbConnectionDetailResponse> listAll(DbConnectionSearchRequest request,
-      @PathVariable("page") Integer page, @PathVariable("size") Integer size) {
+      @PathVariable(value = "page", required = false) Integer page,
+      @PathVariable(value = "size", required = false) Integer size) {
     return databaseConnectionService.listAll(request, page, size);
   }
 
+  @TokenCheck
   @ApiOperation(value = "连接详情")
   @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<DbConnectionDetailResponse> getDetail(@PathVariable("id") Long id) {
     return Result.success(databaseConnectionService.getDetailById(id));
   }
 
+  @TokenCheck
   @ApiOperation(value = "测试连接")
   @GetMapping(value = "/test/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result test(@PathVariable("id") Long id) {
     return databaseConnectionService.test(id);
   }
 
+  @TokenCheck
   @ApiOperation(value = "查询连接的Schema列表")
   @GetMapping(value = "/schemas/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result getSchemas(@PathVariable("id") Long id) {
     return databaseConnectionService.getSchemas(id);
   }
 
+  @TokenCheck
   @ApiOperation(value = "查询连接在制定Schema下的所有表列表")
   @GetMapping(value = "/tables/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result getSchemaTables(@PathVariable("id") Long id,
@@ -78,21 +86,24 @@ public class DbConnectionController {
     return databaseConnectionService.getSchemaTables(id, schema);
   }
 
-  @OperateLog(name = "数据库连接", description = "'添加的数据库连接标题为：'+#request.name")
+  @TokenCheck
+  @LogOperate(name = "数据库连接", description = "'添加的数据库连接标题为：'+#request.name")
   @ApiOperation(value = "添加连接")
   @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<DbConnectionDetailResponse> create(@RequestBody DbConnectionCreateRequest request) {
     return databaseConnectionService.addDatabaseConnection(request);
   }
 
-  @OperateLog(name = "数据库连接", description = "'修改的数据库连接ID为：'+#request.id")
+  @TokenCheck
+  @LogOperate(name = "数据库连接", description = "'修改的数据库连接ID为：'+#request.id")
   @ApiOperation(value = "修改连接")
   @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result update(@RequestBody DbConnectionUpdateRequest request) {
     return databaseConnectionService.updateDatabaseConnection(request);
   }
 
-  @OperateLog(name = "数据库连接", description = "'删除的数据库连接ID为：'+#id")
+  @TokenCheck
+  @LogOperate(name = "数据库连接", description = "'删除的数据库连接ID为：'+#id")
   @ApiOperation(value = "删除连接")
   @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result delete(@PathVariable("id") Long id) {
@@ -100,6 +111,7 @@ public class DbConnectionController {
     return Result.success();
   }
 
+  @TokenCheck
   @ApiOperation(value = "连接名称")
   @GetMapping(value = "/list/name", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<DbConnectionNameResponse> getNameList() {

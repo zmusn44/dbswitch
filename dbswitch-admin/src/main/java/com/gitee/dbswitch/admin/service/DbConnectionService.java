@@ -10,6 +10,7 @@
 package com.gitee.dbswitch.admin.service;
 
 import com.gitee.dbswitch.admin.common.converter.ConverterFactory;
+import com.gitee.dbswitch.admin.common.excption.DbswitchException;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.common.response.ResultCode;
@@ -75,14 +76,11 @@ public class DbConnectionService {
 
   public DbConnectionDetailResponse getDetailById(Long id) {
     return ConverterFactory.getConverter(DbConnectionDetailConverter.class)
-        .convert(databaseConnectionDAO.getById(id));
+        .convert(getDatabaseConnectionById(id));
   }
 
   public Result test(Long id) {
-    DatabaseConnectionEntity dbConn = databaseConnectionDAO.getById(id);
-    if (Objects.isNull(dbConn)) {
-      return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
-    }
+    DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
 
     SupportDbTypeEnum supportDbType = SupportDbTypeEnum
         .valueOf(dbConn.getType().getName().toUpperCase());
@@ -120,11 +118,7 @@ public class DbConnectionService {
   }
 
   public Result<List<String>> getSchemas(Long id) {
-    DatabaseConnectionEntity dbConn = databaseConnectionDAO.getById(id);
-    if (Objects.isNull(dbConn)) {
-      return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
-    }
-
+    DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
     DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
     IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
     metaDataService.setDatabaseConnection(dbType);
@@ -134,11 +128,7 @@ public class DbConnectionService {
   }
 
   public Result<List<String>> getSchemaTables(Long id, String schema) {
-    DatabaseConnectionEntity dbConn = databaseConnectionDAO.getById(id);
-    if (Objects.isNull(dbConn)) {
-      return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
-    }
-
+    DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
     DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
     IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
     metaDataService.setDatabaseConnection(dbType);
@@ -197,4 +187,12 @@ public class DbConnectionService {
     return Result.success(ret);
   }
 
+  public DatabaseConnectionEntity getDatabaseConnectionById(Long id) {
+    DatabaseConnectionEntity dbConn = databaseConnectionDAO.getById(id);
+    if (Objects.isNull(dbConn)) {
+      throw new DbswitchException(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + id);
+    }
+
+    return dbConn;
+  }
 }

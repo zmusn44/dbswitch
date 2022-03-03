@@ -11,11 +11,9 @@ services:
       MYSQL_PASSWORD: 123456
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_ROOT_HOST: '%'
-    ports:
-      - 13306:3306
   dbswitch:
     container_name: dbswitch_webui
-    image: inrgihc/dbswitch:1.6.4
+    image: inrgihc/dbswitch:1.6.5
     environment:
       MYSQLDB_HOST: dbswitch_mysqldb
       MYSQLDB_PORT: 3306

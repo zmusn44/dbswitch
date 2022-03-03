@@ -10,8 +10,8 @@
 package com.gitee.dbswitch.admin.common.aspect;
 
 import cn.hutool.core.exceptions.ExceptionUtil;
-import com.gitee.dbswitch.admin.common.annotation.AccessLog;
-import com.gitee.dbswitch.admin.common.annotation.OperateLog;
+import com.gitee.dbswitch.admin.common.annotation.LogAccess;
+import com.gitee.dbswitch.admin.common.annotation.LogOperate;
 import com.gitee.dbswitch.admin.dao.SystemLogDAO;
 import com.gitee.dbswitch.admin.entity.SystemLogEntity;
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
@@ -68,7 +68,7 @@ public class LogAdviceAspect {
     return ctx;
   }
 
-  @Pointcut("@annotation(com.gitee.dbswitch.admin.common.annotation.AccessLog)")
+  @Pointcut("@annotation(com.gitee.dbswitch.admin.common.annotation.LogAccess)")
   public void loginPointCut() {
   }
 
@@ -88,7 +88,7 @@ public class LogAdviceAspect {
 
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     Method method = methodSignature.getMethod();
-    if (method.isAnnotationPresent(AccessLog.class)) {
+    if (method.isAnnotationPresent(LogAccess.class)) {
       EvaluationContext ctx = this.getEvaluationContext(joinPoint);
       this.recordAccessLog(methodSignature, ctx, throwable, finishTime - beginTime);
     }
@@ -103,7 +103,7 @@ public class LogAdviceAspect {
   private void recordAccessLog(MethodSignature methodSignature, EvaluationContext ctx,
       Throwable throwable, long elapse) {
     Method method = methodSignature.getMethod();
-    AccessLog logAnnotation = method.getAnnotation(AccessLog.class);
+    LogAccess logAnnotation = method.getAnnotation(LogAccess.class);
     String moduleName = logAnnotation.value();
     String description = getParsedDescription(logAnnotation.description(), ctx);
     if (null == throwable) {
@@ -125,7 +125,7 @@ public class LogAdviceAspect {
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-  @Pointcut("@annotation(com.gitee.dbswitch.admin.common.annotation.OperateLog)")
+  @Pointcut("@annotation(com.gitee.dbswitch.admin.common.annotation.LogOperate)")
   public void operatorPointCut() {
   }
 
@@ -145,7 +145,7 @@ public class LogAdviceAspect {
 
     MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
     Method method = methodSignature.getMethod();
-    if (method.isAnnotationPresent(OperateLog.class)) {
+    if (method.isAnnotationPresent(LogOperate.class)) {
       EvaluationContext ctx = this.getEvaluationContext(joinPoint);
       this.recordOperateLog(methodSignature, ctx, throwable, finishTime - beginTime);
     }
@@ -160,7 +160,7 @@ public class LogAdviceAspect {
   private void recordOperateLog(MethodSignature methodSignature, EvaluationContext ctx,
       Throwable throwable, long elapse) {
     Method method = methodSignature.getMethod();
-    OperateLog logAnnotation = method.getAnnotation(OperateLog.class);
+    LogOperate logAnnotation = method.getAnnotation(LogOperate.class);
     String moduleName = logAnnotation.name();
     String description = getParsedDescription(logAnnotation.description(), ctx);
     if (null == throwable) {

@@ -6,9 +6,11 @@
            width="65%">
         <el-button type="primary"
                    icon="el-icon-document-add"
+                   size="small"
                    @click="handleCreate">添加</el-button>
       </div>
-      <el-table :data="tableData"
+      <el-table :header-cell-style="{background:'#eef1f6',color:'#606266'}"
+                :data="tableData"
                 size="small"
                 border>
         <el-table-column prop="id"
@@ -79,14 +81,14 @@
                         label-width="120px"
                         :required=true
                         prop="name"
-                        style="width:85%">
+                        style="width:65%">
             <el-input v-model="createform.name"
                       auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="描述"
                         label-width="120px"
                         prop="description"
-                        style="width:85%">
+                        style="width:65%">
             <el-input v-model="createform.description"
                       type="textarea"
                       :rows="3"
@@ -96,7 +98,7 @@
                         label-width="120px"
                         :required=true
                         prop="scheduleMode"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="createform.scheduleMode">
               <el-option label="手动调度"
                          value="MANUAL"></el-option>
@@ -106,17 +108,17 @@
           </el-form-item>
           <el-form-item label="Cron表达式"
                         label-width="120px"
-                        style="width:85%"
+                        style="width:65%"
                         v-if="createform.scheduleMode=='SYSTEM_SCHEDULED'">
-            <el-col :span="8">
+            <el-col :span="10">
               <el-popover v-model="cronPopover">
                 <vueCron @change="changeCreateCronExpression"
                          @close="cronPopover=false"
                          i18n="cn" />
                 <el-input slot="reference"
-                          disabled="true"
+                          :disabled=false
                           v-model="createform.cronExpression"
-                          placeholder="定时策略"
+                          placeholder="点击选择"
                           @click="cronPopover=true" />
               </el-popover>
             </el-col>
@@ -125,7 +127,7 @@
                         label-width="120px"
                         :required=true
                         prop="sourceConnectionId"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="createform.sourceConnectionId"
                        @change="selectChangedSourceConnection"
                        placeholder="请选择">
@@ -166,7 +168,7 @@
                         label-width="120px"
                         :required=false
                         prop="sourceTables"
-                        style="width:85%">
+                        style="width:65%">
             <el-tooltip placement="top">
               <div slot="content">
                 当为包含表时，选择所要精确包含的表名，如果不选则代表选择所有；当为排除表时，选择索要精确排除的表名。
@@ -186,7 +188,7 @@
                         label-width="120px"
                         :required=true
                         prop="targetConnectionId"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="createform.targetConnectionId"
                        @change="selectChangedTargetConnection"
                        placeholder="请选择">
@@ -211,15 +213,29 @@
           </el-form-item>
           <el-form-item label="目的端表名前缀"
                         label-width="120px"
-                        style="width:85%">
+                        style="width:65%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                目的端表增加的前缀，例如: DEST_，因某些数据库有表名字符长度限制(如Oracle为32个字符)，该参数不宜过长
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-input v-model="createform.tablePrefix"
+                      :maxlength="12"
+                      style="width:50%"
                       auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="数据批次大小"
                         label-width="120px"
                         :required=true
                         prop="batchSize"
-                        style="width:85%">
+                        style="width:65%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                数据同步时单个批次处理的行记录总数，该值越到越占用内存空间。建议：小字段表设置为10000，大字段表设置为1000
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-select v-model="createform.batchSize">
               <el-option label=1000
                          :value=1000></el-option>
@@ -251,13 +267,13 @@
                         label-width="120px"
                         :required=true
                         prop="name"
-                        style="width:85%">
+                        style="width:65%">
             <el-input v-model="updateform.name"
                       auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="描述"
                         label-width="120px"
-                        style="width:85%">
+                        style="width:65%">
             <el-input v-model="updateform.description"
                       type="textarea"
                       :rows="3"
@@ -267,7 +283,7 @@
                         label-width="120px"
                         :required=true
                         prop="scheduleMode"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="updateform.scheduleMode">
               <el-option label="手动调度"
                          value="MANUAL"></el-option>
@@ -277,17 +293,17 @@
           </el-form-item>
           <el-form-item label="Cron表达式"
                         label-width="120px"
-                        style="width:85%"
+                        style="width:65%"
                         v-if="updateform.scheduleMode=='SYSTEM_SCHEDULED'">
-            <el-col :span="8">
+            <el-col :span="10">
               <el-popover v-model="cronPopover">
                 <vueCron @change="changeUpdateCronExpression"
                          @close="cronPopover=false"
                          i18n="cn" />
                 <el-input slot="reference"
-                          disabled="true"
+                          :disabled=false
                           v-model="updateform.cronExpression"
-                          placeholder="定时策略"
+                          placeholder="点击选择"
                           @click="cronPopover=true" />
               </el-popover>
             </el-col>
@@ -296,7 +312,7 @@
                         label-width="120px"
                         :required=true
                         prop="sourceConnectionId"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="updateform.sourceConnectionId"
                        @change="selectChangedSourceConnection"
                        placeholder="请选择">
@@ -337,7 +353,7 @@
                         label-width="120px"
                         :required=false
                         prop="sourceTables"
-                        style="width:85%">
+                        style="width:65%">
             <el-tooltip placement="top">
               <div slot="content">
                 当为包含表时，选择所要精确包含的表名，如果不选则代表选择所有；当为排除表时，选择索要精确排除的表名。
@@ -357,7 +373,7 @@
                         label-width="120px"
                         :required=true
                         prop="targetConnectionId"
-                        style="width:85%">
+                        style="width:65%">
             <el-select v-model="updateform.targetConnectionId"
                        @change="selectChangedTargetConnection"
                        placeholder="请选择">
@@ -382,15 +398,29 @@
           </el-form-item>
           <el-form-item label="目的端表名前缀"
                         label-width="120px"
-                        style="width:85%">
+                        style="width:65%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                目的端表增加的前缀，例如: DEST_，因某些数据库有表名字符长度限制(如Oracle为32个字符)，该参数不宜过长
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-input v-model="updateform.tablePrefix"
+                      :maxlength="12"
+                      style="width:50%"
                       auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="数据批次大小"
                         label-width="120px"
                         :required=true
                         prop="batchSize"
-                        style="width:85%">
+                        style="width:65%">
+            <el-tooltip placement="top">
+              <div slot="content">
+                数据同步时单个批次处理的行记录总数，该值越到越占用内存空间。建议：小字段表设置为10000，大字段表设置为1000
+              </div>
+              <i class="el-icon-question"></i>
+            </el-tooltip>
             <el-select v-model="updateform.batchSize">
               <el-option label=1000
                          :value=1000></el-option>
@@ -564,6 +594,40 @@ export default {
     };
   },
   methods: {
+    clearAndReset: function () {
+      this.cronPopover = false;
+      this.createform = {
+        name: "",
+        description: "",
+        scheduleMode: "MANUAL",
+        cronExpression: "",
+        sourceConnectionId: 0,
+        sourceSchema: "",
+        includeOrExclude: "",
+        sourceTables: [],
+        tablePrefix: "",
+        targetConnectionId: 0,
+        targetDropTable: true,
+        targetSchema: "",
+        batchSize: 5000
+      };
+      this.updateform = {
+        id: 0,
+        name: "",
+        description: "",
+        scheduleMode: "MANUAL",
+        cronExpression: "",
+        sourceConnectionId: 0,
+        sourceSchema: "",
+        includeOrExclude: "",
+        sourceTables: [],
+        tablePrefix: "",
+        targetConnectionId: 0,
+        targetDropTable: true,
+        targetSchema: "",
+        batchSize: 5000
+      }
+    },
     loadData: function () {
       this.$http({
         method: "GET",
@@ -707,6 +771,7 @@ export default {
               this.$message("添加任务成功");
               this.createform = {};
               this.loadData();
+              this.clearAndReset();
             } else {
               alert("添加任务失败:" + res.data.message);
             }
@@ -749,6 +814,7 @@ export default {
               this.$message("修改任务成功");
               this.updateformform = {};
               this.loadData();
+              this.clearAndReset();
             } else {
               alert("修改任务失败," + res.data.message);
             }
@@ -895,5 +961,12 @@ export default {
   margin-right: 0;
   margin-bottom: 0;
   width: 50%;
+}
+
+.el-input.is-disabled .el-input__inner {
+  background-color: #f5f7fa;
+  border-color: #e4e7ed;
+  color: #c0c4cc;
+  cursor: pointer;
 }
 </style>

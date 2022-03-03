@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.privateapi;
 
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
@@ -32,6 +33,7 @@ public class JobManagerController {
   @Resource
   private JobManagerService opsManagerService;
 
+  @TokenCheck
   @ApiOperation(value = "根据任务ID查询作业执行记录")
   @GetMapping(value = "/jobs/list/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PageResult<TaskJobDetailResponse> listJobs(@RequestParam("id") Long id,
@@ -40,12 +42,14 @@ public class JobManagerController {
     return opsManagerService.listJobs(id, page, size);
   }
 
+  @TokenCheck
   @ApiOperation(value = "根据作业的ID查询执行记录")
   @GetMapping(value = "/job/detail", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<TaskJobDetailResponse> detailJob(@RequestParam("id") Long id) {
     return opsManagerService.detailJob(id);
   }
 
+  @TokenCheck
   @ApiOperation(value = "根据作业的ID取消JOB作业")
   @GetMapping(value = "/job/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<Boolean> cancelJob(@RequestParam("id") Long id) {

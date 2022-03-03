@@ -16,12 +16,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.schema.ModelRef;
+import springfox.documentation.builders.RequestParameterBuilder;
 import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Parameter;
+import springfox.documentation.service.ParameterType;
+import springfox.documentation.service.RequestParameter;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -45,11 +45,11 @@ public class SwaggerConfig {
 
   @Bean(value = "privateApi")
   public Docket defaultApi() {
-    ParameterBuilder ticketPar = new ParameterBuilder();
-    List<Parameter> pars = new ArrayList<Parameter>();
-    ticketPar.name("token").description("token in query parameter")
-        .modelRef(new ModelRef("string"))
-        .parameterType("query")
+    RequestParameterBuilder ticketPar = new RequestParameterBuilder();
+    List<RequestParameter> pars = new ArrayList<>();
+    ticketPar.name("token")
+        .description("认证所用的Token")
+        .in(ParameterType.QUERY)
         .required(false)
         .build();
     pars.add(ticketPar.build());
@@ -62,7 +62,7 @@ public class SwaggerConfig {
         .apis(RequestHandlerSelectors.basePackage(API_DEFAULT_PACKAGE))
         .paths(PathSelectors.any())
         .build()
-        .globalOperationParameters(pars)
+        .globalRequestParameters(pars)
         .ignoredParameterTypes(HttpServletResponse.class, HttpServletRequest.class);
   }
 

@@ -29,9 +29,15 @@ const constantRouter = new Router({
           component: () => import('@/views/connection/list')
         },
         {
+          path: '/metadata',
+          name: '数据目录',
+          icon: "el-icon-coin",
+          component: () => import('@/views/metadata/index')
+        },
+        {
           path: '/task',
           name: '任务管理',
-          icon: "el-icon-folder-opened",
+          icon: "el-icon-s-tools",
           component: () => import('@/views/task/index'),
           children: [
             {

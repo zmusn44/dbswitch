@@ -9,16 +9,19 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
+import com.gitee.dbswitch.core.database.constant.SQLServerConst;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
+import com.gitee.dbswitch.core.util.DDLFormatterUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +34,9 @@ import org.apache.commons.lang3.StringUtils;
  * @author tang
  */
 public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabaseInterface {
+
+  private static final String SHOW_CREATE_VIEW_SQL =
+      "SELECT VIEW_DEFINITION from INFORMATION_SCHEMA.VIEWS where TABLE_SCHEMA ='%s' and TABLE_NAME ='%s'";
 
   private static Set<String> excludesSchemaNames;
 
@@ -53,6 +59,11 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 
   public DatabaseSqlserverImpl(String driverName) {
     super(driverName);
+  }
+
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.SQLSERVER;
   }
 
   private int getDatabaseMajorVersion() {
@@ -116,6 +127,42 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = String.format(SQLServerConst.CREATE_TABLE_SQL_TPL, schemaName, tableName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return DDLFormatterUtils.format(rs.getString(1));
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null && rs.next()) {
+            return rs.getString(1);
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return null;
+  }
+
+  @Override
   public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
     int majorVersion = getDatabaseMajorVersion();
     if (majorVersion <= 8) {
@@ -150,7 +197,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String.format("SELECT TOP 1 * from (%s) tmp ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.SQLSERVER);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override

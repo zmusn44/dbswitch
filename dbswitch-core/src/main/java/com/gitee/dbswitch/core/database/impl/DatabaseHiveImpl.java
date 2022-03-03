@@ -1,8 +1,8 @@
 package com.gitee.dbswitch.core.database.impl;
 
+import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.util.HivePrepareUtils;
-import com.gitee.dbswitch.common.constant.Const;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -14,11 +14,46 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static final String SHOW_CREATE_TABLE_SQL = "SHOW CREATE TABLE `%s`.`%s` ";
+
   public DatabaseHiveImpl() {
     super("org.apache.hive.jdbc.HiveDriver");
+  }
+
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.HIVE;
+  }
+
+  @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_TABLE_SQL, schemaName, tableName);
+    List<String> result = new ArrayList<>();
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null) {
+            while (rs.next()) {
+              String value = rs.getString(1);
+              Optional.ofNullable(value).ifPresent(result::add);
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return String.join("\n", result);
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    return getTableDDL(schemaName,tableName);
   }
 
   @Override
@@ -87,7 +122,7 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
   @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String.format(" %s LIMIT 1", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.HIVE);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override
