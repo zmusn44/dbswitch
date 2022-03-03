@@ -54,7 +54,8 @@ public class AssigmentCreateRequest {
     assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
       if (!ScheduleService.checkCronExpressionValid(this.getCronExpression())) {
-        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT, this.getCronExpression());
+        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT,
+            "CRON表达式[" + this.getCronExpression() + "]");
       }
 
       assignment.setCronExpression(this.getCronExpression());

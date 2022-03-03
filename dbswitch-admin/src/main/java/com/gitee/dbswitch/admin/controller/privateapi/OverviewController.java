@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.privateapi;
 
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
 import com.gitee.dbswitch.admin.model.ops.OpsTaskJobTrend;
@@ -32,12 +33,14 @@ public class OverviewController {
   @Resource
   private OverviewService overviewService;
 
+  @TokenCheck
   @ApiOperation(value = "统计概览")
   @GetMapping(value = "/statistics", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<OverviewStatisticsResponse> overviewStatistics() {
     return Result.success(overviewService.statistics());
   }
 
+  @TokenCheck
   @ApiOperation(value = "执行趋势")
   @GetMapping(value = "/trend/{days}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<List<OpsTaskJobTrend>> trend(@PathVariable("days") Integer days) {

@@ -9,8 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -20,9 +20,11 @@ import com.gitee.dbswitch.core.util.JdbcUrlUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -32,12 +34,20 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static final String SHOW_CREATE_TABLE_SQL = "SHOW CREATE TABLE `%s`.`%s` ";
+  private static final String SHOW_CREATE_VIEW_SQL = "SHOW CREATE VIEW `%s`.`%s` ";
+
   public DatabaseMysqlImpl() {
     super("com.mysql.jdbc.Driver");
   }
 
   public DatabaseMysqlImpl(String driverClassName) {
     super(driverClassName);
+  }
+
+  @Override
+  public DatabaseTypeEnum getDatabaseType() {
+    return DatabaseTypeEnum.MYSQL;
   }
 
   @Override
@@ -84,9 +94,53 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
+  public String getTableDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_TABLE_SQL, schemaName, tableName);
+    List<String> result = new ArrayList<>();
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null) {
+            while (rs.next()) {
+              String value = rs.getString(2);
+              Optional.ofNullable(value).ifPresent(result::add);
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return result.stream().findAny().orElse(null);
+  }
+
+  @Override
+  public String getViewDDL(String schemaName, String tableName) {
+    String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
+    List<String> result = new ArrayList<>();
+    try (Statement st = connection.createStatement()) {
+      if (st.execute(sql)) {
+        try (ResultSet rs = st.getResultSet()) {
+          if (rs != null) {
+            while (rs.next()) {
+              String value = rs.getString(2);
+              Optional.ofNullable(value).ifPresent(result::add);
+            }
+          }
+        }
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+
+    return result.stream().findAny().orElse(null);
+  }
+
+  @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
     String querySQL = String.format(" %s LIMIT 1", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL, DatabaseTypeEnum.MYSQL);
+    return this.getSelectSqlColumnMeta(querySQL);
   }
 
   @Override

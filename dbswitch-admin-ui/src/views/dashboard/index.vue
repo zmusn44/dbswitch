@@ -8,7 +8,7 @@
                      :startVal="startVal"
                      :endVal="statistics.connectionStatistics.totalCount"
                      :duration="2000"></CountTo>
-            <p class="cardItem_p1">数据库连接总数</p>
+            <p class="cardItem_p1">数据库连接数</p>
           </div>
           <div class="cardItem_icon">
             <i class="el-icon-s-grid color-green1"></i>
@@ -22,7 +22,7 @@
                      :startVal="startVal"
                      :endVal="statistics.assignmentTaskStatistics.totalCount"
                      :duration="2000"></CountTo>
-            <p class="cardItem_p1">任务安排总数</p>
+            <p class="cardItem_p1">任务安排数</p>
           </div>
           <div class="cardItem_icon">
             <i class="el-icon-s-data color-blue"></i>
@@ -36,7 +36,7 @@
                      :startVal="startVal"
                      :endVal="statistics.assignmentTaskStatistics.publishedCount"
                      :duration="2000"></CountTo>
-            <p class="cardItem_p1">任务发布总数</p>
+            <p class="cardItem_p1">任务发布数</p>
           </div>
           <div class="cardItem_icon">
             <i class="el-icon-loading color-green2"></i>
@@ -50,7 +50,7 @@
                      :startVal="startVal"
                      :endVal="statistics.assignmentJobStatistics.totalCount"
                      :duration="2000"></CountTo>
-            <p class="cardItem_p1">作业执行总数</p>
+            <p class="cardItem_p1">作业执行数</p>
           </div>
           <div class="cardItem_icon">
             <i class="el-icon-office-building color-red"></i>
@@ -126,8 +126,6 @@ export default {
           res => {
             if (0 === res.data.code) {
               this.statistics = res.data.data;
-            } else {
-              alert("加载数据失败:" + res.data.message);
             }
           },
           error => {

@@ -10,8 +10,10 @@
 package com.gitee.dbswitch.core.database;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.util.HivePrepareUtils;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -131,6 +133,13 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
+  public TableDescription queryTableMeta(String schemaName, String tableName) {
+    return queryTableList(schemaName).stream()
+        .filter(one -> tableName.equals(one.getTableName()))
+        .findAny().orElse(null);
+  }
+
+  @Override
   public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
     String sql = this.getTableFieldsQuerySQL(schemaName, tableName);
     List<ColumnDescription> ret = this.querySelectSqlColumnMeta(sql);
@@ -161,6 +170,48 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
         }
       }
       return new ArrayList<>(ret);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public SchemaTableData queryTableData(String schemaName, String tableName, int rowCount) {
+    String fullTableName = getQuotedSchemaTableCombination(schemaName, tableName);
+    String querySQL = String.format("SELECT * FROM %s ", fullTableName);
+    SchemaTableData data = new SchemaTableData();
+    data.setSchemaName(schemaName);
+    data.setTableName(tableName);
+    data.setColumns(new ArrayList<>());
+    data.setRows(new ArrayList<>());
+    try (Statement st = connection.createStatement()) {
+      if (getDatabaseType() == DatabaseTypeEnum.HIVE) {
+        HivePrepareUtils.prepare(connection, schemaName, tableName);
+      }
+
+      try (ResultSet rs = st.executeQuery(querySQL)) {
+        ResultSetMetaData m = rs.getMetaData();
+        int count = m.getColumnCount();
+        for (int i = 1; i <= count; i++) {
+          data.getColumns().add(m.getColumnLabel(i));
+        }
+
+        int counter = 0;
+        while (rs.next() && counter++ < rowCount) {
+          List<Object> row = new ArrayList<>(count);
+          for (int i = 1; i <= count; i++) {
+            Object value = rs.getObject(i);
+            if (value != null && value instanceof byte[]) {
+              row.add(toHexString((byte[]) value));
+            } else {
+              row.add(null == value ? null : value.toString());
+            }
+          }
+          data.getRows().add(row);
+        }
+
+        return data;
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -211,11 +262,11 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   protected abstract String getTestQuerySQL(String sql);
 
-  protected List<ColumnDescription> getSelectSqlColumnMeta(String querySQL, DatabaseTypeEnum type) {
+  protected List<ColumnDescription> getSelectSqlColumnMeta(String querySQL) {
     List<ColumnDescription> ret = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
-      if (DatabaseTypeEnum.HIVE == type) {
-        st.execute("set hive.resultset.use.unique.column.names=false");
+      if (getDatabaseType() == DatabaseTypeEnum.HIVE) {
+        HivePrepareUtils.setResultSetColumnNameNotUnique(connection);
       }
 
       try (ResultSet rs = st.executeQuery(querySQL)) {
@@ -258,7 +309,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
             // nothing more we can do here by catch the exception.
           }
           cd.setSigned(signed);
-          cd.setDbType(type);
+          cd.setDbType(getDatabaseType());
 
           ret.add(cd);
         }
@@ -268,5 +319,21 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String toHexString(byte[] bytes) {
+    if (null == bytes || bytes.length <= 0) {
+      return null;
+    }
+    final StringBuilder hexString = new StringBuilder();
+    for (byte b : bytes) {
+      int v = b & 0xFF;
+      String s = Integer.toHexString(v);
+      if (s.length() < 2) {
+        hexString.append(0);
+      }
+      hexString.append(s);
+    }
+    return hexString.toString();
   }
 }

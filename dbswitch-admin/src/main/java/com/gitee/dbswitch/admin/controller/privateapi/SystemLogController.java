@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.controller.privateapi;
 
+import com.gitee.dbswitch.admin.common.annotation.TokenCheck;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
@@ -31,6 +32,7 @@ public class SystemLogController {
   @Resource
   private SystemLogService systemLogService;
 
+  @TokenCheck
   @ApiOperation(value = "日志列表")
   @GetMapping(value = "/list/{type}/{page}/{size}", produces = MediaType.APPLICATION_JSON_VALUE)
   public PageResult<SystemLogDetailResponse> listAll(
@@ -40,6 +42,7 @@ public class SystemLogController {
     return systemLogService.listAll(type, page, size);
   }
 
+  @TokenCheck
   @ApiOperation(value = "日志详情")
   @GetMapping(value = "/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<SystemLogDetailResponse> getDetail(
