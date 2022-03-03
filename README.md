@@ -110,9 +110,6 @@ sh ./docker-maven-build.sh
 
 (2) 基于docker-compose提供linux联网环境下的**一键安装**：
 
-```
-curl -sSL https://gitee.com/inrgihc/dbswitch/attach_files/965057/download | sh
-```
 详见文档: [build-docker/install/README.md](build-docker/install) 
 
 ## 三、工具使用
