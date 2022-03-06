@@ -10,6 +10,7 @@
 package com.gitee.dbswitch.data.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gitee.dbswitch.common.type.DBTableType;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.service.IMetaDataService;
 import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
@@ -121,6 +122,11 @@ public class MigrationService {
               log.warn("### Find source database table list empty for schema name is : {}", schema);
             } else {
               for (TableDescription td : tableList) {
+                // 当没有配置迁移的表是，默认为所有物理表(不含有视图表)
+                if (includes.isEmpty() && DBTableType.VIEW.name().equals(td.getTableType())) {
+                  continue;
+                }
+
                 String tableName = td.getTableName();
 
                 if (useExcludeTables) {
