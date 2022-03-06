@@ -216,7 +216,7 @@ jdbc驱动名称： org.mariadb.jdbc.Driver
 **oracle的驱动配置样例**
 
 ```
-jdbc连接地址：jdbc:oracle:thin:@172.17.2.10:1521:ORCL
+jdbc连接地址：jdbc:oracle:thin:@172.17.2.10:1521:ORCL  或   jdbc:oracle:thin:@//172.17.2.10:1521/ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
