@@ -29,9 +29,4 @@ public class DatabaseMariaDBImpl extends DatabaseMysqlImpl {
     return DatabaseTypeEnum.MARIADB;
   }
 
-  @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
-    String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
-  }
 }

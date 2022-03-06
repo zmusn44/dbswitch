@@ -139,7 +139,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 
   @Override
   public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
-    String querySQL = String.format(" %s LIMIT 1", sql.replace(";", ""));
+    String querySQL = String.format(" %s LIMIT 0,1", sql.replace(";", ""));
     return this.getSelectSqlColumnMeta(querySQL);
   }
 
