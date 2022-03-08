@@ -29,10 +29,10 @@ public class DbConnectionUpdateRequest {
   public DatabaseConnectionEntity toDatabaseConnection() {
     DatabaseConnectionEntity databaseConnectionEntity = new DatabaseConnectionEntity();
     databaseConnectionEntity.setId(id);
-    databaseConnectionEntity.setName(name);
+    databaseConnectionEntity.setName(name.trim());
     databaseConnectionEntity.setType(type);
-    databaseConnectionEntity.setDriver(driver);
-    databaseConnectionEntity.setUrl(url);
+    databaseConnectionEntity.setDriver(driver.trim());
+    databaseConnectionEntity.setUrl(url.trim());
     databaseConnectionEntity.setUsername(username);
     databaseConnectionEntity.setPassword(password);
 

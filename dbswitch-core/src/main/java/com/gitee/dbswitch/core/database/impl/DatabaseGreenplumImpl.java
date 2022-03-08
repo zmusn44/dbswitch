@@ -19,7 +19,10 @@ import com.gitee.dbswitch.core.model.ColumnMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 支持Greenplum数据库的元信息实现
@@ -28,10 +31,18 @@ import java.util.List;
  */
 public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabaseInterface {
 
+  private static Set<String> systemSchemas = new HashSet<>();
+
   private static final String SHOW_CREATE_VIEW_SQL =
-      "SELECT pg_get_viewdef((select pg_class.relfilenode from pg_catalog.pg_class \n"
-          + "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid \n"
-          + "where pg_namespace.nspname='%s' and pg_class.relname ='%s'),true) ";
+      "select pg_get_viewdef('\"%s\".\"%s\"', true)";
+
+  static {
+    systemSchemas.add("gp_toolkit");
+    systemSchemas.add("pg_aoseg");
+    systemSchemas.add("information_schema");
+    systemSchemas.add("pg_catalog");
+    systemSchemas.add("pg_bitmapindex");
+  }
 
   public DatabaseGreenplumImpl() {
     super("com.pivotal.jdbc.GreenplumDriver");
@@ -40,6 +51,14 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
   @Override
   public DatabaseTypeEnum getDatabaseType() {
     return DatabaseTypeEnum.GREENPLUM;
+  }
+
+  @Override
+  public List<String> querySchemaList() {
+    List<String> schemas = super.querySchemaList();
+    return schemas.stream()
+        .filter(s -> !systemSchemas.contains(s))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -56,7 +75,9 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      //throw new RuntimeException(e);
+      // TODO: Greenplum的表的DDL获取方法
+      return e.getMessage();
     }
 
     return null;

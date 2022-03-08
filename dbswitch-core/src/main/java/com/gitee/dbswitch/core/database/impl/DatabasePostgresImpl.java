@@ -20,7 +20,10 @@ import com.gitee.dbswitch.core.util.DDLFormatterUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 支持PostgreSQL数据库的元信息实现
@@ -29,10 +32,21 @@ import java.util.List;
  */
 public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseInterface {
 
-  private static final String SHOW_CREATE_VIEW_SQL =
+  private static Set<String> systemSchemas = new HashSet<>();
+
+  private static final String SHOW_CREATE_VIEW_SQL_1 =
       "SELECT pg_get_viewdef((select pg_class.relfilenode from pg_catalog.pg_class \n"
           + "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid \n"
           + "where pg_namespace.nspname='%s' and pg_class.relname ='%s'),true) ";
+  private static final String SHOW_CREATE_VIEW_SQL_2 =
+      "select pg_get_viewdef('\"%s\".\"%s\"', true)";
+
+  static {
+    systemSchemas.add("pg_aoseg");
+    systemSchemas.add("information_schema");
+    systemSchemas.add("pg_catalog");
+    systemSchemas.add("pg_bitmapindex");
+  }
 
   public DatabasePostgresImpl() {
     super("org.postgresql.Driver");
@@ -41,6 +55,14 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
   @Override
   public DatabaseTypeEnum getDatabaseType() {
     return DatabaseTypeEnum.POSTGRESQL;
+  }
+
+  @Override
+  public List<String> querySchemaList() {
+    List<String> schemas = super.querySchemaList();
+    return schemas.stream()
+        .filter(s -> !systemSchemas.contains(s))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -57,7 +79,9 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      //throw new RuntimeException(e);
+      // 低版本的PostgreSQL的表的DDL获取方法
+      return e.getMessage();
     }
 
     return null;
@@ -65,12 +89,23 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
 
   @Override
   public String getViewDDL(String schemaName, String tableName) {
-    String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
+    String sql = String.format(SHOW_CREATE_VIEW_SQL_1, schemaName, tableName);
     try (Statement st = connection.createStatement()) {
-      if (st.execute(sql)) {
-        try (ResultSet rs = st.getResultSet()) {
-          if (rs != null && rs.next()) {
-            return rs.getString(1);
+      try {
+        if (st.execute(sql)) {
+          try (ResultSet rs = st.getResultSet()) {
+            if (rs != null && rs.next()) {
+              return rs.getString(1);
+            }
+          }
+        }
+      } catch (SQLException se) {
+        String.format(SHOW_CREATE_VIEW_SQL_2, schemaName, tableName);
+        if (st.execute(sql)) {
+          try (ResultSet rs = st.getResultSet()) {
+            if (rs != null && rs.next()) {
+              return rs.getString(1);
+            }
           }
         }
       }
