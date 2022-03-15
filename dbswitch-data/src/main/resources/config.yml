@@ -10,14 +10,18 @@ dbswitch:
       # source database configuration parameters
       ## fetch size for query source database
       fetch-size: 10000
-      ## schema name for query source database
+      ## schema name for query source schemas, separate by ','
       source-schema: 'TANG'
-      ## prefix of table name for target name
-      prefix-table: 'TA_'
-      ## table name include from table lists
+      ## table name include from table lists, separate by ','
       source-includes: ''
-      ## table name exclude from table lists
+      ## table name exclude from table lists, separate by ','
       source-excludes: ''
+      ## table name convert mapper by regular expression
+      regex-table-mapper:
+        - 'from-pattern': '^'
+          'to-value': 'T_'
+      ## columns name convert mapper by regular expression like regex-table-mapper
+      regex-column-mapper:
 
   target:
     # target database connection information

@@ -18,6 +18,7 @@ import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.util.DDLFormatterUtils;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -66,18 +67,18 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
     return DatabaseTypeEnum.SQLSERVER;
   }
 
-  private int getDatabaseMajorVersion() {
+  private int getDatabaseMajorVersion(Connection connection) {
     try {
-      return this.metaData.getDatabaseMajorVersion();
+      return connection.getMetaData().getDatabaseMajorVersion();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public List<String> querySchemaList() {
+  public List<String> querySchemaList(Connection connection) {
     Set<String> ret = new HashSet<>();
-    try (ResultSet schemas = this.metaData.getSchemas();) {
+    try (ResultSet schemas = connection.getMetaData().getSchemas();) {
       while (schemas.next()) {
         String name = schemas.getString("TABLE_SCHEM");
         if (!excludesSchemaNames.contains(name)) {
@@ -91,10 +92,10 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public List<TableDescription> queryTableList(String schemaName) {
-    int majorVersion = getDatabaseMajorVersion();
+  public List<TableDescription> queryTableList(Connection connection, String schemaName) {
+    int majorVersion = getDatabaseMajorVersion(connection);
     if (majorVersion <= 8) {
-      return super.queryTableList(schemaName);
+      return super.queryTableList(connection, schemaName);
     }
 
     List<TableDescription> ret = new ArrayList<>();
@@ -103,7 +104,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
             + "FROM INFORMATION_SCHEMA.TABLES t LEFT JOIN sysobjects d on t.TABLE_NAME = d.name \r\n"
             + "LEFT JOIN sys.extended_properties g on g.major_id=d.id and g.minor_id='0' where t.TABLE_SCHEMA='%s'",
         schemaName);
-    try (PreparedStatement ps = this.connection.prepareStatement(sql);
+    try (PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();) {
       while (rs.next()) {
         TableDescription td = new TableDescription();
@@ -127,7 +128,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public String getTableDDL(String schemaName, String tableName) {
+  public String getTableDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SQLServerConst.CREATE_TABLE_SQL_TPL, schemaName, tableName);
     try (Statement st = connection.createStatement()) {
       if (st.execute(sql)) {
@@ -145,7 +146,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public String getViewDDL(String schemaName, String tableName) {
+  public String getViewDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
     try (Statement st = connection.createStatement()) {
       if (st.execute(sql)) {
@@ -163,14 +164,15 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
-    int majorVersion = getDatabaseMajorVersion();
+  public List<ColumnDescription> queryTableColumnMeta(Connection connection, String schemaName,
+      String tableName) {
+    int majorVersion = getDatabaseMajorVersion(connection);
     if (majorVersion <= 8) {
-      return super.queryTableColumnMeta(schemaName, tableName);
+      return super.queryTableColumnMeta(connection, schemaName, tableName);
     }
 
     String sql = this.getTableFieldsQuerySQL(schemaName, tableName);
-    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(sql);
+    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(connection, sql);
     String querySql = String.format(
         "SELECT a.name AS COLUMN_NAME,CONVERT(nvarchar(50),ISNULL(g.[value], '')) AS REMARKS FROM sys.columns a\r\n"
             + "LEFT JOIN sys.extended_properties g ON ( a.object_id = g.major_id AND g.minor_id = a.column_id )\r\n"
@@ -195,9 +197,9 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+  public List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql) {
     String querySQL = String.format("SELECT TOP 1 * from (%s) tmp ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
+    return this.getSelectSqlColumnMeta(connection, querySQL);
   }
 
   @Override

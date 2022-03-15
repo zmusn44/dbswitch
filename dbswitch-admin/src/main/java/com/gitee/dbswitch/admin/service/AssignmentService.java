@@ -31,8 +31,8 @@ import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
 import com.gitee.dbswitch.admin.util.JsonUtils;
 import com.gitee.dbswitch.admin.util.PageUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
-import com.gitee.dbswitch.data.config.DbswichProperties.SourceDataSourceProperties;
-import com.gitee.dbswitch.data.config.DbswichProperties.TargetDataSourceProperties;
+import com.gitee.dbswitch.data.entity.SourceDataSourceProperties;
+import com.gitee.dbswitch.data.entity.TargetDataSourceProperties;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -225,7 +225,8 @@ public class AssignmentService {
       }
     }
     sourceDataSourceProperties.setSourceSchema(sourceSchema);
-    sourceDataSourceProperties.setPrefixTable(assignmentConfigEntity.getTablePrefix());
+    sourceDataSourceProperties.setRegexTableMapper(assignmentConfigEntity.getTableNameMap());
+    sourceDataSourceProperties.setRegexColumnMapper(assignmentConfigEntity.getColumnNameMap());
     sourceDataSourceProperties.setFetchSize(assignmentConfigEntity.getBatchSize());
     return sourceDataSourceProperties;
   }

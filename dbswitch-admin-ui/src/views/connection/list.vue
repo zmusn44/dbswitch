@@ -342,7 +342,7 @@ export default {
             this.totalCount = res.data.pagination.total;
             this.tableData = res.data.data;
           } else {
-            alert("加载任务列表失败:" + res.data.errmsg);
+            alert("加载任务列表失败:" + res.data.message);
           }
           this.totalCount = this.tableData.length;
         },
@@ -362,7 +362,7 @@ export default {
           if (0 === res.data.code) {
             this.databaseType = res.data.data;
           } else {
-            alert("加载任务列表失败:" + res.data.errmsg);
+            alert("加载任务列表失败:" + res.data.message);
           }
         },
         function () {
@@ -389,7 +389,7 @@ export default {
           if (0 === res.data.code) {
             this.loadData();
           } else {
-            alert("删除任务失败:" + res.data.errmsg);
+            alert("删除任务失败:" + res.data.message);
           }
         });
       });

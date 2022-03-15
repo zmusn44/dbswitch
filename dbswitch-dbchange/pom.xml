@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gitee.dbswitch</groupId>
 		<artifactId>dbswitch-parent</artifactId>
-		<version>1.6.5</version>
+		<version>1.6.6</version>
 	</parent>
 
 	<artifactId>dbswitch-dbchange</artifactId>
@@ -15,6 +15,12 @@
 		<dependency>
 			<groupId>com.gitee.dbswitch</groupId>
 			<artifactId>dbswitch-dbcommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.gitee.dbswitch</groupId>
+			<artifactId>dbswitch-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

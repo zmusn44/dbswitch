@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbcommon.database;
 
+import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.dbcommon.database.impl.DB2DatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.DmDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.GreenplumDatabaseOperator;
@@ -18,7 +19,6 @@ import com.gitee.dbswitch.dbcommon.database.impl.MysqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.OracleDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.PostgreSqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.SqlServerDatabaseOperator;
-import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,8 +37,10 @@ public final class DatabaseOperatorFactory {
 
     {
       put("MYSQL", MysqlDatabaseOperator::new);
+      put("MARIADB", MysqlDatabaseOperator::new);
       put("ORACLE", OracleDatabaseOperator::new);
       put("SQLSERVER", SqlServerDatabaseOperator::new);
+      put("SQLSERVER2000", SqlServerDatabaseOperator::new);
       put("POSTGRESQL", PostgreSqlDatabaseOperator::new);
       put("GREENPLUM", GreenplumDatabaseOperator::new);
       put("DB2", DB2DatabaseOperator::new);
@@ -55,7 +57,7 @@ public final class DatabaseOperatorFactory {
    * @return 指定类型的数据库读取器
    */
   public static IDatabaseOperator createDatabaseOperator(DataSource dataSource) {
-    String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
+    String type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource).name();
     if (!DATABASE_OPERATOR_MAPPER.containsKey(type)) {
       throw new RuntimeException(
           String.format("[dbcommon] Unsupported database type (%s)", type));

@@ -23,6 +23,7 @@ import com.gitee.dbswitch.core.database.impl.DatabaseSqlserver2000Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserverImpl;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  * 数据库实例构建工厂类

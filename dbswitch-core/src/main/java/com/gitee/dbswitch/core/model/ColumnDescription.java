@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.model;
@@ -142,6 +142,24 @@ public class ColumnDescription {
 
   public void setRemarks(String remarks) {
     this.remarks = remarks;
+  }
+
+  public ColumnDescription copy() {
+    ColumnDescription description = new ColumnDescription();
+    description.setFieldName(fieldName);
+    description.setLabelName(labelName);
+    description.setFieldTypeName(fieldTypeName);
+    description.setFiledTypeClassName(filedTypeClassName);
+    description.setFieldType(fieldType);
+    description.setDisplaySize(displaySize);
+    description.setScaleSize(scaleSize);
+    description.setPrecisionSize(precisionSize);
+    description.setAutoIncrement(isAutoIncrement);
+    description.setNullable(isNullable);
+    description.setRemarks(remarks);
+    description.setSigned(signed);
+    description.setDbType(dbtype);
+    return description;
   }
 
   /////////////////////////////////////////////

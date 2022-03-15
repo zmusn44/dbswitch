@@ -13,6 +13,7 @@ import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.TableDescription;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,13 +36,14 @@ public class DatabaseSqlserver2000Impl extends DatabaseSqlserverImpl implements 
   public DatabaseTypeEnum getDatabaseType() {
     return DatabaseTypeEnum.SQLSERVER2000;
   }
-  
+
   @Override
-  public List<TableDescription> queryTableList(String schemaName) {
+  public List<TableDescription> queryTableList(Connection connection, String schemaName) {
     List<TableDescription> ret = new ArrayList<>();
     Set<String> uniqueSet = new HashSet<>();
     String[] types = new String[]{"TABLE", "VIEW"};
-    try (ResultSet tables = metaData.getTables(this.catalogName, schemaName, "%", types);) {
+    try (ResultSet tables = connection.getMetaData()
+        .getTables(this.catalogName, schemaName, "%", types);) {
       while (tables.next()) {
         String tableName = tables.getString("TABLE_NAME");
         if (uniqueSet.contains(tableName)) {
@@ -68,10 +70,12 @@ public class DatabaseSqlserver2000Impl extends DatabaseSqlserverImpl implements 
   }
 
   @Override
-  public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
+  public List<ColumnDescription> queryTableColumnMeta(Connection connection, String schemaName,
+      String tableName) {
     String sql = this.getTableFieldsQuerySQL(schemaName, tableName);
-    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(sql);
-    try (ResultSet columns = metaData.getColumns(this.catalogName, schemaName, tableName, null)) {
+    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(connection, sql);
+    try (ResultSet columns = connection.getMetaData()
+        .getColumns(this.catalogName, schemaName, tableName, null)) {
       while (columns.next()) {
         String columnName = columns.getString("COLUMN_NAME");
         String remarks = columns.getString("REMARKS");

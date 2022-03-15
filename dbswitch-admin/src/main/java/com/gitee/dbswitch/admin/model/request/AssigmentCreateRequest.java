@@ -16,6 +16,7 @@ import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
 import com.gitee.dbswitch.admin.service.ScheduleService;
 import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
+import com.gitee.dbswitch.common.entity.PatternMapper;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
@@ -41,7 +42,8 @@ public class AssigmentCreateRequest {
     private List<String> sourceTables;
     private Long targetConnectionId;
     private String targetSchema;
-    private String tablePrefix;
+    private List<PatternMapper> tableNameMapper;
+    private List<PatternMapper> columnNameMapper;
     private Boolean targetDropTable;
     private Integer batchSize;
   }
@@ -79,7 +81,8 @@ public class AssigmentCreateRequest {
     );
     assignmentConfigEntity.setTargetConnectionId(this.getConfig().getTargetConnectionId());
     assignmentConfigEntity.setTargetSchema(this.getConfig().getTargetSchema());
-    assignmentConfigEntity.setTablePrefix(this.getConfig().getTablePrefix());
+    assignmentConfigEntity.setTableNameMap(this.getConfig().getTableNameMapper());
+    assignmentConfigEntity.setColumnNameMap(this.getConfig().getColumnNameMapper());
     assignmentConfigEntity.setTargetDropTable(this.getConfig().getTargetDropTable());
     assignmentConfigEntity.setBatchSize(
         Objects.isNull(this.config.getBatchSize())

@@ -24,7 +24,7 @@
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DM的迁移(**支持绝大多数常规类型字段...**)
 
@@ -288,7 +288,7 @@ bin/datasync.sh
 
 - 1、对于向目的库为PostgreSQL/Greenplum的数据离线同步默认采用copy方式写入数据，说明如下：
   
-  **（a）** 如若使用copy方式写入，配置文件中需配置为postgresql的jdbcurl和驱动类（不能为greenplum的驱动包），
+  **（a）** 如若使用copy方式写入，配置文件中需配置为postgresql的jdbc url和驱动类（不能为greenplum的驱动包），
   
   **（b）** 如若使用insert方式写入，需要在config.properties配置文件中设置如下参数为true:
 
@@ -400,6 +400,10 @@ bin/startup.sh
  ![admin_05.png](images/admin_05.png)
  
  ![admin_06.png](images/admin_06.png)
+
+ ![admin_07.png](images/admin_07.png)
+
+ ![admin_08.png](images/admin_08.png)
 
 ## 四、常见问题解决
 

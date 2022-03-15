@@ -9,7 +9,9 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.entity;
 
+import com.gitee.dbswitch.admin.handler.ListPatternHandler;
 import com.gitee.dbswitch.admin.handler.ListTypeHandler;
+import com.gitee.dbswitch.common.entity.PatternMapper;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.Column;
@@ -54,8 +56,13 @@ public class AssignmentConfigEntity {
   @Column(name = "target_schema")
   private String targetSchema;
 
-  @Column(name = "table_prefix")
-  private String tablePrefix;
+  @Column(name = "table_name_map")
+  @ColumnType(typeHandler = ListPatternHandler.class)
+  private List<PatternMapper> tableNameMap;
+
+  @Column(name = "column_name_map")
+  @ColumnType(typeHandler = ListPatternHandler.class)
+  private List<PatternMapper> columnNameMap;
 
   @Column(name = "target_drop_table")
   private Boolean targetDropTable;

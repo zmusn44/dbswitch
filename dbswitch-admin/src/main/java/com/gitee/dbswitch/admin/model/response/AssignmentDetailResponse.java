@@ -12,6 +12,7 @@ package com.gitee.dbswitch.admin.model.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
+import com.gitee.dbswitch.common.entity.PatternMapper;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.sql.Timestamp;
@@ -82,8 +83,11 @@ public class AssignmentDetailResponse {
     @ApiModelProperty("目的端数据源的Schema")
     private String targetSchema;
 
-    @ApiModelProperty("目的端的表名前缀")
-    private String tablePrefix;
+    @ApiModelProperty("表名映射关系")
+    private List<PatternMapper> tableNameMapper;
+
+    @ApiModelProperty("字段名映射关系")
+    private List<PatternMapper> columnNameMapper;
 
     @ApiModelProperty("数据批次大小")
     private Integer batchSize;
