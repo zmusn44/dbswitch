@@ -9,20 +9,24 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbchange;
 
+import com.gitee.dbswitch.core.service.IMetaDataByDatasourceService;
+import com.gitee.dbswitch.core.service.impl.MetaDataByDataSourceServiceImpl;
 import com.gitee.dbswitch.dbcommon.constant.Constants;
 import com.gitee.dbswitch.dbcommon.database.DatabaseOperatorFactory;
 import com.gitee.dbswitch.dbcommon.database.IDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.domain.StatementResultSet;
-import com.gitee.dbswitch.dbcommon.util.JdbcMetaDataUtils;
-import com.gitee.dbswitch.dbcommon.util.JdbcTypesUtils;
+import com.gitee.dbswitch.common.util.JdbcTypesUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.SerializationUtils;
 
 /**
@@ -93,20 +97,31 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
     this.queryFetchSize = size;
   }
 
+  /**
+   * 变化量计算函数
+   * <p>
+   * 说明 ： old 后缀的为目标段； new 后缀的为来源段；
+   * <p>
+   * 数据由 new 向 old 方向 同步。
+   *
+   * @param task    任务描述实体对象
+   * @param handler 计算结果回调处理器
+   */
   @Override
   public void executeCalculate(@NonNull TaskParamEntity task,
       @NonNull IDatabaseRowHandler handler) {
-
     if (log.isDebugEnabled()) {
       log.debug("###### Begin execute calculate table CDC data now");
     }
 
-    boolean useOwnFieldsColumns = (task.getFieldColumns() != null && !task.getFieldColumns()
-        .isEmpty());
+    Map<String, String> columnsMap = task.getColumnsMap();
+    boolean useOwnFieldsColumns = !CollectionUtils.isEmpty(task.getFieldColumns());
 
     // 检查新旧两张表的主键字段与比较字段
-    JdbcMetaDataUtils oldMd = new JdbcMetaDataUtils(task.getOldDataSource());
-    JdbcMetaDataUtils newMd = new JdbcMetaDataUtils(task.getNewDataSource());
+    IMetaDataByDatasourceService
+        oldMd = new MetaDataByDataSourceServiceImpl(task.getOldDataSource());
+    IMetaDataByDatasourceService
+        newMd = new MetaDataByDataSourceServiceImpl(task.getNewDataSource());
     List<String> fieldsPrimaryKeyOld = oldMd
         .queryTablePrimaryKeys(task.getOldSchemaName(), task.getOldTableName());
     List<String> fieldsAllColumnOld = oldMd
@@ -115,42 +130,45 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
         .queryTablePrimaryKeys(task.getNewSchemaName(), task.getNewTableName());
     List<String> fieldsAllColumnNew = newMd
         .queryTableColumnName(task.getNewSchemaName(), task.getNewTableName());
+    List<String> fieldsMappedPrimaryKeyNew = fieldsPrimaryKeyNew.stream()
+        .map(s -> columnsMap.getOrDefault(s, s))
+        .collect(Collectors.toList());
+    List<String> fieldsMappedAllColumnNew = fieldsAllColumnNew.stream()
+        .map(s -> columnsMap.getOrDefault(s, s))
+        .collect(Collectors.toList());
 
     if (fieldsPrimaryKeyOld.isEmpty() || fieldsPrimaryKeyNew.isEmpty()) {
       throw new RuntimeException("计算变化量的表中存在无主键的表");
     }
 
-    boolean same = (fieldsPrimaryKeyOld.containsAll(fieldsPrimaryKeyNew)
-        && fieldsPrimaryKeyNew.containsAll(fieldsPrimaryKeyOld));
-    if (!same) {
-      throw new RuntimeException("两个表的主键不相同");
+    if (!isListEqual(fieldsPrimaryKeyOld, fieldsMappedPrimaryKeyNew)) {
+      throw new RuntimeException("两个表的主键映射关系不匹配");
     }
 
     if (useOwnFieldsColumns) {
-      if (!fieldsAllColumnOld.containsAll(task.getFieldColumns())
-          || !fieldsAllColumnNew.containsAll(task.getFieldColumns())) {
+      // 如果自己配置了字段列表，判断子集关系
+      List<String> mappedFieldColumns = task.getFieldColumns().stream()
+          .map(s -> columnsMap.getOrDefault(s, s))
+          .collect(Collectors.toList());
+      if (!fieldsAllColumnNew.containsAll(task.getFieldColumns())
+          || !fieldsAllColumnOld.containsAll(mappedFieldColumns)) {
         throw new RuntimeException("指定的字段列不完全在两个表中存在");
       }
-    } else {
-      same = (fieldsAllColumnOld.containsAll(fieldsPrimaryKeyNew)
-          && fieldsAllColumnNew.containsAll(fieldsAllColumnOld));
-      if (!same) {
-        throw new RuntimeException("两个表的字段不相同");
-      }
-    }
-
-    if (useOwnFieldsColumns) {
-      // 如果自己配置了字段列表
-      same = (task.getFieldColumns().containsAll(fieldsPrimaryKeyNew)
-          && task.getFieldColumns().containsAll(fieldsPrimaryKeyOld));
+      boolean same = (mappedFieldColumns.containsAll(fieldsPrimaryKeyOld)
+          && task.getFieldColumns().containsAll(fieldsPrimaryKeyNew));
       if (!same) {
         throw new RuntimeException("提供的比较字段中未包含主键");
       }
-
-      same = (fieldsAllColumnOld.containsAll(task.getFieldColumns())
+      same = (fieldsAllColumnOld.containsAll(mappedFieldColumns)
           && fieldsAllColumnNew.containsAll(task.getFieldColumns()));
       if (!same) {
-        throw new RuntimeException("提供的比较字段中存在表中不存在的字段");
+        throw new RuntimeException("提供的比较字段中存在表中不存在(映射关系对不上)的字段");
+      }
+    } else {
+      boolean same = (fieldsMappedAllColumnNew.containsAll(fieldsPrimaryKeyOld)
+          && fieldsAllColumnOld.containsAll(fieldsMappedAllColumnNew));
+      if (!same) {
+        throw new RuntimeException("两个表的字段映射关系不匹配");
       }
     }
 
@@ -159,17 +177,21 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
     if (useOwnFieldsColumns) {
       fieldsOfCompareValue.addAll(task.getFieldColumns());
     } else {
-      fieldsOfCompareValue.addAll(fieldsAllColumnOld);
+      fieldsOfCompareValue.addAll(fieldsAllColumnNew);
     }
-    fieldsOfCompareValue.removeAll(fieldsPrimaryKeyOld);
+    fieldsOfCompareValue.removeAll(fieldsPrimaryKeyNew);
 
     // 构造查询列字段
     List<String> queryFieldColumn;
+    List<String> mappedQueryFieldColumn;
     if (useOwnFieldsColumns) {
       queryFieldColumn = task.getFieldColumns();
     } else {
       queryFieldColumn = fieldsAllColumnOld;
     }
+    mappedQueryFieldColumn = queryFieldColumn.stream()
+        .map(s -> columnsMap.getOrDefault(s, s))
+        .collect(Collectors.toList());
 
     StatementResultSet rsold = null;
     StatementResultSet rsnew = null;
@@ -188,12 +210,12 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
       }
 
       rsold = oldQuery
-          .queryTableData(task.getOldSchemaName(), task.getOldTableName(), queryFieldColumn,
-              fieldsPrimaryKeyOld);
+          .queryTableData(task.getOldSchemaName(), task.getOldTableName(),
+              mappedQueryFieldColumn, fieldsMappedPrimaryKeyNew);
       rsnew = newQuery
-          .queryTableData(task.getNewSchemaName(), task.getNewTableName(), queryFieldColumn,
-              fieldsPrimaryKeyNew);
-      ResultSetMetaData metaData = rsold.getResultset().getMetaData();
+          .queryTableData(task.getNewSchemaName(), task.getNewTableName(),
+              queryFieldColumn, fieldsPrimaryKeyNew);
+      ResultSetMetaData metaData = rsnew.getResultset().getMetaData();
 
       if (log.isDebugEnabled()) {
         log.debug("###### Check data validate now");
@@ -206,26 +228,22 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
         throw new RuntimeException(String.format("两个表的字段总个数不相等，即：%d!=%d", oldcnt, newcnt));
       } else {
         for (int k = 1; k < metaData.getColumnCount(); ++k) {
-          String key1 = rsold.getResultset().getMetaData().getColumnLabel(k);
+          String key1 = rsnew.getResultset().getMetaData().getColumnLabel(k);
           if (null == key1) {
-            key1 = rsold.getResultset().getMetaData().getColumnName(k);
+            key1 = rsnew.getResultset().getMetaData().getColumnName(k);
           }
 
-          String key2 = rsnew.getResultset().getMetaData().getColumnLabel(k);
+          String key2 = rsold.getResultset().getMetaData().getColumnLabel(k);
           if (null == key2) {
-            key2 = rsnew.getResultset().getMetaData().getColumnName(k);
-          }
-
-          if (!key1.equals(key2)) {
-            throw new RuntimeException(
-                String.format("字段名称 [Index=%d] 不同，因 %s!=%s !", k, key1, key2));
+            key2 = rsold.getResultset().getMetaData().getColumnName(k);
           }
 
           if (checkJdbcType) {
             int type1 = rsold.getResultset().getMetaData().getColumnType(k);
             int type2 = rsnew.getResultset().getMetaData().getColumnType(k);
             if (type1 != type2) {
-              throw new RuntimeException(String.format("字段 [name=%s] 的数据类型不同，因 %s!=%s !", key1,
+              throw new RuntimeException(String.format("字段 [name=%s -> %s] 的数据类型不同，因 %s!=%s !",
+                  key1, key2,
                   JdbcTypesUtils.resolveTypeName(type1), JdbcTypesUtils.resolveTypeName(type2)));
             }
           }
@@ -234,9 +252,9 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
       }
 
       // 计算主键字段序列在结果集中的索引号
-      int[] keyNumbers = new int[fieldsPrimaryKeyOld.size()];
+      int[] keyNumbers = new int[fieldsPrimaryKeyNew.size()];
       for (int i = 0; i < keyNumbers.length; ++i) {
-        String fn = fieldsPrimaryKeyOld.get(i);
+        String fn = fieldsPrimaryKeyNew.get(i);
         keyNumbers[i] = getIndexOfField(fn, metaData);
       }
 
@@ -254,7 +272,7 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
         if (null == key) {
           key = metaData.getColumnName(k);
         }
-        targetColumns.add(key);
+        targetColumns.add(columnsMap.getOrDefault(key, key));
       }
 
       if (log.isDebugEnabled()) {
@@ -330,6 +348,10 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
       }
     }
 
+  }
+
+  private boolean isListEqual(List<String> left, List<String> right) {
+    return left.containsAll(right) && right.containsAll(left);
   }
 
   /**

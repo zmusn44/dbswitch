@@ -17,6 +17,7 @@ import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.util.JdbcUrlUtils;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,10 +52,10 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public List<String> querySchemaList() {
+  public List<String> querySchemaList(Connection connection) {
     String mysqlJdbcUrl = null;
     try {
-      mysqlJdbcUrl = this.metaData.getURL();
+      mysqlJdbcUrl = connection.getMetaData().getURL();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -66,11 +67,11 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public List<TableDescription> queryTableList(String schemaName) {
+  public List<TableDescription> queryTableList(Connection connection, String schemaName) {
     List<TableDescription> ret = new ArrayList<>();
     String sql = String.format("SELECT `TABLE_SCHEMA`,`TABLE_NAME`,`TABLE_TYPE`,`TABLE_COMMENT` "
         + "FROM `information_schema`.`TABLES` where `TABLE_SCHEMA`='%s'", schemaName);
-    try (PreparedStatement ps = this.connection.prepareStatement(sql);
+    try (PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();) {
       while (rs.next()) {
         TableDescription td = new TableDescription();
@@ -94,7 +95,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public String getTableDDL(String schemaName, String tableName) {
+  public String getTableDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_TABLE_SQL, schemaName, tableName);
     List<String> result = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
@@ -116,7 +117,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public String getViewDDL(String schemaName, String tableName) {
+  public String getViewDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
     List<String> result = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
@@ -138,9 +139,9 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+  public List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql) {
     String querySQL = String.format(" %s LIMIT 0,1", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
+    return this.getSelectSqlColumnMeta(connection, querySQL);
   }
 
   @Override

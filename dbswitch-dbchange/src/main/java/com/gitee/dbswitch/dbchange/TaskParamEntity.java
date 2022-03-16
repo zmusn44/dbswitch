@@ -9,13 +9,14 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbchange;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import org.springframework.lang.Nullable;
 
 /**
  * 任务参数实体类定义
@@ -31,7 +32,7 @@ public class TaskParamEntity {
    * 老表的数据源
    */
   @NonNull
-  DataSource oldDataSource;
+  private DataSource oldDataSource;
 
   /**
    * 老表的schema名
@@ -49,7 +50,7 @@ public class TaskParamEntity {
    * 新表的数据源
    */
   @NonNull
-  DataSource newDataSource;
+  private DataSource newDataSource;
 
   /**
    * 新表的schema名
@@ -66,6 +67,12 @@ public class TaskParamEntity {
   /**
    * 字段列
    */
-  @Nullable
   private List<String> fieldColumns;
+
+  /**
+   * 字段名映射关系
+   */
+  @NonNull
+  @Builder.Default
+  private Map<String, String> columnsMap = Collections.EMPTY_MAP;
 }

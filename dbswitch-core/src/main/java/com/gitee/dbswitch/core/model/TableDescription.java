@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.model;
@@ -54,5 +54,8 @@ public class TableDescription {
   public void setTableType(String tableType) {
     this.tableType = DBTableType.valueOf(tableType.toUpperCase());
   }
-  
+
+  public boolean isViewTable() {
+    return DBTableType.VIEW == tableType;
+  }
 }

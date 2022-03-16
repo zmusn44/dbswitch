@@ -4,13 +4,15 @@
 
 ### 1、功能描述
 
-一句话，dbswitch工具提供源端数据库向目的端数据的迁移同步功能，包括全量和增量方式。迁移包括：
+一句话，dbswitch工具提供源端数据库向目的端数据的迁移同步功能，支持数据的全量和增量方式同步。包括：
 
 - **结构迁移**
 
-字段类型、主键信息、建表语句等的转换，并生成建表SQL语句。
+支持字段类型、主键信息、建表语句等的转换，并生成建表SQL语句。
 
-- **数据迁移**。
+支持基于正则表达式转换的表名与字段名映射转换。
+
+- **数据同步**。
 
 基于JDBC的分批次读取源端数据库数据，并基于insert/copy方式将数据分批次写入目的数据库。
 
@@ -24,7 +26,7 @@
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oralce的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DM的迁移(**支持绝大多数常规类型字段...**)
 
@@ -135,14 +137,18 @@ dbswitch:
       # source database configuration parameters
       ## fetch size for query source database
       fetch-size: 10000
-      ## schema name for query source database
+      ## schema name for query source schemas, separate by ','
       source-schema: 'TANG'
-      ## prefix of table name for target name
-      prefix-table: 'TA_'
-      ## table name include from table lists
+      ## table name include from table lists, separate by ','
       source-includes: ''
-      ## table name exclude from table lists
+      ## table name exclude from table lists, separate by ','
       source-excludes: ''
+      ## table name convert mapper by regular expression
+      regex-table-mapper:
+        - 'from-pattern': '^'
+          'to-value': 'T_'
+      ## columns name convert mapper by regular expression like regex-table-mapper
+      regex-column-mapper:
 
   target:
     # target database connection information
@@ -159,7 +165,7 @@ dbswitch:
     ## whether create table support auto increment for primary key field
     create-table-auto-increment: false
     ## whether use insert engine to write data for target database
-    ## Only usefull for PostgreSQL/Greenplum database
+    ## Only useful for PostgreSQL/Greenplum database
     writer-engine-insert: false
     ## whether use change data synchronize to target database table
     change-data-sync: true
@@ -173,9 +179,10 @@ dbswitch:
 | dbswitch.source[i].password | 来源端连接帐号密码 | tangyibo | 无 |
 | dbswitch.source[i].fetch-size | 来源端数据库查询时的fetch_size设置 | 10000 | 需要大于100有效 |
 | dbswitch.source[i].source-schema | 来源端的schema名称 | dbo,test | 多个之间用英文逗号分隔 |
-| dbswitch.source[i].prefix-table | 创建对应目的表的前缀 | TA_ | 不能含有特殊字符，可以为空; 建议最长为8个字符，以下划线结尾 |
 | dbswitch.source[i].source-includes | 来源端schema下的表中需要包含的表名称 | users1,orgs1 | 支持多个表（多个之间用英文逗号分隔）；支持支持正则表达式(不能含有逗号) |
 | dbswitch.source[i].source-excludes | 来源端schema下的表中需要过滤的表名称 | users,orgs | 不包含的表名称，多个之间用英文逗号分隔 |
+| dbswitch.source[i].regex-table-mapper | 基于正则表达式的表名称映射关系 | [{"from-pattern": "^","to-value": "T_"}] | 为list类型，元素存在顺序关系 |
+| dbswitch.source[i].regex-column-mapper | 基于正则表达式的字段名映射关系 | [{"from-pattern": "$","to-value": "_x"}] | 为list类型，元素存在顺序关系 |
 | dbswitch.target.url | 目的端JDBC连接的URL | jdbc:postgresql://10.17.1.90:5432/study | 可为：oracle/sqlserver/postgresql/greenplum,mysql/mariadb/db2/dm/kingbase8/highgo也支持，但字段类型兼容性问题比较多 |
 | dbswitch.target.driver-class-name |目的端 数据库的驱动类名称 | org.postgresql.Driver | 对应数据库的驱动类 |
 | dbswitch.target.username | 目的端连接帐号名 | study | 无 |
@@ -197,7 +204,11 @@ dbswitch:
 
 - （4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 
 
-- （5）各个数据库的JDBC驱动连接示例如下：
+- （5）对于```regex-table-mapper```和```regex-column-mappe```，为基于正则表达式替换的表名映射和字段名映射，均可以为空（代表原名映射，即源的表t_a映射到目的端也为t_a）
+
+> 提示：如果要将源端所有表名添加前缀，可以配置```"from-pattern": "^","to-value": "T_"```;
+
+- （6）各个数据库的JDBC驱动连接示例如下：
 
 **mysql/mariadb的驱动配置样例**
 
@@ -288,7 +299,7 @@ bin/datasync.sh
 
 - 1、对于向目的库为PostgreSQL/Greenplum的数据离线同步默认采用copy方式写入数据，说明如下：
   
-  **（a）** 如若使用copy方式写入，配置文件中需配置为postgresql的jdbcurl和驱动类（不能为greenplum的驱动包），
+  **（a）** 如若使用copy方式写入，配置文件中需配置为postgresql的jdbc url和驱动类（不能为greenplum的驱动包），
   
   **（b）** 如若使用insert方式写入，需要在config.properties配置文件中设置如下参数为true:
 
@@ -400,6 +411,43 @@ bin/startup.sh
  ![admin_05.png](images/admin_05.png)
  
  ![admin_06.png](images/admin_06.png)
+
+ ![admin_07.png](images/admin_07.png)
+
+ ![admin_08.png](images/admin_08.png)
+
+### 3、两种方式的适用场景
+
+- 方式一：基于conf/config.yml配置启动的命令操作方式式   
+
+**优点：**
+
+> 当需要配置的表或字段等数量较大时，该方式便于在yml中配置；
+
+> 只需一个配置文件即可进行启动执行任务；
+
+**缺点：**
+
+> 只能运行单个任务，任务执行完立即停止；
+
+> 不支持CRON表达式的周期执行；
+
+- 方式二：基于conf/application.yml配置启动的WEB使用方式
+
+**优点：**
+
+> 提供WEB操作来配置（方式一的YAML中的参数）,只需点击即可完成配置；
+
+> 支持多个任务并发执行（在硬件资源足够的条件下）
+
+> 支持CRON表达式的周期执行
+
+**缺点：**
+
+> 当数据库内的表数量较大时，WEB方式卡顿严重；
+
+> 多个任务并发执行不易于分析任务错误原因；
+
 
 ## 四、常见问题解决
 

@@ -44,7 +44,7 @@ const constantRouter = new Router({
               path: '/task/assignment',
               name: '任务安排',
               icon: "el-icon-eleme",
-              component: () => import('@/views/task/assignment')
+              component: () => import('@/views/task/assignment'),
             },
             {
               path: '/task/schedule',
@@ -87,6 +87,18 @@ const constantRouter = new Router({
           hidden: true,
           component: () => import('@/views/personal/index')
         },
+        {
+          path: '/task/create',
+          name: '创建任务',
+          hidden: true,
+          component: () => import('@/views/task/create')
+        },
+        {
+          path: '/task/update',
+          name: '修改任务',
+          hidden: true,
+          component: () => import('@/views/task/update')
+        }
       ],
     },
 

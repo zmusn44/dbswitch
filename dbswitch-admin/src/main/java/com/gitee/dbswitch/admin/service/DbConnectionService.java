@@ -27,8 +27,8 @@ import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
 import com.gitee.dbswitch.admin.util.JDBCURL;
 import com.gitee.dbswitch.admin.util.PageUtils;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.service.IMetaDataService;
-import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
+import com.gitee.dbswitch.core.service.IMetaDataByJdbcService;
+import com.gitee.dbswitch.core.service.impl.MetaDataByJdbcServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +45,34 @@ public class DbConnectionService {
 
   @Resource
   private DatabaseConnectionDAO databaseConnectionDAO;
+
+  public IMetaDataByJdbcService getMetaDataCoreService(DatabaseConnectionEntity dbConn) {
+    String typeName = dbConn.getType().getName().toUpperCase();
+    SupportDbTypeEnum supportDbType = SupportDbTypeEnum.valueOf(typeName);
+    for (String pattern : supportDbType.getUrl()) {
+      final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
+      if (!matcher.matches()) {
+        if (1 == supportDbType.getUrl().length) {
+          throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
+        } else {
+          continue;
+        }
+      }
+
+      String host = matcher.group("host");
+      String port = matcher.group("port");
+      if (null == port) {
+        port = String.valueOf(supportDbType.getPort());
+      }
+
+      if (!JDBCURL.reachable(host, port)) {
+        throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
+      }
+    }
+    DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
+    IMetaDataByJdbcService metaDataService = new MetaDataByJdbcServiceImpl(prd);
+    return metaDataService;
+  }
 
   public List<DatabaseTypeDetailResponse> listTypeAll() {
     List<DatabaseTypeDetailResponse> lists = new ArrayList<>();
@@ -81,47 +109,19 @@ public class DbConnectionService {
 
   public Result test(Long id) {
     DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
-
-    SupportDbTypeEnum supportDbType = SupportDbTypeEnum
-        .valueOf(dbConn.getType().getName().toUpperCase());
-    for (String pattern : supportDbType.getUrl()) {
-      final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
-      if (!matcher.matches()) {
-        if (1 == supportDbType.getUrl().length) {
-          return Result.failed(ResultCode.ERROR_INVALID_JDBC_URL, dbConn.getUrl());
-        } else {
-          continue;
-        }
-      }
-
-      String host = matcher.group("host");
-      String port = matcher.group("port");
-      if (null == port) {
-        port = String.valueOf(supportDbType.getPort());
-      }
-
-      if (!JDBCURL.reachable(host, port)) {
-        return Result.failed(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getUrl());
-      }
-
-      DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
-      IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-      metaDataService.setDatabaseConnection(prd);
-      metaDataService.testQuerySQL(
-          dbConn.getUrl(),
-          dbConn.getUsername(),
-          dbConn.getPassword(),
-          dbConn.getType().getSql()
-      );
-    }
+    IMetaDataByJdbcService metaDataService = getMetaDataCoreService(dbConn);
+    metaDataService.testQuerySQL(
+        dbConn.getUrl(),
+        dbConn.getUsername(),
+        dbConn.getPassword(),
+        dbConn.getType().getSql()
+    );
     return Result.success();
   }
 
   public Result<List<String>> getSchemas(Long id) {
     DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
-    DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
-    IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-    metaDataService.setDatabaseConnection(dbType);
+    IMetaDataByJdbcService metaDataService = getMetaDataCoreService(dbConn);
     List<String> schemas = metaDataService.querySchemaList(
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword());
     return Result.success(schemas);
@@ -129,16 +129,14 @@ public class DbConnectionService {
 
   public Result<List<String>> getSchemaTables(Long id, String schema) {
     DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
-    DatabaseTypeEnum dbType = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
-    IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-    metaDataService.setDatabaseConnection(dbType);
+    IMetaDataByJdbcService metaDataService = getMetaDataCoreService(dbConn);
     List<String> tables = Optional.ofNullable(
         metaDataService.queryTableList(dbConn.getUrl(),
             dbConn.getUsername(),
             dbConn.getPassword(),
             schema))
         .orElseGet(ArrayList::new).stream()
-        .filter(t -> "TABLE".equals(t.getTableType()))
+        .filter(t -> !t.isViewTable())
         .map(t -> t.getTableName())
         .collect(Collectors.toList());
     return Result.success(tables);

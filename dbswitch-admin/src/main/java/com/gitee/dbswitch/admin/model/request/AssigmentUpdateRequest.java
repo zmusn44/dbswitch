@@ -16,6 +16,7 @@ import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
 import com.gitee.dbswitch.admin.service.ScheduleService;
 import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
+import com.gitee.dbswitch.common.entity.PatternMapper;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
@@ -30,11 +31,11 @@ public class AssigmentUpdateRequest {
   private String description;
   private ScheduleModeEnum scheduleMode;
   private String cronExpression;
-  private AssigmentCreateConfig config;
+  private AssigmentUpdateConfig config;
 
   @NoArgsConstructor
   @Data
-  public static class AssigmentCreateConfig {
+  public static class AssigmentUpdateConfig {
 
     private Long sourceConnectionId;
     private String sourceSchema;
@@ -42,11 +43,11 @@ public class AssigmentUpdateRequest {
     private List<String> sourceTables;
     private Long targetConnectionId;
     private String targetSchema;
-    private String tablePrefix;
+    private List<PatternMapper> tableNameMapper;
+    private List<PatternMapper> columnNameMapper;
     private Boolean targetDropTable;
     private Integer batchSize;
   }
-
 
   public AssignmentTaskEntity toAssignmentTask() {
     AssignmentTaskEntity assignment = new AssignmentTaskEntity();
@@ -56,7 +57,8 @@ public class AssigmentUpdateRequest {
     assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
       if (!ScheduleService.checkCronExpressionValid(this.getCronExpression())) {
-        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT, this.getCronExpression());
+        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT,
+            "CRON表达式[" + this.getCronExpression() + "]");
       }
 
       assignment.setCronExpression(this.getCronExpression());
@@ -80,7 +82,8 @@ public class AssigmentUpdateRequest {
     );
     assignmentConfigEntity.setTargetConnectionId(this.getConfig().getTargetConnectionId());
     assignmentConfigEntity.setTargetSchema(this.getConfig().getTargetSchema());
-    assignmentConfigEntity.setTablePrefix(this.getConfig().getTablePrefix());
+    assignmentConfigEntity.setTableNameMap(this.getConfig().getTableNameMapper());
+    assignmentConfigEntity.setColumnNameMap(this.getConfig().getColumnNameMapper());
     assignmentConfigEntity.setTargetDropTable(this.getConfig().getTargetDropTable());
     assignmentConfigEntity.setBatchSize(
         Objects.isNull(this.config.getBatchSize())

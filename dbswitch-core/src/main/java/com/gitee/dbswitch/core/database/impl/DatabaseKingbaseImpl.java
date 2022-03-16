@@ -16,6 +16,7 @@ import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.database.constant.PostgresqlConst;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,7 +44,7 @@ public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseI
   }
 
   @Override
-  public String getTableDDL(String schemaName, String tableName) {
+  public String getTableDDL(Connection connection, String schemaName, String tableName) {
     String sql = PostgresqlConst.CREATE_TABLE_SQL_TPL
         .replace(PostgresqlConst.TPL_KEY_SCHEMA, schemaName)
         .replace(PostgresqlConst.TPL_KEY_TABLE, tableName);
@@ -63,7 +64,7 @@ public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseI
   }
 
   @Override
-  public String getViewDDL(String schemaName, String tableName) {
+  public String getViewDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_VIEW_SQL, schemaName, tableName);
     try (Statement st = connection.createStatement()) {
       if (st.execute(sql)) {
@@ -81,9 +82,9 @@ public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseI
   }
 
   @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+  public List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql) {
     String querySQL = String.format(" %s LIMIT 0 ", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
+    return this.getSelectSqlColumnMeta(connection, querySQL);
   }
 
   @Override

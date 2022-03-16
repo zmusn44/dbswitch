@@ -9,6 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbchange;
 
+import java.util.Map;
+
 /**
  * 变化量计算器接口定义
  *
