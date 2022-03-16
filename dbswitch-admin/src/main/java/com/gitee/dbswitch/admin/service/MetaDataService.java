@@ -1,30 +1,23 @@
 package com.gitee.dbswitch.admin.service;
 
-import com.gitee.dbswitch.admin.common.excption.DbswitchException;
 import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
-import com.gitee.dbswitch.admin.common.response.ResultCode;
 import com.gitee.dbswitch.admin.entity.DatabaseConnectionEntity;
 import com.gitee.dbswitch.admin.model.response.MetadataColumnDetailResponse;
 import com.gitee.dbswitch.admin.model.response.MetadataSchemaDetailResponse;
 import com.gitee.dbswitch.admin.model.response.MetadataTableDetailResponse;
 import com.gitee.dbswitch.admin.model.response.MetadataTableInfoResponse;
 import com.gitee.dbswitch.admin.model.response.SchemaTableDataResponse;
-import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
-import com.gitee.dbswitch.admin.util.JDBCURL;
 import com.gitee.dbswitch.admin.util.PageUtils;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.SchemaTableMeta;
 import com.gitee.dbswitch.core.model.TableDescription;
-import com.gitee.dbswitch.core.service.IMetaDataService;
-import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
+import com.gitee.dbswitch.core.service.IMetaDataByJdbcService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,7 +31,7 @@ public class MetaDataService {
 
   public PageResult<MetadataSchemaDetailResponse> allSchemas(Long id, Integer page, Integer size) {
     DatabaseConnectionEntity dbConn = connectionService.getDatabaseConnectionById(id);
-    IMetaDataService metaDataService = getMetaDataCoreService(dbConn);
+    IMetaDataByJdbcService metaDataService = connectionService.getMetaDataCoreService(dbConn);
     List<String> schemas = metaDataService.querySchemaList(
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword());
     List<MetadataSchemaDetailResponse> responses = schemas.stream()
@@ -50,7 +43,7 @@ public class MetaDataService {
   public PageResult<MetadataTableInfoResponse> allTables(Long id, String schema, Integer page,
       Integer size) {
     DatabaseConnectionEntity dbConn = connectionService.getDatabaseConnectionById(id);
-    IMetaDataService metaDataService = getMetaDataCoreService(dbConn);
+    IMetaDataByJdbcService metaDataService = connectionService.getMetaDataCoreService(dbConn);
     List<TableDescription> tables = metaDataService.queryTableList(
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(), schema);
     List<MetadataTableInfoResponse> responses = tables.stream()
@@ -66,7 +59,7 @@ public class MetaDataService {
 
   public Result<MetadataTableDetailResponse> tableDetail(Long id, String schema, String table) {
     DatabaseConnectionEntity dbConn = connectionService.getDatabaseConnectionById(id);
-    IMetaDataService metaDataService = getMetaDataCoreService(dbConn);
+    IMetaDataByJdbcService metaDataService = connectionService.getMetaDataCoreService(dbConn);
     SchemaTableMeta tableMeta = metaDataService.queryTableMeta(
         dbConn.getUrl(),
         dbConn.getUsername(),
@@ -107,7 +100,7 @@ public class MetaDataService {
 
   public Result<SchemaTableDataResponse> tableData(Long id, String schema, String table) {
     DatabaseConnectionEntity dbConn = connectionService.getDatabaseConnectionById(id);
-    IMetaDataService metaDataService = getMetaDataCoreService(dbConn);
+    IMetaDataByJdbcService metaDataService = connectionService.getMetaDataCoreService(dbConn);
     SchemaTableData data = metaDataService.queryTableData(
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(),
         schema, table, 10);
@@ -133,35 +126,6 @@ public class MetaDataService {
       result.add(map);
     }
     return result;
-  }
-
-  private IMetaDataService getMetaDataCoreService(DatabaseConnectionEntity dbConn) {
-    String typeName = dbConn.getType().getName().toUpperCase();
-    SupportDbTypeEnum supportDbType = SupportDbTypeEnum.valueOf(typeName);
-    for (String pattern : supportDbType.getUrl()) {
-      final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
-      if (!matcher.matches()) {
-        if (1 == supportDbType.getUrl().length) {
-          throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
-        } else {
-          continue;
-        }
-      }
-
-      String host = matcher.group("host");
-      String port = matcher.group("port");
-      if (null == port) {
-        port = String.valueOf(supportDbType.getPort());
-      }
-
-      if (!JDBCURL.reachable(host, port)) {
-        throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
-      }
-    }
-    DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
-    IMetaDataService metaDataService = new MigrationMetaDataServiceImpl();
-    metaDataService.setDatabaseConnection(prd);
-    return metaDataService;
   }
 
   private String toStr(Boolean value) {

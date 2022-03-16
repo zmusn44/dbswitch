@@ -11,16 +11,16 @@ package com.gitee.dbswitch.data.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gitee.dbswitch.common.type.DBTableType;
+import com.gitee.dbswitch.common.util.DbswitchStrUtils;
 import com.gitee.dbswitch.core.model.TableDescription;
-import com.gitee.dbswitch.core.service.IMetaDataService;
-import com.gitee.dbswitch.core.service.impl.MigrationMetaDataServiceImpl;
+import com.gitee.dbswitch.core.service.IMetaDataByDatasourceService;
+import com.gitee.dbswitch.core.service.impl.MetaDataByDataSourceServiceImpl;
 import com.gitee.dbswitch.data.config.DbswichProperties;
 import com.gitee.dbswitch.data.domain.PerfStat;
+import com.gitee.dbswitch.data.entity.SourceDataSourceProperties;
 import com.gitee.dbswitch.data.handler.MigrationHandler;
 import com.gitee.dbswitch.data.util.BytesUnitUtils;
 import com.gitee.dbswitch.data.util.DataSourceUtils;
-import com.gitee.dbswitch.data.util.JdbcTemplateUtils;
-import com.gitee.dbswitch.data.util.StrUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,20 +81,20 @@ public class MigrationService {
         .createTargetDataSource(properties.getTarget())) {
       int sourcePropertiesIndex = 0;
       int totalTableCount = 0;
-      List<DbswichProperties.SourceDataSourceProperties> sourcesProperties = properties.getSource();
-      for (DbswichProperties.SourceDataSourceProperties sourceProperties : sourcesProperties) {
+      List<SourceDataSourceProperties> sourcesProperties = properties.getSource();
+      for (SourceDataSourceProperties sourceProperties : sourcesProperties) {
 
         try (HikariDataSource sourceDataSource = DataSourceUtils
             .createSourceDataSource(sourceProperties)) {
-          IMetaDataService sourceMetaDataService = new MigrationMetaDataServiceImpl();
-
-          sourceMetaDataService
-              .setDatabaseConnection(JdbcTemplateUtils.getDatabaseProduceName(sourceDataSource));
+          IMetaDataByDatasourceService
+              sourceMetaDataService = new MetaDataByDataSourceServiceImpl(sourceDataSource);
 
           // 判断处理的策略：是排除还是包含
-          List<String> includes = StrUtils.stringToList(sourceProperties.getSourceIncludes());
+          List<String> includes = DbswitchStrUtils
+              .stringToList(sourceProperties.getSourceIncludes());
           log.info("Includes tables is :{}", jackson.writeValueAsString(includes));
-          List<String> filters = StrUtils.stringToList(sourceProperties.getSourceExcludes());
+          List<String> filters = DbswitchStrUtils
+              .stringToList(sourceProperties.getSourceExcludes());
           log.info("Filter tables is :{}", jackson.writeValueAsString(filters));
 
           boolean useExcludeTables = includes.isEmpty();
@@ -108,16 +108,14 @@ public class MigrationService {
 
           List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-          List<String> schemas = StrUtils.stringToList(sourceProperties.getSourceSchema());
+          List<String> schemas = DbswitchStrUtils.stringToList(sourceProperties.getSourceSchema());
           log.info("Source schema names is :{}", jackson.writeValueAsString(schemas));
 
           AtomicInteger numberOfFailures = new AtomicInteger(0);
           AtomicLong totalBytesSize = new AtomicLong(0L);
           final int indexInternal = sourcePropertiesIndex;
           for (String schema : schemas) {
-            List<TableDescription> tableList = sourceMetaDataService
-                .queryTableList(sourceProperties.getUrl(),
-                    sourceProperties.getUsername(), sourceProperties.getPassword(), schema);
+            List<TableDescription> tableList = sourceMetaDataService.queryTableList(schema);
             if (tableList.isEmpty()) {
               log.warn("### Find source database table list empty for schema name is : {}", schema);
             } else {

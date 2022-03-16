@@ -49,7 +49,8 @@ public class AssignmentDetailConverter extends
     config.setTargetConnectionId(dstConn.getId());
     config.setTargetConnectionName(dstConn.getName());
     config.setTargetSchema(taskConfig.getTargetSchema());
-    config.setTablePrefix(taskConfig.getTablePrefix());
+    config.setTableNameMapper(taskConfig.getTableNameMap());
+    config.setColumnNameMapper(taskConfig.getColumnNameMap());
     config.setBatchSize(taskConfig.getBatchSize());
 
     AssignmentDetailResponse detailResponse = new AssignmentDetailResponse();

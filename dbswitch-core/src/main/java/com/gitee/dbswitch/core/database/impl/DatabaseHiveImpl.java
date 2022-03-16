@@ -1,3 +1,12 @@
+// Copyright tang.  All rights reserved.
+// https://gitee.com/inrgihc/dbswitch
+//
+// Use of this source code is governed by a BSD-style license
+//
+// Author: tang (inrgihc@126.com)
+// Date : 2020/1/2
+// Location: beijing , china
+/////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.constant.Const;
@@ -7,6 +16,7 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -30,7 +40,7 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
   }
 
   @Override
-  public String getTableDDL(String schemaName, String tableName) {
+  public String getTableDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_TABLE_SQL, schemaName, tableName);
     List<String> result = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
@@ -52,12 +62,13 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
   }
 
   @Override
-  public String getViewDDL(String schemaName, String tableName) {
-    return getTableDDL(schemaName,tableName);
+  public String getViewDDL(Connection connection, String schemaName, String tableName) {
+    return getTableDDL(connection, schemaName, tableName);
   }
 
   @Override
-  public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
+  public List<ColumnDescription> queryTableColumnMeta(Connection connection, String schemaName,
+      String tableName) {
     String querySQL = this.getTableFieldsQuerySQL(schemaName, tableName);
     List<ColumnDescription> ret = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
@@ -115,14 +126,15 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
   }
 
   @Override
-  public List<String> queryTablePrimaryKeys(String schemaName, String tableName) {
+  public List<String> queryTablePrimaryKeys(Connection connection, String schemaName,
+      String tableName) {
     return Collections.emptyList();
   }
 
   @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+  public List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql) {
     String querySQL = String.format(" %s LIMIT 1", sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
+    return this.getSelectSqlColumnMeta(connection, querySQL);
   }
 
   @Override

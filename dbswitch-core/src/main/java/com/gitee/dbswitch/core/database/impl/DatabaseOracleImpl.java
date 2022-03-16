@@ -16,6 +16,7 @@ import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.TableDescription;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,7 +60,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public List<TableDescription> queryTableList(String schemaName) {
+  public List<TableDescription> queryTableList(Connection connection, String schemaName) {
     List<TableDescription> ret = new ArrayList<>();
     String sql = String.format("SELECT \"OWNER\",\"TABLE_NAME\",\"TABLE_TYPE\",\"COMMENTS\" "
         + "FROM all_tab_comments where \"OWNER\"='%s'", schemaName);
@@ -87,7 +88,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public String getTableDDL(String schemaName, String tableName) {
+  public String getTableDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_TABLE_SQL, tableName, schemaName);
     try (Statement st = connection.createStatement()) {
       if (st.execute(sql)) {
@@ -105,7 +106,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public String getViewDDL(String schemaName, String tableName) {
+  public String getViewDDL(Connection connection, String schemaName, String tableName) {
     String sql = String.format(SHOW_CREATE_VIEW_SQL, tableName, schemaName);
     try (Statement st = connection.createStatement()) {
       if (st.execute(sql)) {
@@ -123,7 +124,8 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public List<String> queryTablePrimaryKeys(String schemaName, String tableName) {
+  public List<String> queryTablePrimaryKeys(Connection connection, String schemaName,
+      String tableName) {
     // Oracle表的主键可以使用如下命令设置主键是否生效
     // 使主键失效：alter table tableName disable primary key;
     // 使主键恢复：alter table tableName enable primary key;
@@ -133,7 +135,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
             + "ON col.constraint_name=con.constraint_name AND col.OWNER =con.OWNER  AND col.TABLE_NAME =con.TABLE_NAME \n"
             + "WHERE con.constraint_type = 'P' and con.STATUS='ENABLED' and con.owner='%s' AND con.table_name='%s'",
         schemaName, tableName);
-    try (PreparedStatement ps = this.connection.prepareStatement(sql);
+    try (PreparedStatement ps = connection.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
     ) {
       while (rs.next()) {
@@ -147,10 +149,10 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public List<ColumnDescription> querySelectSqlColumnMeta(String sql) {
+  public List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql) {
     String querySQL = String.format("SELECT * from (%s) tmp where ROWNUM<=1 ",
         sql.replace(";", ""));
-    return this.getSelectSqlColumnMeta(querySQL);
+    return this.getSelectSqlColumnMeta(connection, querySQL);
   }
 
   @Override

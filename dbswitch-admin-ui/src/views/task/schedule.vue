@@ -22,9 +22,9 @@
                     :data="jobTableData"
                     size="small"
                     border>
-                    <template slot="empty">
-                      <span>单击左侧任务列表记录来查看作业调度记录</span>
-                    </template>
+            <template slot="empty">
+              <span>单击左侧任务列表记录来查看作业调度记录</span>
+            </template>
             <el-table-column type="expand">
               <template slot-scope="props">
                 <el-form label-position="left"
@@ -127,7 +127,9 @@ export default {
         if (0 === res.data.code) {
           this.allTaskAssignments = res.data.data;
         } else {
-          alert("初始化任务安排信息失败:" + res.data.errmsg);
+          if (res.data.message) {
+            alert("初始化任务安排信息失败:" + res.data.message);
+          }
         }
       }
       );
@@ -153,7 +155,9 @@ export default {
           this.totalCount = res.data.pagination.total;
           this.jobTableData = res.data.data;
         } else {
-          alert("查询JOB执行历史纪录失败," + res.data.message);
+          if (res.data.message) {
+            alert("查询JOB执行历史纪录失败," + res.data.message);
+          }
         }
       });
     },
@@ -170,7 +174,9 @@ export default {
           this.$message("停止JOB成功");
           this.loadJobsData();
         } else {
-          alert("JOB停止失败," + res.data.message);
+          if (res.data.message) {
+            alert("JOB停止失败," + res.data.message);
+          }
         }
       });
     }

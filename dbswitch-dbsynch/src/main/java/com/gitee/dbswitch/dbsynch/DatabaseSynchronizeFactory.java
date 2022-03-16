@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbsynch;
 
-import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
+import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.dbsynch.db2.DB2DatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.dm.DmDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.kingbase.KingbaseDatabaseSyncImpl;
@@ -38,6 +38,7 @@ public final class DatabaseSynchronizeFactory {
       put("MYSQL", MySqlDatabaseSyncImpl::new);
       put("ORACLE", OracleDatabaseSyncImpl::new);
       put("SQLSERVER", SqlServerDatabaseSyncImpl::new);
+      put("SQLSERVER2000", SqlServerDatabaseSyncImpl::new);
       put("POSTGRESQL", PostgresqlDatabaseSyncImpl::new);
       put("GREENPLUM", GreenplumDatabaseSyncImpl::new);
       put("DB2", DB2DatabaseSyncImpl::new);
@@ -53,7 +54,7 @@ public final class DatabaseSynchronizeFactory {
    * @return 同步器对象
    */
   public static IDatabaseSynchronize createDatabaseWriter(DataSource dataSource) {
-    String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
+    String type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource).name();
     if (!DATABASE_SYNC_MAPPER.containsKey(type)) {
       throw new RuntimeException(
           String.format("[dbsynch] Unsupported database type (%s)", type));

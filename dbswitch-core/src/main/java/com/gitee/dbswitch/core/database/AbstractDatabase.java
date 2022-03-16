@@ -10,14 +10,13 @@
 package com.gitee.dbswitch.core.database;
 
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.util.DbswitchStrUtils;
 import com.gitee.dbswitch.common.util.HivePrepareUtils;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -25,8 +24,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,12 +36,12 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   public static final int CLOB_LENGTH = 9999999;
 
-  protected Connection connection = null;
-  protected DatabaseMetaData metaData = null;
+  protected String driverClassName;
   protected String catalogName = null;
 
   public AbstractDatabase(String driverClassName) {
     try {
+      this.driverClassName = driverClassName;
       Class.forName(driverClassName);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -52,50 +49,14 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public void connect(String jdbcUrl, String username, String password) {
-    /*
-     * 超时时间设置问题： https://blog.csdn.net/lsunwing/article/details/79461217
-     * https://blog.csdn.net/weixin_34405332/article/details/91664781
-     */
-    try {
-      /**
-       * Oracle在通过jdbc连接的时候需要添加一个参数来设置是否获取注释
-       */
-      Properties props = new Properties();
-      props.put("user", username);
-      props.put("password", password);
-      props.put("remarksReporting", "true");
-
-      // 设置最大时间
-      DriverManager.setLoginTimeout(15);
-
-      this.connection = DriverManager.getConnection(jdbcUrl, props);
-      if (Objects.isNull(this.connection)) {
-        throw new RuntimeException("数据库连接失败，连接参数为：" + jdbcUrl);
-      }
-
-      this.metaData = Objects.requireNonNull(this.connection.getMetaData());
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-
+  public String getDriverClassName() {
+    return this.driverClassName;
   }
 
   @Override
-  public void close() {
-    if (null != connection) {
-      try {
-        connection.close();
-      } catch (SQLException e) {
-      }
-      connection = null;
-    }
-  }
-
-  @Override
-  public List<String> querySchemaList() {
+  public List<String> querySchemaList(Connection connection) {
     Set<String> ret = new HashSet<>();
-    try (ResultSet schemas = this.metaData.getSchemas()) {
+    try (ResultSet schemas = connection.getMetaData().getSchemas()) {
       while (schemas.next()) {
         ret.add(schemas.getString("TABLE_SCHEM"));
       }
@@ -106,11 +67,12 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public List<TableDescription> queryTableList(String schemaName) {
+  public List<TableDescription> queryTableList(Connection connection, String schemaName) {
     List<TableDescription> ret = new ArrayList<>();
     Set<String> uniqueSet = new HashSet<>();
     String[] types = new String[]{"TABLE", "VIEW"};
-    try (ResultSet tables = metaData.getTables(this.catalogName, schemaName, "%", types)) {
+    try (ResultSet tables = connection.getMetaData()
+        .getTables(this.catalogName, schemaName, "%", types)) {
       while (tables.next()) {
         String tableName = tables.getString("TABLE_NAME");
         if (uniqueSet.contains(tableName)) {
@@ -133,17 +95,37 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public TableDescription queryTableMeta(String schemaName, String tableName) {
-    return queryTableList(schemaName).stream()
+  public TableDescription queryTableMeta(Connection connection, String schemaName,
+      String tableName) {
+    return queryTableList(connection, schemaName).stream()
         .filter(one -> tableName.equals(one.getTableName()))
         .findAny().orElse(null);
   }
 
   @Override
-  public List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName) {
+  public List<String> queryTableColumnName(Connection connection, String schemaName,
+      String tableName) {
+    Set<String> columns = new HashSet<>();
+    try (ResultSet rs = connection.getMetaData()
+        .getColumns(this.catalogName, schemaName, tableName, null)) {
+      while (rs.next()) {
+        columns.add(rs.getString("COLUMN_NAME"));
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    return new ArrayList<>(columns);
+  }
+
+  @Override
+  public List<ColumnDescription> queryTableColumnMeta(Connection connection, String schemaName,
+      String tableName) {
     String sql = this.getTableFieldsQuerySQL(schemaName, tableName);
-    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(sql);
-    try (ResultSet columns = metaData.getColumns(this.catalogName, schemaName, tableName, null)) {
+    List<ColumnDescription> ret = this.querySelectSqlColumnMeta(connection, sql);
+
+    // 补充一下注释信息
+    try (ResultSet columns = connection.getMetaData()
+        .getColumns(this.catalogName, schemaName, tableName, null)) {
       while (columns.next()) {
         String columnName = columns.getString("COLUMN_NAME");
         String remarks = columns.getString("REMARKS");
@@ -160,9 +142,11 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public List<String> queryTablePrimaryKeys(String schemaName, String tableName) {
+  public List<String> queryTablePrimaryKeys(Connection connection, String schemaName,
+      String tableName) {
     Set<String> ret = new HashSet<>();
-    try (ResultSet primaryKeys = metaData.getPrimaryKeys(this.catalogName, schemaName, tableName)) {
+    try (ResultSet primaryKeys = connection.getMetaData()
+        .getPrimaryKeys(this.catalogName, schemaName, tableName)) {
       while (primaryKeys.next()) {
         String name = primaryKeys.getString("COLUMN_NAME");
         if (!ret.contains(name)) {
@@ -176,7 +160,8 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public SchemaTableData queryTableData(String schemaName, String tableName, int rowCount) {
+  public SchemaTableData queryTableData(Connection connection, String schemaName, String tableName,
+      int rowCount) {
     String fullTableName = getQuotedSchemaTableCombination(schemaName, tableName);
     String querySQL = String.format("SELECT * FROM %s ", fullTableName);
     SchemaTableData data = new SchemaTableData();
@@ -202,7 +187,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
           for (int i = 1; i <= count; i++) {
             Object value = rs.getObject(i);
             if (value != null && value instanceof byte[]) {
-              row.add(toHexString((byte[]) value));
+              row.add(DbswitchStrUtils.toHexString((byte[]) value));
             } else {
               row.add(null == value ? null : value.toString());
             }
@@ -218,12 +203,9 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   }
 
   @Override
-  public abstract List<ColumnDescription> querySelectSqlColumnMeta(String sql);
-
-  @Override
-  public void testQuerySQL(String sql) {
+  public void testQuerySQL(Connection connection, String sql) {
     String wrapperSql = this.getTestQuerySQL(sql);
-    try (Statement statement = this.connection.createStatement();) {
+    try (Statement statement = connection.createStatement();) {
       statement.execute(wrapperSql);
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -262,7 +244,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   protected abstract String getTestQuerySQL(String sql);
 
-  protected List<ColumnDescription> getSelectSqlColumnMeta(String querySQL) {
+  protected List<ColumnDescription> getSelectSqlColumnMeta(Connection connection, String querySQL) {
     List<ColumnDescription> ret = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
       if (getDatabaseType() == DatabaseTypeEnum.HIVE) {
@@ -321,19 +303,4 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
     }
   }
 
-  private String toHexString(byte[] bytes) {
-    if (null == bytes || bytes.length <= 0) {
-      return null;
-    }
-    final StringBuilder hexString = new StringBuilder();
-    for (byte b : bytes) {
-      int v = b & 0xFF;
-      String s = Integer.toHexString(v);
-      if (s.length() < 2) {
-        hexString.append(0);
-      }
-      hexString.append(s);
-    }
-    return hexString.toString();
-  }
 }

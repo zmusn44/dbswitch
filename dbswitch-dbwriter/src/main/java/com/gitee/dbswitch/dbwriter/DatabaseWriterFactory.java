@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter;
 
-import com.gitee.dbswitch.dbcommon.util.DatabaseAwareUtils;
+import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -22,7 +22,8 @@ import javax.sql.DataSource;
  */
 public class DatabaseWriterFactory {
 
-  private static final Map<String, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER = new HashMap<String, Function<DataSource, IDatabaseWriter>>() {
+  private static final Map<String, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER
+      = new HashMap<String, Function<DataSource, IDatabaseWriter>>() {
 
     private static final long serialVersionUID = 3365136872693503697L;
 
@@ -30,6 +31,7 @@ public class DatabaseWriterFactory {
       put("MYSQL", com.gitee.dbswitch.dbwriter.mysql.MySqlWriterImpl::new);
       put("ORACLE", com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl::new);
       put("SQLSERVER", com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl::new);
+      put("SQLSERVER2000", com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl::new);
       put("POSTGRESQL", com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl::new);
       put("GREENPLUM", com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl::new);
       put("DB2", com.gitee.dbswitch.dbwriter.db2.DB2WriterImpl::new);
@@ -57,14 +59,14 @@ public class DatabaseWriterFactory {
    * @return 写入器对象
    */
   public static IDatabaseWriter createDatabaseWriter(DataSource dataSource, boolean insert) {
-    String type = DatabaseAwareUtils.getDatabaseNameByDataSource(dataSource).toUpperCase();
+    String type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource).name();
     if (insert) {
       if ("POSTGRESQL".equalsIgnoreCase(type) || "GREENPLUM".equalsIgnoreCase(type)) {
         return new com.gitee.dbswitch.dbwriter.gpdb.GreenplumInsertWriterImpl(dataSource);
       }
     }
 
-    if (!DATABASE_WRITER_MAPPER.containsKey(type.trim())) {
+    if (!DATABASE_WRITER_MAPPER.containsKey(type)) {
       throw new RuntimeException(
           String.format("[dbwrite] Unsupported database type (%s)", type));
     }

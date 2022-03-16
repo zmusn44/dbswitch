@@ -17,8 +17,8 @@ import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.DatabaseDescription;
 import com.gitee.dbswitch.core.model.TableDescription;
-import com.gitee.dbswitch.core.service.IMigrationService;
-import com.gitee.dbswitch.core.service.impl.MigrationConvertServiceImpl;
+import com.gitee.dbswitch.core.service.IMetaDataByDescriptionService;
+import com.gitee.dbswitch.core.service.impl.MetaDataByDescriptionServiceImpl;
 import com.google.common.base.Strings;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -61,8 +61,8 @@ public class StructureController {
     String dbname = object.getString("dbname");
     String charset = object.getString("charset");
 
-    if (null != type && null != mode && type.equalsIgnoreCase("oracle") && mode
-        .equalsIgnoreCase("TNSNAME")) {
+    if (null != type && null != mode && type.equalsIgnoreCase("oracle")
+        && mode.equalsIgnoreCase("TNSNAME")) {
       if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd) || Strings
           .isNullOrEmpty(dbname)) {
         throw new RuntimeException("Invalid input parameter");
@@ -85,10 +85,10 @@ public class StructureController {
       }
     }
 
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
     return Result.success(migrationService.querySchemaList());
   }
 
@@ -141,10 +141,10 @@ public class StructureController {
       }
     }
 
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
     List<TableDescription> tables = migrationService.queryTableList(model);
     List<Map<String, String>> ret = new ArrayList<Map<String, String>>();
     for (TableDescription td : tables) {
@@ -187,14 +187,14 @@ public class StructureController {
 
     if (null != type && null != mode && type.equalsIgnoreCase("oracle") && mode
         .equalsIgnoreCase("TNSNAME")) {
-      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd) || Strings
-          .isNullOrEmpty(dbname)
-          || Strings.isNullOrEmpty(model) || Strings.isNullOrEmpty(src_table)) {
+      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname) || Strings.isNullOrEmpty(model)
+          || Strings.isNullOrEmpty(src_table)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
-      if (Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(model) || Strings
-          .isNullOrEmpty(src_table)) {
+      if (Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(model)
+          || Strings.isNullOrEmpty(src_table)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
@@ -204,22 +204,21 @@ public class StructureController {
 
     } else {
       if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host) || Strings.isNullOrEmpty(user)
-          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname) || Strings
-          .isNullOrEmpty(charset)
-          || Strings.isNullOrEmpty(model) || Strings.isNullOrEmpty(src_table) || Objects
-          .isNull(port)) {
+          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname)
+          || Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(model)
+          || Strings.isNullOrEmpty(src_table) || Objects.isNull(port)) {
         throw new RuntimeException("Invalid input parameter");
       }
     }
 
     Map<String, Object> ret = new HashMap<String, Object>();
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
     List<ColumnDescription> columnDescs = migrationService.queryTableColumnMeta(model, src_table);
     List<String> primaryKeys = migrationService.queryTablePrimaryKeys(model, src_table);
-    List<Map<String, Object>> columns = new ArrayList<Map<String, Object>>();
+    List<Map<String, Object>> columns = new ArrayList<>();
     for (ColumnDescription col : columnDescs) {
       Map<String, Object> one = new HashMap<String, Object>();
       one.put("name", col.getFieldName());
@@ -279,9 +278,8 @@ public class StructureController {
 
     if (null != type && null != mode && type.equalsIgnoreCase("oracle") && mode
         .equalsIgnoreCase("TNSNAME")) {
-      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd) || Strings
-          .isNullOrEmpty(dbname)
-          || Strings.isNullOrEmpty(querysql)) {
+      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname) || Strings.isNullOrEmpty(querysql)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
@@ -295,17 +293,17 @@ public class StructureController {
 
     } else {
       if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host) || Strings.isNullOrEmpty(user)
-          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname) || Strings
-          .isNullOrEmpty(charset)
-          || Strings.isNullOrEmpty(querysql) || Objects.isNull(port)) {
+          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname)
+          || Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(querysql)
+          || Objects.isNull(port)) {
         throw new RuntimeException("Invalid input parameter");
       }
     }
 
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
     List<ColumnDescription> columnDescs = migrationService.querySqlColumnMeta(querysql);
     List<Map<String, Object>> columns = new ArrayList<Map<String, Object>>();
     for (ColumnDescription col : columnDescs) {
@@ -334,7 +332,7 @@ public class StructureController {
       "		    \"type\":\"oracle\",  \r\n" +
       "		    \"host\":\"172.17.20.52\",\r\n" +
       "		    \"port\":1521,\r\n" +
-      "          \"mode\":\"sid\",\r\n" +
+      "       \"mode\":\"sid\",\r\n" +
       "		    \"user\":\"yi_bo\",\r\n" +
       "		    \"passwd\":\"tangyibo\",\r\n" +
       "		    \"dbname\":\"orcl\",\r\n" +
@@ -361,17 +359,16 @@ public class StructureController {
     String dest_model = object.getString("dest_model");
     String dest_table = object.getString("dest_table");
 
-    if (null != type && null != mode && type.equalsIgnoreCase("oracle") && mode
-        .equalsIgnoreCase("TNSNAME")) {
-      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd) || Strings
-          .isNullOrEmpty(dbname)) {
+    if (null != type && null != mode && type.equalsIgnoreCase("oracle")
+        && mode.equalsIgnoreCase("TNSNAME")) {
+      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
-      if (Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(src_model) || Strings
-          .isNullOrEmpty(src_table)
-          || Strings.isNullOrEmpty(dest_model) || Strings.isNullOrEmpty(dest_table)
-          || Strings.isNullOrEmpty(target)) {
+      if (Strings.isNullOrEmpty(charset) || Strings.isNullOrEmpty(src_model)
+          || Strings.isNullOrEmpty(src_table) || Strings.isNullOrEmpty(dest_model)
+          || Strings.isNullOrEmpty(dest_table) || Strings.isNullOrEmpty(target)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
@@ -380,28 +377,27 @@ public class StructureController {
       }
 
     } else {
-      if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host) || Strings.isNullOrEmpty(user)
-          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname) || Strings
-          .isNullOrEmpty(charset)
-          || Strings.isNullOrEmpty(src_model) || Strings.isNullOrEmpty(src_table) || Objects
-          .isNull(port)
-          || Strings.isNullOrEmpty(dest_model) || Strings.isNullOrEmpty(dest_table)
-          || Strings.isNullOrEmpty(target)) {
+      if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host)
+          || Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname) || Strings.isNullOrEmpty(charset)
+          || Strings.isNullOrEmpty(src_model) || Strings.isNullOrEmpty(src_table)
+          || Objects.isNull(port) || Strings.isNullOrEmpty(dest_model)
+          || Strings.isNullOrEmpty(dest_table) || Strings.isNullOrEmpty(target)) {
         throw new RuntimeException("Invalid input parameter");
       }
     }
 
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    DatabaseTypeEnum taregetDabaseType = DatabaseTypeEnum.valueOf(target.toUpperCase());
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
 
     List<ColumnDescription> columnDescs = migrationService
         .queryTableColumnMeta(src_model, src_table);
     List<String> primaryKeys = migrationService.queryTablePrimaryKeys(src_model, src_table);
+    DatabaseTypeEnum targetDatabaseType = DatabaseTypeEnum.valueOf(target.trim().toUpperCase());
     String sql = migrationService
-        .getDDLCreateTableSQL(taregetDabaseType, columnDescs, primaryKeys, dest_model, dest_table,
+        .getDDLCreateTableSQL(targetDatabaseType, columnDescs, primaryKeys, dest_model, dest_table,
             false);
 
     Map<String, Object> ret = new HashMap<>();
@@ -465,10 +461,10 @@ public class StructureController {
     String charset = object.getString("charset");
     String querysql = object.getString("querysql");
 
-    if (null != type && null != mode && type.equalsIgnoreCase("oracle") && mode
-        .equalsIgnoreCase("TNSNAME")) {
-      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd) || Strings
-          .isNullOrEmpty(dbname)) {
+    if (null != type && null != mode && type.equalsIgnoreCase("oracle")
+        && mode.equalsIgnoreCase("TNSNAME")) {
+      if (Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname)) {
         throw new RuntimeException("Invalid input parameter");
       }
 
@@ -481,18 +477,18 @@ public class StructureController {
       }
 
     } else {
-      if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host) || Strings.isNullOrEmpty(user)
-          || Strings.isNullOrEmpty(passwd) || Strings.isNullOrEmpty(dbname) || Strings
-          .isNullOrEmpty(charset)
+      if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(host)
+          || Strings.isNullOrEmpty(user) || Strings.isNullOrEmpty(passwd)
+          || Strings.isNullOrEmpty(dbname) || Strings.isNullOrEmpty(charset)
           || Strings.isNullOrEmpty(querysql) || Objects.isNull(port)) {
         throw new RuntimeException("Invalid input parameter");
       }
     }
 
-    IMigrationService migrationService = new MigrationConvertServiceImpl();
-    DatabaseDescription databaseDesc = new DatabaseDescription(type, host, port, mode, dbname,
-        charset, user, passwd);
-    migrationService.setDatabaseConnection(databaseDesc);
+    DatabaseDescription databaseDesc = new DatabaseDescription(type,
+        host, port, mode, dbname, charset, user, passwd);
+    IMetaDataByDescriptionService migrationService =
+        new MetaDataByDescriptionServiceImpl(databaseDesc);
     migrationService.testQuerySQL(querysql);
     return Result.success("ok");
   }

@@ -4,13 +4,13 @@
 // Use of this source code is governed by a BSD-style license
 //
 // Author: tang (inrgihc@126.com)
-// Data : 2020/1/2
+// Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.util;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.constant.Const;
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -32,7 +32,7 @@ public class GenerateSqlUtils {
       String schemaName,
       String tableName,
       boolean autoIncr) {
-    StringBuilder retval = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
     List<String> pks = fieldNames.stream()
         .filter((cd) -> primaryKeys.contains(cd.getFieldName()))
         .map((cd) -> cd.getFieldName())
@@ -40,34 +40,34 @@ public class GenerateSqlUtils {
 
     AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
 
-    retval.append(Const.CREATE_TABLE);
+    sb.append(Const.CREATE_TABLE);
     // if(ifNotExist && type!=DatabaseType.ORACLE) {
-    // retval.append( Const.IF_NOT_EXISTS );
+    // sb.append( Const.IF_NOT_EXISTS );
     // }
-    retval.append(db.getQuotedSchemaTableCombination(schemaName, tableName));
-    retval.append("(");
+    sb.append(db.getQuotedSchemaTableCombination(schemaName, tableName));
+    sb.append("(");
 
     for (int i = 0; i < fieldNames.size(); i++) {
       if (i > 0) {
-        retval.append(", ");
+        sb.append(", ");
       } else {
-        retval.append("  ");
+        sb.append("  ");
       }
 
       ColumnMetaData v = fieldNames.get(i).getMetaData();
-      retval.append(db.getFieldDefinition(v, pks, autoIncr, false));
+      sb.append(db.getFieldDefinition(v, pks, autoIncr, false));
     }
 
     if (!pks.isEmpty()) {
       String pk = db.getPrimaryKeyAsString(pks);
-      retval.append(", PRIMARY KEY (").append(pk).append(")");
+      sb.append(", PRIMARY KEY (").append(pk).append(")");
     }
 
-    retval.append(")");
+    sb.append(")");
     if (DatabaseTypeEnum.MYSQL == type) {
-      retval.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin");
+      sb.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin");
     }
 
-    return DDLFormatterUtils.format(retval.toString());
+    return DDLFormatterUtils.format(sb.toString());
   }
 }

@@ -143,8 +143,8 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
       }
     });
 
-    this.fieldOrders = new ArrayList<String>(fieldNames);
-    this.pksOrders = new ArrayList<String>(pks);
+    this.fieldOrders = new ArrayList<>(fieldNames);
+    this.pksOrders = new ArrayList<>(pks);
 
     this.insertStatementSql = this.getInsertPrepareStatementSql(schemaName, tableName, fieldNames);
     this.updateStatementSql = this

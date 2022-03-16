@@ -14,6 +14,7 @@ import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.TableDescription;
+import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ import java.util.List;
  *
  * @author tang
  */
-public interface IDatabaseInterface extends AutoCloseable {
+public interface IDatabaseInterface {
 
   /**
    * 获取数据库类型
@@ -31,105 +32,119 @@ public interface IDatabaseInterface extends AutoCloseable {
   DatabaseTypeEnum getDatabaseType();
 
   /**
-   * 建立数据库连接
+   * 获取数据库的JDBC驱动类
    *
-   * @param jdbcurl  JDBC的URL连接字符串
-   * @param username 用户名
-   * @param password 密码
+   * @return
    */
-  void connect(String jdbcurl, String username, String password);
-
-  /**
-   * 断开数据库连接
-   */
-  @Override
-  void close();
+  String getDriverClassName();
 
   /**
    * 获取数据库的模式schema列表
    *
+   * @param connection JDBC连接
    * @return 模式名列表
    */
-  List<String> querySchemaList();
+  List<String> querySchemaList(Connection connection);
 
   /**
    * 获取指定模式Schema内的所有表列表
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @return 表及视图名列表
    */
-  List<TableDescription> queryTableList(String schemaName);
+  List<TableDescription> queryTableList(Connection connection, String schemaName);
 
   /**
    * 精确获取表或视图的元数据
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表或视图名称
-   *
    * @return
    */
-  TableDescription queryTableMeta(String schemaName, String tableName);
+  TableDescription queryTableMeta(Connection connection, String schemaName, String tableName);
 
   /**
    * 获取指定物理表的DDL语句
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表或视图名称
    * @return 字段元信息列表
    */
-  String getTableDDL(String schemaName, String tableName);
+  String getTableDDL(Connection connection, String schemaName, String tableName);
 
   /**
    * 获取指定视图表的DDL语句
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表或视图名称
    * @return 字段元信息列表
    */
-  String getViewDDL(String schemaName, String tableName);
+  String getViewDDL(Connection connection, String schemaName, String tableName);
+
+  /**
+   * 获取指定模式表的字段列表
+   *
+   * @param connection JDBC连接
+   * @param schemaName 模式名称
+   * @param tableName  表或视图名称
+   * @return 字段元信息列表
+   */
+  List<String> queryTableColumnName(Connection connection, String schemaName,
+      String tableName);
 
   /**
    * 获取指定模式表的元信息
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表或视图名称
    * @return 字段元信息列表
    */
-  List<ColumnDescription> queryTableColumnMeta(String schemaName, String tableName);
+  List<ColumnDescription> queryTableColumnMeta(Connection connection, String schemaName,
+      String tableName);
 
   /**
    * 获取指定查询SQL的元信息
    *
-   * @param sql SQL查询语句
+   * @param connection JDBC连接
+   * @param sql        SQL查询语句
    * @return 字段元信息列表
    */
-  List<ColumnDescription> querySelectSqlColumnMeta(String sql);
+  List<ColumnDescription> querySelectSqlColumnMeta(Connection connection, String sql);
 
   /**
    * 获取指定模式表的主键字段列表
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表名称
    * @return 主键字段名称列表
    */
-  List<String> queryTablePrimaryKeys(String schemaName, String tableName);
+  List<String> queryTablePrimaryKeys(Connection connection, String schemaName, String tableName);
 
   /**
    * 获取指定模式表内的数据
    *
+   * @param connection JDBC连接
    * @param schemaName 模式名称
    * @param tableName  表名称
    * @param rowCount   记录的行数
    * @return 数据内容
    */
-  SchemaTableData queryTableData(String schemaName, String tableName, int rowCount);
+  SchemaTableData queryTableData(Connection connection, String schemaName, String tableName,
+      int rowCount);
 
   /**
    * 测试查询SQL语句的有效性
    *
-   * @param sql 待验证的SQL语句
+   * @param connection JDBC连接
+   * @param sql        待验证的SQL语句
    */
-  void testQuerySQL(String sql);
+  void testQuerySQL(Connection connection, String sql);
 
   /**
    * 获取数据库的表全名
