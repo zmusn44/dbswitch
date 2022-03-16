@@ -204,7 +204,11 @@ dbswitch:
 
 - （4）如果```dbswitch.target.target-drop=false```，```dbswitch.target.change-data-synch=true```；时会对有主键表启用增量变更方式同步 
 
-- （5）各个数据库的JDBC驱动连接示例如下：
+- （5）对于```regex-table-mapper```和```regex-column-mappe```，为基于正则表达式替换的表名映射和字段名映射，均可以为空（代表原名映射，即源的表t_a映射到目的端也为t_a）
+
+> 提示：如果要将源端所有表名添加前缀，可以配置```"from-pattern": "^","to-value": "T_"```;
+
+- （6）各个数据库的JDBC驱动连接示例如下：
 
 **mysql/mariadb的驱动配置样例**
 
