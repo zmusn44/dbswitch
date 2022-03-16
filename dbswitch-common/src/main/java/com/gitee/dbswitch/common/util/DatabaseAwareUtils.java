@@ -39,13 +39,20 @@ public final class DatabaseAwareUtils {
     productNameMap.put("KingbaseES", DatabaseTypeEnum.KINGBASE);
     productNameMap.put("Apache Hive", DatabaseTypeEnum.HIVE);
     productNameMap.put("MySQL", DatabaseTypeEnum.MYSQL);
+    productNameMap.put("MariaDB", DatabaseTypeEnum.MARIADB);
     productNameMap.put("Oracle", DatabaseTypeEnum.ORACLE);
     productNameMap.put("PostgreSQL", DatabaseTypeEnum.POSTGRESQL);
-    productNameMap.put("DB2", DatabaseTypeEnum.DB2);
+    productNameMap.put("DB2 for Unix/Windows", DatabaseTypeEnum.DB2);
+    productNameMap.put("Hive", DatabaseTypeEnum.HIVE);
 
     driverNameMap.put("MySQL Connector Java", DatabaseTypeEnum.MYSQL);
     driverNameMap.put("MariaDB Connector/J", DatabaseTypeEnum.MARIADB);
     driverNameMap.put("Oracle JDBC driver", DatabaseTypeEnum.ORACLE);
+    driverNameMap.put("PostgreSQL JDBC Driver", DatabaseTypeEnum.POSTGRESQL);
+    driverNameMap.put("Kingbase8 JDBC Driver", DatabaseTypeEnum.KINGBASE);
+    driverNameMap.put("IBM Data Server Driver for JDBC and SQLJ", DatabaseTypeEnum.DB2);
+    driverNameMap.put("dm.jdbc.driver.DmDriver", DatabaseTypeEnum.DM);
+    driverNameMap.put("Hive JDBC", DatabaseTypeEnum.HIVE);
   }
 
   /**
