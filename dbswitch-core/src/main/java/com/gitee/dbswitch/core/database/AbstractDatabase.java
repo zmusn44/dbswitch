@@ -12,6 +12,7 @@ package com.gitee.dbswitch.core.database;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.util.DbswitchStrUtils;
 import com.gitee.dbswitch.common.util.HivePrepareUtils;
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.SchemaTableData;
@@ -188,6 +189,11 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
             Object value = rs.getObject(i);
             if (value != null && value instanceof byte[]) {
               row.add(DbswitchStrUtils.toHexString((byte[]) value));
+            } else if (value != null && value instanceof java.sql.Clob) {
+              row.add(TypeConvertUtils.castToString(value));
+            } else if (value != null && value instanceof java.sql.Blob) {
+              byte[] bytes = TypeConvertUtils.castToByteArray(value);
+              row.add(DbswitchStrUtils.toHexString(bytes));
             } else {
               row.add(null == value ? null : value.toString());
             }

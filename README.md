@@ -4,7 +4,7 @@
 
 ### 1、功能描述
 
-一句话，dbswitch工具提供源端数据库向目的端数据的迁移同步功能，支持数据的全量和增量方式同步。包括：
+一句话，dbswitch工具提供源端数据库向目的端数据库的**批量**迁移同步功能，支持数据的全量和增量方式同步。包括：
 
 - **结构迁移**
 
@@ -214,7 +214,7 @@ dbswitch:
 
 ```
 jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false
-jdbc驱动名称： com.mysql.cj.jdbc.Driver
+jdbc驱动名称： com.mysql.jdbc.Driver
 ```
 
 与:
@@ -444,7 +444,7 @@ bin/startup.sh
 
 **缺点：**
 
-> 当数据库内的表数量较大时，WEB方式卡顿严重；
+> 当数据库内的表或字段数量较大时，WEB方式卡顿严重；
 
 > 多个任务并发执行不易于分析任务错误原因；
 

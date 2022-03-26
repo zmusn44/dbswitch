@@ -9,8 +9,10 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.dm;
 
+import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
-import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
+import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
+import java.util.List;
 import javax.sql.DataSource;
 
 /**
@@ -18,7 +20,7 @@ import javax.sql.DataSource;
  *
  * @author tang
  */
-public class DmWriterImpl extends OracleWriterImpl implements IDatabaseWriter {
+public class DmWriterImpl extends AbstractDatabaseWriter implements IDatabaseWriter {
 
   public DmWriterImpl(DataSource dataSource) {
     super(dataSource);
@@ -29,4 +31,18 @@ public class DmWriterImpl extends OracleWriterImpl implements IDatabaseWriter {
     return "DM";
   }
 
+  @Override
+  public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    recordValues.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = ObjectCastUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
+    return super.write(fieldNames, recordValues);
+  }
 }

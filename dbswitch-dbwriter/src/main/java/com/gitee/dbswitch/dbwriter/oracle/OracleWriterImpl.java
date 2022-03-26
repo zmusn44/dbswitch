@@ -9,13 +9,20 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.oracle;
 
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
-import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.SqlTypeValue;
 
 /**
  * Oracle数据库写入实现类
@@ -40,28 +47,48 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
      * 将java.sql.Array 类型转换为java.lang.String
      * <p>
      *  Oracle 没有数组类型，这里以文本类型进行存在
+     * <p>
+     *  Oracle的CLOB和BLOB类型写入请见：
+     *  <p>
+     *  oracle.jdbc.driver.OraclePreparedStatement.setObjectCritical
      */
+    List<InputStream> iss = new ArrayList<>();
     recordValues.parallelStream().forEach((Object[] row) -> {
       for (int i = 0; i < row.length; ++i) {
         try {
           int dataType = this.columnType.get(fieldNames.get(i));
           switch (dataType) {
-            // oracle.jdbc.driver.OraclePreparedStatement.setObjectCritical
+            case Types.CLOB:
+            case Types.NCLOB:
+              row[i] = Objects.isNull(row[i])
+                  ? null
+                  : TypeConvertUtils.castToString(row[i]);
+              break;
             case Types.BLOB:
-              // 需要oracle.sql.BLOB类型
-              log.warn("Unsupported type for convert {} to oracle.sql.BLOB",
-                  row[i].getClass().getName());
-              row[i] = null;
+              final byte[] bytes = Objects.isNull(row[i])
+                  ? null
+                  : TypeConvertUtils.castToByteArray(row[i]);
+              row[i] = new SqlTypeValue() {
+                @Override
+                public void setTypeValue(PreparedStatement ps, int paramIndex, int sqlType,
+                    String typeName) throws SQLException {
+                  if (null != bytes) {
+                    InputStream is = new ByteArrayInputStream(bytes);
+                    ps.setBlob(paramIndex, is);
+                    iss.add(is);
+                  } else {
+                    ps.setNull(paramIndex, sqlType);
+                  }
+                }
+              };
               break;
             case Types.ROWID:
             case Types.ARRAY:
-            case Types.NCLOB:
             case Types.REF:
             case Types.SQLXML:
               row[i] = null;
               break;
             default:
-              row[i] = ObjectCastUtils.castByDetermine(row[i]);
               break;
           }
         } catch (Exception e) {
@@ -70,6 +97,15 @@ public class OracleWriterImpl extends AbstractDatabaseWriter implements IDatabas
       }
     });
 
-    return super.write(fieldNames, recordValues);
+    try {
+      return super.write(fieldNames, recordValues);
+    } finally {
+      iss.forEach(is -> {
+        try {
+          is.close();
+        } catch (Exception ignore) {
+        }
+      });
+    }
   }
 }

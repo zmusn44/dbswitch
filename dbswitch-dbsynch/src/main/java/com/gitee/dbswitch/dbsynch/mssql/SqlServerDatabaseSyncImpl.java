@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbsynch.mssql;
 
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.dbsynch.AbstractDatabaseSynchronize;
 import com.gitee.dbswitch.dbsynch.IDatabaseSynchronize;
 import java.util.Collections;
@@ -72,4 +73,33 @@ public class SqlServerDatabaseSyncImpl extends AbstractDatabaseSynchronize imple
         schemaName, tableName, StringUtils.join(uw, "  AND  "));
   }
 
+  @Override
+  public long executeInsert(List<Object[]> records) {
+    records.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = TypeConvertUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
+    return super.executeInsert(records);
+  }
+
+  @Override
+  public long executeUpdate(List<Object[]> records) {
+    records.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = TypeConvertUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
+    return super.executeUpdate(records);
+  }
 }

@@ -704,7 +704,11 @@ export default {
       }
 
       if (this.updateform.includeOrExclude == "INCLUDE") {
-        this.preiveSeeTableNameList = this.updateform.sourceTables;
+        if (this.updateform.sourceTables && this.updateform.sourceTables.length > 0) {
+          this.preiveSeeTableNameList = this.updateform.sourceTables;
+        } else {
+          this.preiveSeeTableNameList = this.sourceSchemaTables;
+        }
       } else {
         if (this.updateform.sourceTables.length == 0) {
           alert("请选择排除表的【表名配置】！");

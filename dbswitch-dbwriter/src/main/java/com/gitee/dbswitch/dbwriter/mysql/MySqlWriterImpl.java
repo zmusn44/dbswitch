@@ -9,14 +9,23 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter.mysql;
 
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -55,6 +64,20 @@ public class MySqlWriterImpl extends AbstractDatabaseWriter implements IDatabase
 
   @Override
   public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    if (recordValues.isEmpty()) {
+      return 0;
+    }
+
+    recordValues.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = ObjectCastUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
     List<String> placeHolders = Collections.nCopies(fieldNames.size(), "?");
     String sqlInsert = String.format("INSERT INTO `%s`.`%s` ( `%s` ) VALUES ( %s )",
         schemaName, tableName,
