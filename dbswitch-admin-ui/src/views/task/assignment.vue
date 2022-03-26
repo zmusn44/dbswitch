@@ -61,7 +61,9 @@
       </el-table>
       <div class="page"
            align="right">
-        <el-pagination :current-page="currentPage"
+        <el-pagination @size-change="handleSizeChange"
+                       @current-change="handleCurrentChange"
+                       :current-page="currentPage"
                        :page-sizes="[5, 10, 20, 40]"
                        :page-size="pageSize"
                        layout="total, sizes, prev, pager, next, jumper"
@@ -96,11 +98,8 @@ export default {
             this.totalCount = res.data.pagination.total;
             this.tableData = res.data.data;
           } else {
-            if (res.data.message) {
-              alert("加载任务列表失败:" + res.data.errmsg);
-            }
+            alert("加载任务列表失败:" + res.data.message);
           }
-          this.totalCount = this.tableData.length;
         },
         function () {
           console.log("failed");
@@ -205,6 +204,17 @@ export default {
         }
       });
     },
+    handleSizeChange: function (pageSize) {
+      this.loading = true;
+      this.pageSize = pageSize;
+      this.loadData();
+    },
+
+    handleCurrentChange: function (currentPage) {
+      this.loading = true;
+      this.currentPage = currentPage;
+      this.loadData();
+    }
   },
   created () {
     this.loadData();

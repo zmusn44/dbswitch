@@ -11,6 +11,8 @@ package com.gitee.dbswitch.dbwriter.db2;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
+import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
+import java.util.List;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,4 +33,18 @@ public class DB2WriterImpl extends AbstractDatabaseWriter implements IDatabaseWr
     return "DB2";
   }
 
+  @Override
+  public long write(List<String> fieldNames, List<Object[]> recordValues) {
+    recordValues.parallelStream().forEach((Object[] row) -> {
+      for (int i = 0; i < row.length; ++i) {
+        try {
+          row[i] = ObjectCastUtils.castByDetermine(row[i]);
+        } catch (Exception e) {
+          row[i] = null;
+        }
+      }
+    });
+
+    return super.write(fieldNames, recordValues);
+  }
 }
