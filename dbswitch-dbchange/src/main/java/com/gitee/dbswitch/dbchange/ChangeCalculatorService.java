@@ -9,13 +9,14 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbchange;
 
+import com.gitee.dbswitch.common.util.JdbcTypesUtils;
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.core.service.IMetaDataByDatasourceService;
 import com.gitee.dbswitch.core.service.impl.MetaDataByDataSourceServiceImpl;
 import com.gitee.dbswitch.dbcommon.constant.Constants;
 import com.gitee.dbswitch.dbcommon.database.DatabaseOperatorFactory;
 import com.gitee.dbswitch.dbcommon.database.IDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.domain.StatementResultSet;
-import com.gitee.dbswitch.common.util.JdbcTypesUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -27,7 +28,6 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.SerializationUtils;
 
 /**
  * 数据变化量计算核心类
@@ -437,8 +437,8 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
      * </p>
      */
     if (JdbcTypesUtils.isString(type)) {
-      String s1 = String.valueOf(o1);
-      String s2 = String.valueOf(o2);
+      String s1 = TypeConvertUtils.castToString(o1);
+      String s2 = TypeConvertUtils.castToString(o2);
       return s1.compareTo(s2);
     } else if (JdbcTypesUtils.isNumeric(type) && o1 instanceof java.lang.Number
         && o2 instanceof java.lang.Number) {
@@ -470,7 +470,10 @@ public final class ChangeCalculatorService implements IDatabaseChangeCaculator {
       }
     } else {
       try {
-        return compareTo(SerializationUtils.serialize(o1), SerializationUtils.serialize(o2));
+        return compareTo(
+            TypeConvertUtils.castToByteArray(o1),
+            TypeConvertUtils.castToByteArray(o2)
+        );
       } catch (Exception e) {
         log.warn("CDC compare field value failed, return 0 instead,{}", e.getMessage());
         return 0;

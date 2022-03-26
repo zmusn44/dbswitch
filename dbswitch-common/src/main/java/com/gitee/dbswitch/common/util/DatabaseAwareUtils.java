@@ -96,8 +96,12 @@ public final class DatabaseAwareUtils {
       ps.setString(1, schemaName);
       ps.setString(2, tableName);
       try (ResultSet rs = ps.executeQuery()) {
-        return rs.getInt(1) > 0;
+        if (rs.next()) {
+          return rs.getInt(1) > 0;
+        }
       }
+
+      return false;
     } catch (SQLException se) {
       throw new RuntimeException(se);
     }

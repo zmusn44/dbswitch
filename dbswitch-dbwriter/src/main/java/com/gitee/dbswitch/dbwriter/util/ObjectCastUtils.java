@@ -868,18 +868,18 @@ public final class ObjectCastUtils {
     }
 
     if (in instanceof java.sql.Clob) {
-      return ObjectCastUtils.clob2Str((java.sql.Clob) in);
+      return clob2Str((java.sql.Clob) in);
     } else if (in instanceof java.sql.Array
         || in instanceof java.sql.SQLXML) {
       try {
-        return ObjectCastUtils.objectToString(in);
+        return objectToString(in);
       } catch (Exception e) {
         log.warn("Unsupported type for convert {} to java.lang.String", in.getClass().getName());
         return null;
       }
     } else if (in instanceof java.sql.Blob) {
       try {
-        return ObjectCastUtils.blob2Bytes((java.sql.Blob) in);
+        return blob2Bytes((java.sql.Blob) in);
       } catch (Exception e) {
         log.warn("Unsupported type for convert {} to byte[] ", in.getClass().getName());
         return null;
