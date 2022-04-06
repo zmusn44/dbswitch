@@ -392,7 +392,7 @@ bin/startup.sh
 
 - WEB系统的访问如下：
 
-> URL地址: ```htttp://127.0.0.1:9088``` 登陆账号：```admin```  登陆密码：```123456```
+> URL地址: ```http://127.0.0.1:9088``` 登陆账号：```admin```  登陆密码：```123456```
 
 - WEB系统的使用流程为：
 
@@ -415,6 +415,7 @@ bin/startup.sh
  ![admin_07.png](images/admin_07.png)
 
  ![admin_08.png](images/admin_08.png)
+ 
 
 ### 3、两种方式的适用场景
 
@@ -448,8 +449,38 @@ bin/startup.sh
 
 > 多个任务并发执行不易于分析任务错误原因；
 
+## 四、模块集成与二次开发
 
-## 四、常见问题解决
+### 1、dbswitch安装到本地仓库
+
+```
+cd dbswitch && mvn clean install
+```
+
+### 2、pom.xml中引入dbswitch模块依赖
+
+```
+<dependency>
+ <groupId>com.gitee.dbswitch</groupId>
+ <artifactId>dbswitch-data</artifactId>
+ <version>${dbswitch.version}</version>
+</dependency>
+```
+
+### 3、代码集成开发
+
+```
+// 构造dbswitch所需的配置参数，参数说明请参考第三章第1小节
+DbswichProperties properties = new DbswichProperties();
+properties.setXXXX();
+
+// 将参数传递给dbswitch引起并执行
+MigrationService service = new MigrationService(properties);
+service.run();
+```
+
+
+## 五、常见问题解决
 
 ### 1、执行启动脚本报错
 
@@ -461,7 +492,7 @@ bin/startup.sh
 
 > 解决办法：用vi/vim工具打开脚本，然后命令模式下设置 ```set ff=unix```后，然后保存退出，再执行脚本。
 
-## 五、文档博客
+## 六、文档博客
 
 （1）https://blog.csdn.net/inrgihc/article/details/103739629
 
@@ -473,7 +504,7 @@ bin/startup.sh
 
 （5）https://blog.csdn.net/inrgihc/article/details/121447417
 
-## 六、问题反馈
+## 七、问题反馈
 
 如果您看到并使用了本工具，或您觉得本工具对您有价值，请为此项目**点个赞**，以表示对本项目的支持，多谢！如果您在使用时遇到了bug，欢迎在issue中反馈。也可扫描下方二维码入群讨论：（加好友请注明："程序交流"）
 
