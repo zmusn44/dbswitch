@@ -9,11 +9,20 @@
           </div>
           <div class="navsBox">
             <ul>
-              <li v-for="(item,index) in allTaskAssignments"
+              <li v-for="(item,index) in pageTaskAssignments"
                   :key="index"
                   @click="handleChooseClick(item.id,index)"
                   :class="{active:index==isActive}">[{{item.id}}]{{item.name}}</li>
             </ul>
+            <el-pagination small
+                           layout="sizes, prev, pager, next"
+                           @current-change="handleLoadPageTaskAssignments"
+                           :current-page="currentTaskAssignmentPage"
+                           :page-sizes="[10, 15, 20]"
+                           @size-change="handleLoadPageTaskAssignmentsSizeChange"
+                           :page-size="currentTaskAssignmentPageSize"
+                           :total="pageTaskAssignmentsTotalCount">
+            </el-pagination>
           </div>
         </el-card>
 
@@ -23,7 +32,7 @@
                     size="small"
                     border>
             <template slot="empty">
-              <span>单击左侧任务列表记录来查看作业调度记录</span>
+              <span>记录为空，或者单击左侧任务列表记录来查看作业调度记录</span>
             </template>
             <el-table-column type="expand">
               <template slot-scope="props">
@@ -110,7 +119,10 @@ export default {
       currentPage: 1,
       pageSize: 10,
       totalCount: 0,
-      allTaskAssignments: [],
+      currentTaskAssignmentPage: 1,
+      currentTaskAssignmentPageSize: 10,
+      pageTaskAssignments: [],
+      pageTaskAssignmentsTotalCount: 0,
       taskId: '请选择一个任务安排',
       jobTableData: [],
       jobScheduleTime: '',
@@ -119,13 +131,14 @@ export default {
     };
   },
   methods: {
-    loadAllTaskAssignments: function () {
+    loadPageTaskAssignments: function () {
       this.$http({
         method: "GET",
-        url: "/dbswitch/admin/api/v1/assignment/list/1/10000"
+        url: "/dbswitch/admin/api/v1/assignment/list/" + this.currentTaskAssignmentPage + "/" + this.currentTaskAssignmentPageSize
       }).then(res => {
         if (0 === res.data.code) {
-          this.allTaskAssignments = res.data.data;
+          this.pageTaskAssignments = res.data.data;
+          this.pageTaskAssignmentsTotalCount = res.data.pagination.total;
         } else {
           if (res.data.message) {
             alert("初始化任务安排信息失败:" + res.data.message);
@@ -133,6 +146,14 @@ export default {
         }
       }
       );
+    },
+    handleLoadPageTaskAssignments: function (currentPage) {
+      this.currentTaskAssignmentPage = currentPage;
+      this.loadPageTaskAssignments();
+    },
+    handleLoadPageTaskAssignmentsSizeChange: function (pageSize) {
+      this.currentTaskAssignmentPageSize = pageSize;
+      this.loadPageTaskAssignments();
     },
     handleClose: function () { },
     handleSizeChange: function (pageSize) {
@@ -182,7 +203,7 @@ export default {
     }
   },
   created () {
-    this.loadAllTaskAssignments();
+    this.loadPageTaskAssignments();
   }
 };
 </script>
@@ -265,4 +286,5 @@ export default {
   padding: 10px;
   width: calc(100% - 250px);
 }
+
 </style>

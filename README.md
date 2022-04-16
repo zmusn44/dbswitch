@@ -38,7 +38,7 @@
 
 - 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
-** 注:** 目前Hive只支持账号密码方式认证。
+** 注:** 目前Hive只支持Hive version 3.x的账号密码方式认证。
 
 ### 4、结构设计
   
@@ -72,7 +72,7 @@
 
 - 环境要求:
 
-  **JDK**:>=1.8
+  **JDK**:>=1.8 （建议用JDK 1.8）
  
   **maven**:>=3.6
 > Maven 仓库默认在国外， 国内使用难免很慢，可以更换为阿里云的仓库。 参考教程： [配置阿里云的仓库教程](https://www.runoob.com/maven/maven-repositories.html)
@@ -101,7 +101,7 @@ cd dbswitch/
 sh ./docker-maven-build.sh
 ```
 
-**特别注意：** 在Java9及以上版本默认情况下不允许应用程序查看来自JDK的所有类，但在dbswitch中利用反射计算对象的字节大小，所以需要在JVM启动时(bin/datasync.sh脚本)需要增加如下参数：
+**特别注意：** 在Java9及以上版本默认情况下不允许应用程序查看来自JDK的所有类，但在dbswitch中利用反射计算对象的字节大小，所以需要在JVM启动时需要增加如下参数：
 ```
 --add-opens java.base/jdk.internal.loader=ALL-UNNAMED --add-opens jdk.zipfs/jdk.nio.zipfs=ALL-UNNAMED
 ```
@@ -110,15 +110,15 @@ sh ./docker-maven-build.sh
 
 (1) 当编译打包命令执行完成后，会在dbswitch/target/目录下生成dbswitch-relase-x.x.x.tar.gz的打包文件，将文件拷贝到已安装JRE的部署机器上解压即可。
 
-(2) 基于docker-compose提供linux联网环境下的**一键安装**：
+(2) 基于docker-compose提供linux联网环境下的**一键安装**，安装命令见 [发行版链接地址](https://gitee.com/inrgihc/dbswitch/releases)
 
 详见文档: [build-docker/install/README.md](build-docker/install) 
 
 ## 三、工具使用
 
-> dbswitch工具提供基于```conf/config.yml```配置的启动方式和基于```conf/application.yml```的WEB端使用方式；
+> dbswitch工具提供基于```conf/config.yml```配置的dbswitch-data模块启动方式和基于```conf/application.yml```的dbswitch-admin模块的WEB端使用方式；
 
-### 1、基于conf/config.yml配置启动的命令操作方式
+### 1、基于conf/config.yml配置的dbswitch-data模块启动命令操作方式
 
 #### (1)、配置文件
 
@@ -319,7 +319,7 @@ dbswitch.target.writer-engine-insert=true
 
 > 注：如果待同步的两端表结构已经一致或源端字段是目的端字段的子集，也可直接用步骤B配置进行变更同步
 
-### 2、基于conf/application.yml配置启动的WEB使用方式
+### 2、基于conf/application.yml配置的dbswitch-admin模块启动的WEB使用方式
 
 #### (1)、准备一个MySQL(建议为：版本为 5.7+ )的数据库
 
@@ -386,7 +386,7 @@ bin/startup.sh
 
 - dbswitch-admin服务启动时会基于flyway自动建库建表，需要保证配置的mysql连接账号具有建库建表等权限；
 
-- dbswitch离线同步工具提供各种数据库间表结构转换RESTful类型的在线API接口如下:（详见[接口文档](/INTERFACE.md)）
+- dbswitch离线同步工具提供各种数据库间表结构转换RESTful在线API接口如下:（详见[接口文档](/INTERFACE.md)）
 
 > Swagger在线接口地址： http://127.0.0.1:9088/swagger-ui/
 
@@ -419,7 +419,7 @@ bin/startup.sh
 
 ### 3、两种方式的适用场景
 
-- 方式一：基于conf/config.yml配置启动的命令操作方式式   
+- 方式一：基于conf/config.yml配置的dbswitch-data模块启动的命令操作方式式   
 
 **优点：**
 
@@ -433,7 +433,7 @@ bin/startup.sh
 
 > 不支持CRON表达式的周期执行；
 
-- 方式二：基于conf/application.yml配置启动的WEB使用方式
+- 方式二：基于conf/application.yml配置的dbswitch-admin模块启动的WEB使用方式
 
 **优点：**
 
@@ -449,7 +449,7 @@ bin/startup.sh
 
 > 多个任务并发执行不易于分析任务错误原因；
 
-## 四、模块集成与二次开发
+## 四、模块集成开发说明
 
 ### 1、dbswitch安装到本地仓库
 
@@ -474,7 +474,7 @@ cd dbswitch && mvn clean install
 DbswichProperties properties = new DbswichProperties();
 properties.setXXXX();
 
-// 将参数传递给dbswitch引起并执行
+// 将参数传递给dbswitch启动同步方式执行
 MigrationService service = new MigrationService(properties);
 service.run();
 ```

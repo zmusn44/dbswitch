@@ -3,16 +3,18 @@
     <el-card>
       <div class="flex-between">
         <div class="tree-container">
-          <el-tree class="el-scrollbar"
-                   :props="props"
-                   :load="loadNode"
-                   :expand-on-click-node="true"
-                   :highlight-current="true"
-                   :render-content="renderContent"
-                   @check-change="handleCheckChange"
-                   @node-click="handleNodeClick"
-                   lazy>
-          </el-tree>
+          <el-scrollbar style="height:100%">
+            <el-tree class="scroller"
+                     :props="props"
+                     :load="loadNode"
+                     :expand-on-click-node="true"
+                     :highlight-current="true"
+                     :render-content="renderContent"
+                     @check-change="handleCheckChange"
+                     @node-click="handleNodeClick"
+                     lazy>
+            </el-tree>
+          </el-scrollbar>
         </div>
         <div class="table-container">
           <span>当前表：{{currentNode.schemaName}} / {{currentNode.tableName}}</span>
@@ -27,17 +29,17 @@
                 <el-descriptions-item label="表名称">{{tableMeta.tableName}}</el-descriptions-item>
                 <el-descriptions-item label="表类型">{{tableMeta.type}}</el-descriptions-item>
                 <el-descriptions-item label="模式名">{{tableMeta.schemaName}}</el-descriptions-item>
-                <el-descriptions-item label="建表DDL">
-                  <el-input type="textarea"
-                            :rows="16"
-                            v-model="tableMeta.createSql"
-                            auto-complete="off"
-                            :readonly=true></el-input>
-                </el-descriptions-item>
                 <el-descriptions-item label="表注释">
                   <el-input type="textarea"
                             :rows="2"
                             v-model="tableMeta.remarks"
+                            auto-complete="off"
+                            :readonly=true></el-input>
+                </el-descriptions-item>
+                <el-descriptions-item label="建表DDL">
+                  <el-input type="textarea"
+                            :rows="16"
+                            v-model="tableMeta.createSql"
                             auto-complete="off"
                             :readonly=true></el-input>
                 </el-descriptions-item>
@@ -51,7 +53,7 @@
                         border
                         style="width: 100%">
                 <template slot="empty">
-                  <span>单击左侧展开"数据源导航数"来查看表的元数据记录</span>
+                  <span>单击左侧展开"数据源导航树"来查看表的元数据记录</span>
                 </template>
                 <el-table-column prop="fieldName"
                                  min-width="20%"
@@ -104,7 +106,7 @@
                         :data="sampleData.rows"
                         border>
                 <template slot="empty">
-                  <span>单击左侧展开"数据源导航数"来查看表的数据记录</span>
+                  <span>单击左侧展开"数据源导航树"来查看表的数据记录</span>
                 </template>
                 <el-table-column v-for="(item,index) in sampleData.columns"
                                  :prop="item"
@@ -380,7 +382,11 @@ export default {
 </script>
 
 <style scoped>
-.el-card,
+.el-card {
+  width: 100%;
+  height: 100%;
+}
+
 .el-message {
   width: 100%;
   height: 100%;
@@ -389,17 +395,15 @@ export default {
 .flex-between {
   display: flex;
 }
-.tree-container {
-  overflow: hidden;
-  background: #f1ecec;
-}
+.el-scrollbar .el-scrollbar__wrap {overflow-x: hidden;}
 .tree-container .el-tree {
   min-width: 350px;
-  max-width: 350px;
   position: relative;
   cursor: default;
   background: #f3f1f1;
-  color: #242425;
+}
+.scroller {
+  min-width: 100%;
 }
 .tree-container .tree {
   overflow: auto;
