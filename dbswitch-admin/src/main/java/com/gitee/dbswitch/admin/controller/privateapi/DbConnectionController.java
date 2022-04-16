@@ -114,8 +114,10 @@ public class DbConnectionController {
   @TokenCheck
   @ApiOperation(value = "连接名称")
   @GetMapping(value = "/list/name", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Result<DbConnectionNameResponse> getNameList() {
-    return databaseConnectionService.getNameList();
+  public PageResult<DbConnectionNameResponse> getNameList(
+      @RequestParam(value = "page", required = false) Integer page,
+      @RequestParam(value = "size", required = false) Integer size) {
+    return databaseConnectionService.getNameList(page, size);
   }
 
 }

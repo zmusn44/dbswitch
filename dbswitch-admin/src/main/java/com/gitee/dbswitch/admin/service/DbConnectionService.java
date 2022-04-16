@@ -61,7 +61,7 @@ public class DbConnectionService {
 
       String host = matcher.group("host");
       String port = matcher.group("port");
-      if (null == port) {
+      if (StringUtils.isBlank(port)) {
         port = String.valueOf(supportDbType.getPort());
       }
 
@@ -144,8 +144,8 @@ public class DbConnectionService {
 
   public Result<DbConnectionDetailResponse> addDatabaseConnection(
       DbConnectionCreateRequest request) {
-    if (Objects.isNull(request.getName())) {
-      return Result.failed(ResultCode.ERROR_INVALID_ARGUMENT, "name is null");
+    if (StringUtils.isBlank(request.getName())) {
+      return Result.failed(ResultCode.ERROR_INVALID_ARGUMENT, "name is empty");
     }
 
     if (Objects.nonNull(databaseConnectionDAO.getByName(request.getName()))) {
@@ -153,6 +153,7 @@ public class DbConnectionService {
     }
 
     DatabaseConnectionEntity conn = request.toDatabaseConnection();
+    validJdbcUrlFormat(conn);
     databaseConnectionDAO.insert(conn);
 
     return Result.success(ConverterFactory.getConverter(DbConnectionDetailConverter.class)
@@ -166,7 +167,13 @@ public class DbConnectionService {
       return Result.failed(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + request.getId());
     }
 
+    DatabaseConnectionEntity exist = databaseConnectionDAO.getByName(request.getName());
+    if (Objects.nonNull(exist) && !exist.getId().equals(request.getId())) {
+      return Result.failed(ResultCode.ERROR_RESOURCE_ALREADY_EXISTS, "name=" + request.getName());
+    }
+
     DatabaseConnectionEntity conn = request.toDatabaseConnection();
+    validJdbcUrlFormat(conn);
     databaseConnectionDAO.updateById(conn);
 
     return Result.success(ConverterFactory.getConverter(DbConnectionDetailConverter.class)
@@ -177,12 +184,15 @@ public class DbConnectionService {
     databaseConnectionDAO.deleteById(id);
   }
 
-  public Result<DbConnectionNameResponse> getNameList() {
-    List<DatabaseConnectionEntity> lists = databaseConnectionDAO.listAll(null);
-    List<DbConnectionNameResponse> ret = lists.parallelStream()
-        .map(c -> new DbConnectionNameResponse(c.getId(), c.getName()))
-        .collect(Collectors.toList());
-    return Result.success(ret);
+  public PageResult<DbConnectionNameResponse> getNameList(Integer page, Integer size) {
+    Supplier<List<DbConnectionNameResponse>> method = () -> {
+      List<DatabaseConnectionEntity> lists = databaseConnectionDAO.listAll(null);
+      return lists.stream()
+          .map(c -> new DbConnectionNameResponse(c.getId(), c.getName()))
+          .collect(Collectors.toList());
+    };
+
+    return PageUtils.getPage(method, page, size);
   }
 
   public DatabaseConnectionEntity getDatabaseConnectionById(Long id) {
@@ -193,4 +203,30 @@ public class DbConnectionService {
 
     return dbConn;
   }
+
+  private void validJdbcUrlFormat(DatabaseConnectionEntity conn) {
+    String typeName = conn.getType().getName().toUpperCase();
+    SupportDbTypeEnum supportDbType = SupportDbTypeEnum.valueOf(typeName);
+    if (!conn.getUrl().startsWith(supportDbType.getUrlPrefix())) {
+      throw new DbswitchException(ResultCode.ERROR_INVALID_JDBC_URL, conn.getUrl());
+    }
+
+    for (int i = 0; i < supportDbType.getUrl().length; ++i) {
+      String pattern = supportDbType.getUrl()[i];
+      Matcher matcher = JDBCURL.getPattern(pattern).matcher(conn.getUrl());
+      if (!matcher.matches()) {
+        if (i == supportDbType.getUrl().length - 1) {
+          throw new DbswitchException(ResultCode.ERROR_INVALID_JDBC_URL, conn.getUrl());
+        }
+      } else {
+        if (supportDbType.hasDatabaseName() && StringUtils.isBlank(matcher.group("database"))) {
+          throw new DbswitchException(ResultCode.ERROR_INVALID_JDBC_URL,
+              "库名没有指定 :" + conn.getUrl());
+        }
+
+        break;
+      }
+    }
+  }
+
 }

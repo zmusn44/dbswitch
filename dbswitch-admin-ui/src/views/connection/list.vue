@@ -386,7 +386,7 @@ export default {
         this.$http.delete(
           "/dbswitch/admin/api/v1/connection/delete/" + row.id
         ).then(res => {
-          console.log(res);
+          //console.log(res);
           if (0 === res.data.code) {
             this.loadData();
           } else {
@@ -403,7 +403,7 @@ export default {
       this.$http.get(
         "/dbswitch/admin/api/v1/connection/test/" + row.id
       ).then(res => {
-        console.log(res);
+        //console.log(res);
         if (0 === res.data.code) {
           alert("测试连接成功!");
         } else {
@@ -415,7 +415,7 @@ export default {
       let driverClass = "";
       if (this.databaseType.length > 0) {
         for (let i = 0; i < this.databaseType.length; i++) {
-          console.log(this.databaseType[i])
+          //console.log(this.databaseType[i])
           if (this.databaseType[i].type == this.createform.type) {
             driverClass = this.databaseType[i].driver;
             break;
@@ -462,7 +462,7 @@ export default {
       let driverClass = "";
       if (this.databaseType.length > 0) {
         for (let i = 0; i < this.databaseType.length; i++) {
-          console.log(this.databaseType[i])
+          //console.log(this.databaseType[i])
           if (this.databaseType[i].type == this.updateform.type) {
             driverClass = this.databaseType[i].driver;
             break;
