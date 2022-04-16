@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.gitee.dbswitch</groupId>
   <artifactId>dbswitch-parent</artifactId>
-  <version>1.6.7</version>
+  <version>1.6.8</version>
   <packaging>pom</packaging>
   <name>dbswitch</name>
   <description>database switch project</description>

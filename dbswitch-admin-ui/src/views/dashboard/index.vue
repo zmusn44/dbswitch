@@ -256,7 +256,9 @@ export default {
   },
   mounted () {
     window.addEventListener('resize', () => {
-      this.myChart.resize();
+      if (this.myChart && typeof this.myChart.resize == 'function') {
+        this.myChart.resize();
+      }
     });
   },
   updated () {

@@ -206,10 +206,10 @@ public class JDBCURL {
     }
 
     // 6、Microsoft SQLServer数据库
-    // jdbc:sqlserver://localhost:1433;databaseName=AdventureWorks;user=MyUserName;password=123456;
+    // jdbc:sqlserver://localhost:1433;DatabaseName=AdventureWorks;user=MyUserName;password=123456;
     final Matcher matcher5 = JDBCURL
-        .getPattern("jdbc:sqlserver://{host}[:{port}][;databaseName={database}][;{params}]")
-        .matcher("jdbc:sqlserver://localhost:1433;databaseName=master;user=MyUserName");
+        .getPattern("jdbc:sqlserver://{host}[:{port}][;DatabaseName={database}][;{params}]")
+        .matcher("jdbc:sqlserver://localhost:1433;DatabaseName=master;user=MyUserName");
     if (matcher5.matches()) {
       System.out.println("sqlserver host:" + matcher5.group("host"));
       System.out.println("sqlserver port:" + matcher5.group("port"));
