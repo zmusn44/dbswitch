@@ -11,6 +11,9 @@ package com.gitee.dbswitch.admin.util;
 
 import cn.hutool.crypto.digest.BCrypt;
 
+/**
+ * 密码工具类
+ */
 public final class PasswordUtils {
 
   public static String encryptPassword(String password, String credentialsSalt) {

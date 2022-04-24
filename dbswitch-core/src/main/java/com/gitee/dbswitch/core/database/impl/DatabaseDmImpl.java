@@ -116,7 +116,7 @@ public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterfa
         retval.append("DATE");
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval.append("VARCHAR(32)");
+        retval.append("BIT");
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_BIGNUMBER:

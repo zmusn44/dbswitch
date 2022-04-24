@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * 分页工具类
+ */
 public class PageUtils {
 
   public static <E> PageResult<E> getPage(Supplier<List<E>> method, Integer pageNum,

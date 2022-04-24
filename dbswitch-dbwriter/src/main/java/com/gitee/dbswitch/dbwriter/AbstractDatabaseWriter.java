@@ -28,6 +28,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 数据库写入抽象基类
@@ -57,8 +58,8 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
   }
 
   @Override
-  public void prepareWrite(String schemaName, String tableName) {
-    String sql = this.selectTableMetaDataSqlString(schemaName, tableName);
+  public void prepareWrite(String schemaName, String tableName, List<String> fieldNames) {
+    String sql = this.selectTableMetaDataSqlString(schemaName, tableName, fieldNames);
     Map<String, Integer> columnMetaData = new HashMap<>();
     jdbcTemplate.execute((Connection conn) -> {
       try (Statement stmt = conn.createStatement();
@@ -85,8 +86,14 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
 
   }
 
-  protected String selectTableMetaDataSqlString(String schemaName, String tableName) {
-    return String.format("SELECT *  FROM \"%s\".\"%s\"  WHERE 1=2", schemaName, tableName);
+  protected String selectTableMetaDataSqlString(String schemaName, String tableName,
+      List<String> fieldNames) {
+    if (CollectionUtils.isEmpty(fieldNames)) {
+      return String.format("SELECT *  FROM \"%s\".\"%s\"  WHERE 1=2", schemaName, tableName);
+    } else {
+      return String.format("SELECT \"%s\"  FROM \"%s\".\"%s\"  WHERE 1=2",
+          StringUtils.join(fieldNames, "\",\""), schemaName, tableName);
+    }
   }
 
   protected abstract String getDatabaseProductName();
