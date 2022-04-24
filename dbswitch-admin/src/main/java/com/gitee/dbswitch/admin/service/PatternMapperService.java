@@ -83,10 +83,18 @@ public class PatternMapperService {
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(), request.getSchemaName(),
         request.getTableName());
     for (ColumnDescription cd : tables) {
-      result.add(PreviewNameMapperResponse.builder()
-          .originalName(cd.getFieldName())
-          .targetName(PatterNameUtils.getFinalName(cd.getFieldName(), request.getNameMapper()))
-          .build());
+      String targetName = PatterNameUtils.getFinalName(cd.getFieldName(), request.getNameMapper());
+      if (StringUtils.isNotBlank(targetName)) {
+        result.add(PreviewNameMapperResponse.builder()
+            .originalName(cd.getFieldName())
+            .targetName(targetName)
+            .build());
+      } else {
+        result.add(PreviewNameMapperResponse.builder()
+            .originalName(cd.getFieldName())
+            .targetName("<!字段被删除>")
+            .build());
+      }
     }
 
     return Result.success(result);

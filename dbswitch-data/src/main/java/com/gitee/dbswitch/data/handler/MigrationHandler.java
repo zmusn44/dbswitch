@@ -34,6 +34,7 @@ import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.sizeof.SizeOf;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.StringUtils;
 
 /**
  * 在一个线程内的单表迁移处理逻辑
@@ -153,7 +155,11 @@ public class MigrationHandler implements Supplier<Long> {
     for (int i = 0; i < sourceColumnDescriptions.size(); ++i) {
       String sourceColumnName = sourceColumnDescriptions.get(i).getFieldName();
       String targetColumnName = targetColumnDescriptions.get(i).getFieldName();
-      columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
+      if (StringUtils.hasLength(targetColumnName)) {
+        columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
+      } else {
+        columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, "<!Field is Deleted>"));
+      }
       mapChecker.put(sourceColumnName, targetColumnName);
     }
     log.info("Mapping relation : \ntable mapper :\n\t{}  \ncolumn mapper :\n\t{} ",
@@ -183,8 +189,15 @@ public class MigrationHandler implements Supplier<Long> {
 
       // 生成建表语句并创建
       String sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
-          targetProductType, targetColumnDescriptions, targetPrimaryKeys,
-          targetSchemaName, targetTableName, properties.getTarget().getCreateTableAutoIncrement());
+          targetProductType,
+          targetColumnDescriptions.stream()
+              .filter(column -> StringUtils.hasLength(column.getFieldName()))
+              .collect(Collectors.toList()),
+          targetPrimaryKeys,
+          targetSchemaName,
+          targetTableName,
+          properties.getTarget().getCreateTableAutoIncrement()
+      );
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
       targetJdbcTemplate.execute(sqlCreateTable);
@@ -227,8 +240,26 @@ public class MigrationHandler implements Supplier<Long> {
   private Long doFullCoverSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
 
+    List<String> sourceFields = sourceColumnDescriptions.stream()
+        .map(ColumnDescription::getFieldName)
+        .collect(Collectors.toList());
+    List<String> targetFields = targetColumnDescriptions.stream()
+        .map(ColumnDescription::getFieldName)
+        .collect(Collectors.toList());
+    List<Integer> deletedFieldIndexes = new ArrayList<>();
+    for (int i = 0; i < targetFields.size(); ++i) {
+      if (StringUtils.isEmpty(targetFields.get(i))) {
+        deletedFieldIndexes.add(i);
+      }
+    }
+    Collections.reverse(deletedFieldIndexes);
+    deletedFieldIndexes.forEach(i -> {
+      sourceFields.remove(sourceFields.get(i));
+      targetFields.remove(targetFields.get(i));
+    });
+
     // 准备目的端的数据写入操作
-    writer.prepareWrite(targetSchemaName, targetTableName);
+    writer.prepareWrite(targetSchemaName, targetTableName, targetFields);
 
     // 清空目的端表的数据
     IDatabaseOperator targetOperator = DatabaseOperatorFactory
@@ -240,14 +271,9 @@ public class MigrationHandler implements Supplier<Long> {
         .createDatabaseOperator(sourceDataSource);
     sourceOperator.setFetchSize(BATCH_SIZE);
 
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
     StatementResultSet srs = sourceOperator.queryTableData(
-        sourceSchemaName, sourceTableName, sourceFields);
+        sourceSchemaName, sourceTableName, sourceFields
+    );
 
     List<Object[]> cache = new LinkedList<>();
     long cacheBytes = 0;
@@ -312,7 +338,17 @@ public class MigrationHandler implements Supplier<Long> {
     List<String> targetFields = targetColumnDescriptions.stream()
         .map(ColumnDescription::getFieldName)
         .collect(Collectors.toList());
-
+    List<Integer> deletedFieldIndexes = new ArrayList<>();
+    for (int i = 0; i < targetFields.size(); ++i) {
+      if (StringUtils.isEmpty(targetFields.get(i))) {
+        deletedFieldIndexes.add(i);
+      }
+    }
+    Collections.reverse(deletedFieldIndexes);
+    deletedFieldIndexes.forEach(i -> {
+      sourceFields.remove(sourceFields.get(i));
+      targetFields.remove(targetFields.get(i));
+    });
     Map<String, String> columnNameMaps = new HashMap<>();
     for (int i = 0; i < sourceFields.size(); ++i) {
       columnNameMaps.put(sourceFields.get(i), targetFields.get(i));

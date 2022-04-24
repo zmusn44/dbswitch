@@ -139,7 +139,7 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
         retval += "DATE";
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval += "VARCHAR(32)";
+        retval += "BOOLEAN";
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:

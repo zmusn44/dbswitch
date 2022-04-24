@@ -55,16 +55,6 @@ public class ScheduleService {
   @Resource
   private AssignmentJobDAO assignmentJobDAO;
 
-  public static boolean checkCronExpressionValid(String cronExpression) {
-    try {
-      CronScheduleBuilder.cronSchedule(cronExpression);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
-
-  }
-
 //  public Trigger getQuartzJobDetail(String jobKey) {
 //    Scheduler scheduler = schedulerFactoryBean.getScheduler();
 //

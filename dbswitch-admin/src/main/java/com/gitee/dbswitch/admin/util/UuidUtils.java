@@ -11,6 +11,9 @@ package com.gitee.dbswitch.admin.util;
 
 import java.util.UUID;
 
+/**
+ * UUID工具类
+ */
 public class UuidUtils {
 
   public static String generateUuid() {

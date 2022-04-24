@@ -238,7 +238,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
         retval += "DATE";
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval += "VARCHAR(32)";
+        retval += "BIT";
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:
