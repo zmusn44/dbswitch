@@ -24,6 +24,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.CollectionUtils;
 
 /**
  * SQLServer批量写入实现类
@@ -43,8 +44,14 @@ public class SqlServerWriterImpl extends AbstractDatabaseWriter implements IData
   }
 
   @Override
-  protected String selectTableMetaDataSqlString(String schemaName, String tableName) {
-    return String.format("SELECT *  FROM [%s].[%s]  WHERE 1=2", schemaName, tableName);
+  protected String selectTableMetaDataSqlString(String schemaName, String tableName,
+      List<String> fieldNames) {
+    if (CollectionUtils.isEmpty(fieldNames)) {
+      return String.format("SELECT *  FROM [%s].[%s]  WHERE 1=2", schemaName, tableName);
+    } else {
+      return String.format("SELECT [%s]  FROM [%s].[%s]  WHERE 1=2",
+          StringUtils.join(fieldNames, "],["), schemaName, tableName);
+    }
   }
 
   @Override

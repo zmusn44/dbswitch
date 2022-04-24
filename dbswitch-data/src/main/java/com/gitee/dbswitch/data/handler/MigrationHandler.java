@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.ehcache.sizeof.SizeOf;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.StringUtils;
 
 /**
  * 在一个线程内的单表迁移处理逻辑
@@ -111,6 +112,10 @@ public class MigrationHandler implements Supplier<Long> {
     this.targetTableName = PatterNameUtils.getFinalName(td.getTableName(),
         sourceProperties.getRegexTableMapper());
 
+    if (StringUtils.isEmpty(this.targetTableName)) {
+      throw new RuntimeException("表名的映射规则配置有误，不能将[" + this.sourceTableName + "]映射为空");
+    }
+
     this.tableNameMapString = String.format("%s.%s --> %s.%s",
         td.getSchemaName(), td.getTableName(),
         targetSchemaName, targetTableName);
@@ -153,14 +158,28 @@ public class MigrationHandler implements Supplier<Long> {
     for (int i = 0; i < sourceColumnDescriptions.size(); ++i) {
       String sourceColumnName = sourceColumnDescriptions.get(i).getFieldName();
       String targetColumnName = targetColumnDescriptions.get(i).getFieldName();
-      columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
-      mapChecker.put(sourceColumnName, targetColumnName);
+      if (StringUtils.hasLength(targetColumnName)) {
+        columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
+        mapChecker.put(sourceColumnName, targetColumnName);
+      } else {
+        columnMapperPairs.add(String.format(
+            "%s --> %s",
+            sourceColumnName,
+            String.format("<!Field(%s) is Deleted>", (i + 1))
+        ));
+      }
     }
     log.info("Mapping relation : \ntable mapper :\n\t{}  \ncolumn mapper :\n\t{} ",
-        tableNameMapString, columnMapperPairs.stream().collect(Collectors.joining("\n\t")));
+        tableNameMapString, String.join("\n\t", columnMapperPairs));
     Set<String> valueSet = new HashSet<>(mapChecker.values());
+    if (valueSet.size() <= 0) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表所有的字段都删除!");
+    }
+    if (!valueSet.containsAll(this.targetPrimaryKeys)) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表的主键字段删除!");
+    }
     if (mapChecker.keySet().size() != valueSet.size()) {
-      throw new RuntimeException("字段映射配置有误，多个字段映射到一个同名字段!");
+      throw new RuntimeException("字段映射配置有误，禁止将多个字段映射到一个同名字段!");
     }
 
     IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(
@@ -183,8 +202,15 @@ public class MigrationHandler implements Supplier<Long> {
 
       // 生成建表语句并创建
       String sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
-          targetProductType, targetColumnDescriptions, targetPrimaryKeys,
-          targetSchemaName, targetTableName, properties.getTarget().getCreateTableAutoIncrement());
+          targetProductType,
+          targetColumnDescriptions.stream()
+              .filter(column -> StringUtils.hasLength(column.getFieldName()))
+              .collect(Collectors.toList()),
+          targetPrimaryKeys,
+          targetSchemaName,
+          targetTableName,
+          properties.getTarget().getCreateTableAutoIncrement()
+      );
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
       targetJdbcTemplate.execute(sqlCreateTable);
@@ -227,8 +253,18 @@ public class MigrationHandler implements Supplier<Long> {
   private Long doFullCoverSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
 
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
+      }
+    }
     // 准备目的端的数据写入操作
-    writer.prepareWrite(targetSchemaName, targetTableName);
+    writer.prepareWrite(targetSchemaName, targetTableName, targetFields);
 
     // 清空目的端表的数据
     IDatabaseOperator targetOperator = DatabaseOperatorFactory
@@ -240,14 +276,9 @@ public class MigrationHandler implements Supplier<Long> {
         .createDatabaseOperator(sourceDataSource);
     sourceOperator.setFetchSize(BATCH_SIZE);
 
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
     StatementResultSet srs = sourceOperator.queryTableData(
-        sourceSchemaName, sourceTableName, sourceFields);
+        sourceSchemaName, sourceTableName, sourceFields
+    );
 
     List<Object[]> cache = new LinkedList<>();
     long cacheBytes = 0;
@@ -306,16 +337,18 @@ public class MigrationHandler implements Supplier<Long> {
    */
   private Long doIncreaseSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
 
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
     Map<String, String> columnNameMaps = new HashMap<>();
-    for (int i = 0; i < sourceFields.size(); ++i) {
-      columnNameMaps.put(sourceFields.get(i), targetFields.get(i));
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
+        columnNameMaps.put(scd.getFieldName(), tcd.getFieldName());
+      }
     }
 
     TaskParamEntity.TaskParamEntityBuilder taskBuilder = TaskParamEntity.builder();

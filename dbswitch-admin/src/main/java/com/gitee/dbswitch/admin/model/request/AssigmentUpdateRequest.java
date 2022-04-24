@@ -13,9 +13,9 @@ import com.gitee.dbswitch.admin.common.excption.DbswitchException;
 import com.gitee.dbswitch.admin.common.response.ResultCode;
 import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
-import com.gitee.dbswitch.admin.service.ScheduleService;
 import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
+import com.gitee.dbswitch.admin.util.CronExprUtils;
 import com.gitee.dbswitch.common.entity.PatternMapper;
 import java.util.List;
 import java.util.Objects;
@@ -56,11 +56,7 @@ public class AssigmentUpdateRequest {
     assignment.setDescription(description);
     assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
-      if (!ScheduleService.checkCronExpressionValid(this.getCronExpression())) {
-        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT,
-            "CRON表达式[" + this.getCronExpression() + "]");
-      }
-
+      CronExprUtils.checkCronExpressionValid(this.getCronExpression(), 120);
       assignment.setCronExpression(this.getCronExpression());
     }
 

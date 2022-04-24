@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * JSON序列化与反序列化工具类
+ */
 @Slf4j
 public final class JsonUtils {
 

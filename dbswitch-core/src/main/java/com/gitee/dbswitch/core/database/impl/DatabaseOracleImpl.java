@@ -185,7 +185,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
         retval.append("DATE");
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval.append("VARCHAR(32)");
+        retval.append("NUMBER(1)");
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_BIGNUMBER:
