@@ -15,6 +15,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * 获取Servlet服务器的HTTP参数相关工具类
+ */
 @Slf4j
 public class ServletUtils {
 
@@ -74,7 +77,7 @@ public class ServletUtils {
         ip = request.getRemoteAddr();
       }
     } catch (Exception e) {
-      log.error("IPUtils ERROR ", e);
+      log.error("get client IP address error: ", e);
     }
 
     return ip;

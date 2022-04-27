@@ -32,7 +32,7 @@ public interface IDatabaseWriter {
    * @param schemaName schema名称
    * @param tableName  table名称
    */
-  void prepareWrite(String schemaName, String tableName);
+  void prepareWrite(String schemaName, String tableName,List<String> fieldNames);
 
   /**
    * 批量数据写入

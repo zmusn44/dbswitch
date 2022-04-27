@@ -22,6 +22,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class PatternMapperService {
 
+  private final String STRING_EMPTY = "<!空>";
+  private final String STRING_DELETE = "<!删除>";
+
   @Resource
   private DbConnectionService connectionService;
 
@@ -34,18 +37,22 @@ public class PatternMapperService {
     List<PreviewNameMapperResponse> result = new ArrayList<>();
     if (CollectionUtils.isEmpty(request.getTableNames())) {
       for (TableDescription td : getAllTableNames(request)) {
+        String targetName = PatterNameUtils.getFinalName(
+            td.getTableName(), request.getNameMapper());
         result.add(PreviewNameMapperResponse.builder()
             .originalName(td.getTableName())
-            .targetName(PatterNameUtils.getFinalName(td.getTableName(), request.getNameMapper()))
+            .targetName(StringUtils.isNotBlank(targetName) ? targetName : STRING_EMPTY)
             .build());
       }
     } else {
       if (include) {
         for (String name : request.getTableNames()) {
           if (StringUtils.isNotBlank(name)) {
+            String targetName = PatterNameUtils.getFinalName(
+                name, request.getNameMapper());
             result.add(PreviewNameMapperResponse.builder()
                 .originalName(name)
-                .targetName(PatterNameUtils.getFinalName(name, request.getNameMapper()))
+                .targetName(StringUtils.isNotBlank(targetName) ? targetName : STRING_EMPTY)
                 .build());
           }
         }
@@ -83,10 +90,18 @@ public class PatternMapperService {
         dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(), request.getSchemaName(),
         request.getTableName());
     for (ColumnDescription cd : tables) {
-      result.add(PreviewNameMapperResponse.builder()
-          .originalName(cd.getFieldName())
-          .targetName(PatterNameUtils.getFinalName(cd.getFieldName(), request.getNameMapper()))
-          .build());
+      String targetName = PatterNameUtils.getFinalName(cd.getFieldName(), request.getNameMapper());
+      if (StringUtils.isNotBlank(targetName)) {
+        result.add(PreviewNameMapperResponse.builder()
+            .originalName(cd.getFieldName())
+            .targetName(targetName)
+            .build());
+      } else {
+        result.add(PreviewNameMapperResponse.builder()
+            .originalName(cd.getFieldName())
+            .targetName(STRING_DELETE)
+            .build());
+      }
     }
 
     return Result.success(result);
@@ -102,14 +117,10 @@ public class PatternMapperService {
     if (null == dbConn) {
       throw new DbswitchException(ResultCode.ERROR_RESOURCE_NOT_EXISTS, "id=" + request.getId());
     }
+    
     IMetaDataByJdbcService service = connectionService.getMetaDataCoreService(dbConn);
-    return service.queryTableList(
-        dbConn.getUrl(),
-        dbConn.getUsername(),
-        dbConn.getPassword(),
-        request.getSchemaName()
-    ).stream()
-        .filter(td -> !td.isViewTable())
+    return service.queryTableList(dbConn.getUrl(), dbConn.getUsername(), dbConn.getPassword(),
+        request.getSchemaName()).stream().filter(td -> !td.isViewTable())
         .collect(Collectors.toList());
   }
 

@@ -118,7 +118,10 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
 
     try {
       ReentrantLock lock = mutexes.get(taskId.toString(), ReentrantLock::new);
-      lock.lock();
+      while (!lock.tryLock(1, TimeUnit.SECONDS)) {
+        TimeUnit.SECONDS.sleep(1);
+      }
+
       try {
         log.info("Execute Quartz Job, and task id is : {} , job id is: {}", taskId,
             assignmentJobEntity.getId());
@@ -141,6 +144,12 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
           }
 
           MigrationService mainService = new MigrationService(properties);
+          if (interrupted) {
+            log.info("Quartz task id:{} interrupted", jobDataMap.getLong(TASK_ID));
+            return;
+          }
+
+          // 实际执行JOB
           mainService.run();
 
           if (assignmentConfigEntity.getFirstFlag()) {
@@ -166,7 +175,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
       } finally {
         lock.unlock();
       }
-    } catch (ExecutionException e) {
+    } catch (ExecutionException | InterruptedException e) {
       throw new RuntimeException(e);
     }
 

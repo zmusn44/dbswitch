@@ -180,7 +180,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
         retval += "DATE";
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval += "VARCHAR(32)";
+        retval += "TINYINT";
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_INTEGER:

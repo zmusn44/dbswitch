@@ -141,7 +141,7 @@ public class DatabaseDB2Impl extends AbstractDatabase implements IDatabaseInterf
         retval += "DATE";
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval += "CHARACTER(32)";
+        retval += "BOOLEAN";
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_BIGNUMBER:
