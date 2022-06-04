@@ -56,7 +56,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class MigrationHandler implements Supplier<Long> {
 
-  private final long MAX_CACHE_BYTES_SIZE = 64 * 1024 * 1024;
+  private final long MAX_CACHE_BYTES_SIZE = 128 * 1024 * 1024;
 
   private int fetchSize = 100;
   private final DbswichProperties properties;
@@ -67,6 +67,7 @@ public class MigrationHandler implements Supplier<Long> {
   private DatabaseTypeEnum sourceProductType;
   private String sourceSchemaName;
   private String sourceTableName;
+  private String sourceTableRemarks;
   private List<ColumnDescription> sourceColumnDescriptions;
   private List<String> sourcePrimaryKeys;
 
@@ -130,7 +131,9 @@ public class MigrationHandler implements Supplier<Long> {
     this.sourceMetaDataService = new MetaDataByDataSourceServiceImpl(sourceDataSource,
         sourceProductType);
 
-    // 读取源表的字段元数据
+    // 读取源表的表及字段元数据
+    this.sourceTableRemarks = sourceMetaDataService
+        .getTableRemark(sourceSchemaName, sourceTableName);
     this.sourceColumnDescriptions = sourceMetaDataService
         .queryTableColumnMeta(sourceSchemaName, sourceTableName);
     this.sourcePrimaryKeys = sourceMetaDataService
@@ -201,7 +204,7 @@ public class MigrationHandler implements Supplier<Long> {
       }
 
       // 生成建表语句并创建
-      String sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
+      List<String> sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
           targetProductType,
           targetColumnDescriptions.stream()
               .filter(column -> StringUtils.hasLength(column.getFieldName()))
@@ -209,15 +212,30 @@ public class MigrationHandler implements Supplier<Long> {
           targetPrimaryKeys,
           targetSchemaName,
           targetTableName,
+          sourceTableRemarks,
           properties.getTarget().getCreateTableAutoIncrement()
       );
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
-      targetJdbcTemplate.execute(sqlCreateTable);
-      log.info("Execute SQL: \n{}", sqlCreateTable);
+      for (String sql : sqlCreateTable) {
+        targetJdbcTemplate.execute(sql);
+        log.info("Execute SQL: \n{}", sql);
+      }
+
+      // 如果只想创建表，这里直接返回
+      if (null != properties.getTarget().getOnlyCreate()
+          && properties.getTarget().getOnlyCreate()) {
+        return 0L;
+      }
 
       return doFullCoverSynchronize(writer);
     } else {
+      // 对于只想创建表的情况，不提供后续的变化量数据同步功能
+      if (null != properties.getTarget().getOnlyCreate()
+          && properties.getTarget().getOnlyCreate()) {
+        return 0L;
+      }
+
       // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
       if (properties.getTarget().getChangeDataSync()) {
         // 根据主键情况判断同步的方式：增量同步或覆盖同步
@@ -298,7 +316,8 @@ public class MigrationHandler implements Supplier<Long> {
         }
 
         cache.add(record);
-        cacheBytes += SizeOf.newInstance().deepSizeOf(record);
+        long bytes = SizeOf.newInstance().deepSizeOf(record);
+        cacheBytes += bytes;
         ++totalCount;
 
         if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
@@ -399,8 +418,9 @@ public class MigrationHandler implements Supplier<Long> {
           countDelete++;
         }
 
-        cacheBytes += SizeOf.newInstance().deepSizeOf(record);
-        totalBytes.addAndGet(cacheBytes);
+        long bytes = SizeOf.newInstance().deepSizeOf(record);
+        cacheBytes += bytes;
+        totalBytes.addAndGet(bytes);
         countTotal++;
         checkFull(fields);
       }

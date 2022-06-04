@@ -219,7 +219,7 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int length = v.getLength();
     int precision = v.getPrecision();
@@ -312,6 +312,30 @@ public class DatabaseSqlserverImpl extends AbstractDatabase implements IDatabase
     }
 
     return "";
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    List<String> results = new ArrayList<>();
+    if (StringUtils.isNotBlank(td.getRemarks())) {
+      results.add(String
+          .format(
+              "EXEC [sys].sp_addextendedproperty 'MS_Description', N'%s', 'schema', N'%s', 'table', N'%s' ",
+              td.getRemarks().replace("\"", "\\\""), td.getSchemaName(), td.getTableName()));
+    }
+
+    for (ColumnDescription cd : cds) {
+      if (StringUtils.isNotBlank(cd.getRemarks())) {
+        results.add(String
+            .format(
+                "EXEC [sys].sp_addextendedproperty 'MS_Description', N'%s', 'schema', N'%s', 'table', N'%s', 'column', N'%s' ",
+                cd.getRemarks().replace("\"", "\\\""), td.getSchemaName(), td.getTableName(),
+                cd.getFieldName()));
+      }
+    }
+
+    return results;
   }
 
 }

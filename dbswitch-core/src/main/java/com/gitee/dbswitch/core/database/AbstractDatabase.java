@@ -225,8 +225,8 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
-    throw new RuntimeException("AbstractDatabase Unempliment!");
+      boolean addCr, boolean withRemarks) {
+    throw new RuntimeException("AbstractDatabase Unimplemented!");
   }
 
   @Override
@@ -240,6 +240,12 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
     }
 
     return "";
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    throw new RuntimeException("AbstractDatabase Unimplemented!");
   }
 
   /**************************************
