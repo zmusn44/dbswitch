@@ -15,8 +15,11 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.TableDescription;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 拼接SQL工具类
@@ -32,13 +35,33 @@ public class GenerateSqlUtils {
       String schemaName,
       String tableName,
       boolean autoIncr) {
+    AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
+    return getDDLCreateTableSQL(
+        db,
+        fieldNames,
+        primaryKeys,
+        schemaName,
+        tableName,
+        false,
+        null,
+        autoIncr);
+  }
+
+  public static String getDDLCreateTableSQL(
+      AbstractDatabase db,
+      List<ColumnDescription> fieldNames,
+      List<String> primaryKeys,
+      String schemaName,
+      String tableName,
+      boolean withRemarks,
+      String tableRemarks,
+      boolean autoIncr) {
+    DatabaseTypeEnum type = db.getDatabaseType();
     StringBuilder sb = new StringBuilder();
     List<String> pks = fieldNames.stream()
         .filter((cd) -> primaryKeys.contains(cd.getFieldName()))
         .map((cd) -> cd.getFieldName())
         .collect(Collectors.toList());
-
-    AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
 
     sb.append(Const.CREATE_TABLE);
     // if(ifNotExist && type!=DatabaseType.ORACLE) {
@@ -55,7 +78,7 @@ public class GenerateSqlUtils {
       }
 
       ColumnMetaData v = fieldNames.get(i).getMetaData();
-      sb.append(db.getFieldDefinition(v, pks, autoIncr, false));
+      sb.append(db.getFieldDefinition(v, pks, autoIncr, false, withRemarks));
     }
 
     if (!pks.isEmpty()) {
@@ -66,8 +89,37 @@ public class GenerateSqlUtils {
     sb.append(")");
     if (DatabaseTypeEnum.MYSQL == type) {
       sb.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin");
+      if (withRemarks && StringUtils.isNotBlank(tableRemarks)) {
+        sb.append(String.format(" COMMENT='%s' ", tableRemarks.replace("'", "\\'")));
+      }
     }
 
     return DDLFormatterUtils.format(sb.toString());
   }
+
+  public static List<String> getDDLCreateTableSQL(
+      DatabaseTypeEnum type,
+      List<ColumnDescription> fieldNames,
+      List<String> primaryKeys,
+      String schemaName,
+      String tableName,
+      String tableRemarks,
+      boolean autoIncr) {
+    AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
+    String createTableSql = getDDLCreateTableSQL(db, fieldNames, primaryKeys, schemaName,
+        tableName, true, tableRemarks, autoIncr);
+    if (DatabaseTypeEnum.MYSQL == type || DatabaseTypeEnum.HIVE == type) {
+      return Arrays.asList(createTableSql);
+    }
+
+    TableDescription td = new TableDescription();
+    td.setSchemaName(schemaName);
+    td.setTableName(tableName);
+    td.setRemarks(tableRemarks);
+    td.setTableType("TABLE");
+    List<String> results = db.getTableColumnCommentDefinition(td, fieldNames);
+    results.add(0, createTableSql);
+    return results;
+  }
+
 }

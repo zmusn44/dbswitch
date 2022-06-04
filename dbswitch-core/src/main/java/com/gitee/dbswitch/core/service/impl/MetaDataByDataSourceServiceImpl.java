@@ -78,6 +78,16 @@ public class MetaDataByDataSourceServiceImpl implements IMetaDataByDatasourceSer
   }
 
   @Override
+  public String getTableRemark(String schemaName, String tableName) {
+    try (Connection connection = dataSource.getConnection()) {
+      TableDescription td = database.queryTableMeta(connection, schemaName, tableName);
+      return null == td ? null : td.getRemarks();
+    } catch (SQLException se) {
+      throw new RuntimeException(se);
+    }
+  }
+
+  @Override
   public String getViewDDL(String schemaName, String tableName) {
     try (Connection connection = dataSource.getConnection()) {
       return database.getViewDDL(connection, schemaName, tableName);
@@ -178,10 +188,11 @@ public class MetaDataByDataSourceServiceImpl implements IMetaDataByDatasourceSer
   }
 
   @Override
-  public String getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
-      List<String> primaryKeys, String schemaName, String tableName, boolean autoIncr) {
+  public List<String> getDDLCreateTableSQL(DatabaseTypeEnum type,
+      List<ColumnDescription> fieldNames, List<String> primaryKeys, String schemaName,
+      String tableName, String tableRemarks, boolean autoIncr) {
     return GenerateSqlUtils.getDDLCreateTableSQL(
-        type, fieldNames, primaryKeys, schemaName, tableName, autoIncr);
+        type, fieldNames, primaryKeys, schemaName, tableName, tableRemarks, autoIncr);
   }
 
 }

@@ -83,6 +83,9 @@ public class AssignmentDetailResponse {
     @ApiModelProperty("目的端数据源的Schema")
     private String targetSchema;
 
+    @ApiModelProperty("是否只建表")
+    private Boolean targetOnlyCreate;
+
     @ApiModelProperty("表名映射关系")
     private List<PatternMapper> tableNameMapper;
 
