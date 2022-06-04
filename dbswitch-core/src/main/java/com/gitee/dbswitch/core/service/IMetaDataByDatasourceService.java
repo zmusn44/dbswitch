@@ -42,6 +42,15 @@ public interface IMetaDataByDatasourceService {
   String getTableDDL(String schemaName, String tableName);
 
   /**
+   * 获取物理表的注释
+   *
+   * @param schemaName 模式名称
+   * @param tableName  表名称
+   * @return
+   */
+  String getTableRemark(String schemaName, String tableName);
+
+  /**
    * 获取物理表的DDL建表语句
    *
    * @param schemaName 模式名称
@@ -122,6 +131,7 @@ public interface IMetaDataByDatasourceService {
    * @param autoIncr    是否允许主键自增
    * @return 对应数据库的DDL建表语句
    */
-  String getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
-      List<String> primaryKeys, String schemaName, String tableName, boolean autoIncr);
+  List<String> getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
+      List<String> primaryKeys, String schemaName, String tableName, String tableRemarks,
+      boolean autoIncr);
 }

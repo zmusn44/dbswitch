@@ -70,7 +70,7 @@ public interface IDatabaseInterface {
    *
    * @param connection JDBC连接
    * @param schemaName 模式名称
-   * @param tableName  表或视图名称
+   * @param tableName  表名称
    * @return 字段元信息列表
    */
   String getTableDDL(Connection connection, String schemaName, String tableName);
@@ -158,13 +158,15 @@ public interface IDatabaseInterface {
   /**
    * 获取字段列的结构定义
    *
-   * @param v          值元数据定义
-   * @param pks        主键字段名称列表
-   * @param addCr      是否结尾换行
-   * @param useAutoInc 是否自增
+   * @param v           值元数据定义
+   * @param pks         主键字段名称列表
+   * @param addCr       是否结尾换行
+   * @param useAutoInc  是否自增
+   * @param withRemarks 是否带有注释
    * @return 字段定义字符串
    */
-  String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc, boolean addCr);
+  String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc, boolean addCr,
+      boolean withRemarks);
 
   /**
    * 主键列转换为逗号分隔的字符串
@@ -173,4 +175,13 @@ public interface IDatabaseInterface {
    * @return 主键字段拼接串
    */
   String getPrimaryKeyAsString(List<String> pks);
+
+  /**
+   * 获取表和字段的注释定义
+   *
+   * @param td  表信息定义
+   * @param cds 列信息定义
+   * @return 定义字符串列表
+   */
+  List<String> getTableColumnCommentDefinition(TableDescription td, List<ColumnDescription> cds);
 }

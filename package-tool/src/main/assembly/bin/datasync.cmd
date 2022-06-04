@@ -21,7 +21,7 @@ set APP_LIB_PATH=%APP_HOME%\lib
 set APP_CONF_PATH=%APP_HOME%\conf
 
 ::java虚拟机启动参数
-set JAVA_OPTS=-server -Xms1024m -Xmx1024m -Xmn512m -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Doracle.jdbc.J2EE13Compliant=true
+set JAVA_OPTS=-server -Xms4096m -Xmx4096m -Xmn2048m -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Djava.awt.headless=true -Dfile.encoding=UTF-8 -Doracle.jdbc.J2EE13Compliant=true
 
 ::打印环境信息
 echo System Information:

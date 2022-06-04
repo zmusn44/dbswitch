@@ -30,7 +30,7 @@ echo -n `date +'%Y-%m-%d %H:%M:%S'`              >>${APP_RUN_LOG}
 echo "---- Start service [${APP_MAIN}] process. ">>${APP_RUN_LOG}
 
 # JVMFLAGS JVM参数可以在这里设置
-JVMFLAGS="-Dfile.encoding=UTF-8 -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:./gc.log"
+JVMFLAGS="-Dfile.encoding=UTF-8 -server -Xms4096m -Xmx4096m -Xmn2048m -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Xloggc:./gc.log"
 
 if [ "$JAVA_HOME" != "" ]; then
   JAVA="$JAVA_HOME/bin/java"

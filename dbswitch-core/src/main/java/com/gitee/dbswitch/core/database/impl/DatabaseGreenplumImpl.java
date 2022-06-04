@@ -16,14 +16,18 @@ import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.database.constant.PostgresqlConst;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.TableDescription;
+import com.gitee.dbswitch.core.util.PostgresUtils;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支持Greenplum数据库的元信息实现
@@ -77,11 +81,10 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
       }
     } catch (SQLException e) {
       //throw new RuntimeException(e);
-      // TODO: Greenplum的表的DDL获取方法
-      return e.getMessage();
     }
 
-    return null;
+    // 低版本的PostgreSQL的表的DDL获取方法
+    return PostgresUtils.getTableDDL(connection, schemaName, tableName);
   }
 
   @Override
@@ -120,7 +123,7 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int length = v.getLength();
     int precision = v.getPrecision();
@@ -200,5 +203,28 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
     }
 
     return retval;
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    List<String> results = new ArrayList<>();
+    if (StringUtils.isNotBlank(td.getRemarks())) {
+      results.add(String
+          .format("COMMENT ON TABLE \"%s\".\"%s\" IS '%s' ",
+              td.getSchemaName(), td.getTableName(),
+              td.getRemarks().replace("\"", "\\\"")));
+    }
+
+    for (ColumnDescription cd : cds) {
+      if (StringUtils.isNotBlank(cd.getRemarks())) {
+        results.add(String
+            .format("COMMENT ON COLUMN \"%s\".\"%s\".\"%s\" IS '%s' ",
+                td.getSchemaName(), td.getTableName(), cd.getFieldName(),
+                cd.getRemarks().replace("\"", "\\\"")));
+      }
+    }
+
+    return results;
   }
 }

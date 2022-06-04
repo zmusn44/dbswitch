@@ -21,7 +21,7 @@ APP_LIB_PATH=$APP_HOME/lib
 APP_CONF_PATH=$APP_HOME/conf
 
 # JVMFLAGS JVM参数可以在这里设置
-JVMFLAGS="-Xms2g -Xmx2g -Xmn1g -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Dfile.encoding=UTF-8 -Doracle.jdbc.J2EE13Compliant=true"
+JVMFLAGS="-Xms4g -Xmx4g -Xmn2g -XX:+DisableExplicitGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -Dfile.encoding=UTF-8 -Doracle.jdbc.J2EE13Compliant=true"
 
 if [ "$JAVA_HOME" != "" ]; then
   JAVA="$JAVA_HOME/bin/java"

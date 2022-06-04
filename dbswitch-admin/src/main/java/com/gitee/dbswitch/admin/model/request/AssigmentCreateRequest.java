@@ -48,6 +48,7 @@ public class AssigmentCreateRequest {
     private List<PatternMapper> tableNameMapper;
     private List<PatternMapper> columnNameMapper;
     private Boolean targetDropTable;
+    private Boolean targetOnlyCreate;
     private Integer batchSize;
   }
 
@@ -83,6 +84,7 @@ public class AssigmentCreateRequest {
     assignmentConfigEntity.setTableNameMap(this.getConfig().getTableNameMapper());
     assignmentConfigEntity.setColumnNameMap(this.getConfig().getColumnNameMapper());
     assignmentConfigEntity.setTargetDropTable(this.getConfig().getTargetDropTable());
+    assignmentConfigEntity.setTargetOnlyCreate(this.getConfig().getTargetOnlyCreate());
     assignmentConfigEntity.setBatchSize(
         Objects.isNull(this.config.getBatchSize())
             ? 10000

@@ -251,6 +251,9 @@ public class AssignmentService {
       targetDataSourceProperties.setTargetDrop(Boolean.FALSE);
       targetDataSourceProperties.setChangeDataSync(Boolean.TRUE);
     }
+    if(assignmentConfigEntity.getTargetOnlyCreate()) {
+      targetDataSourceProperties.setOnlyCreate(Boolean.TRUE);
+    }
 
     return targetDataSourceProperties;
   }

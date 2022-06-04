@@ -67,6 +67,9 @@ public class AssignmentConfigEntity {
   @Column(name = "target_drop_table")
   private Boolean targetDropTable;
 
+  @Column(name = "target_only_create")
+  private Boolean targetOnlyCreate;
+
   @Column(name = "batch_size")
   private Integer batchSize;
 

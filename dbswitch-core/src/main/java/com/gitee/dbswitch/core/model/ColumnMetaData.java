@@ -96,6 +96,7 @@ public class ColumnMetaData {
   protected int length;
   protected int precision;
   protected int type;
+  protected String remarks;
 
   /**
    * Constructor function
@@ -136,6 +137,14 @@ public class ColumnMetaData {
 
   public void setType(int type) {
     this.type = type;
+  }
+
+  public String getRemarks() {
+    return remarks;
+  }
+
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
 
   /**
@@ -455,6 +464,7 @@ public class ColumnMetaData {
     this.length = length;
     this.precision = precision;
     this.type = valtype;
+    this.remarks = desc.getRemarks();
   }
 
 }
