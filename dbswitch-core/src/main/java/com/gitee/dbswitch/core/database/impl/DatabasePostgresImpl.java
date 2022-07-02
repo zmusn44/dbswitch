@@ -104,7 +104,7 @@ public class DatabasePostgresImpl extends AbstractDatabase implements IDatabaseI
           }
         }
       } catch (SQLException se) {
-        String.format(SHOW_CREATE_VIEW_SQL_2, schemaName, tableName);
+        sql = String.format(SHOW_CREATE_VIEW_SQL_2, schemaName, tableName);
         if (st.execute(sql)) {
           try (ResultSet rs = st.getResultSet()) {
             if (rs != null && rs.next()) {
