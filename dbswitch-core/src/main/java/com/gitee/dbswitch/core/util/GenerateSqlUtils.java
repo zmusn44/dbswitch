@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author tang
  */
-public class GenerateSqlUtils {
+public final class GenerateSqlUtils {
 
   public static String getDDLCreateTableSQL(
       DatabaseTypeEnum type,
@@ -108,7 +108,7 @@ public class GenerateSqlUtils {
     AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
     String createTableSql = getDDLCreateTableSQL(db, fieldNames, primaryKeys, schemaName,
         tableName, true, tableRemarks, autoIncr);
-    if (DatabaseTypeEnum.MYSQL == type || DatabaseTypeEnum.HIVE == type) {
+    if (type.noCommentStatement()) {
       return Arrays.asList(createTableSql);
     }
 
@@ -120,6 +120,10 @@ public class GenerateSqlUtils {
     List<String> results = db.getTableColumnCommentDefinition(td, fieldNames);
     results.add(0, createTableSql);
     return results;
+  }
+
+  private GenerateSqlUtils() {
+    throw new IllegalStateException();
   }
 
 }

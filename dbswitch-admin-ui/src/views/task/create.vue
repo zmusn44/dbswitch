@@ -56,8 +56,9 @@
               <el-input slot="reference"
                         :disabled=false
                         v-model="createform.cronExpression"
-                        placeholder="点击选择"
-                        @click="cronPopover=true" />
+                        placeholder="点击选择或手动输入"
+                        @click="cronPopover=true"
+                        size="small" />
             </el-popover>
           </el-col>
         </el-form-item>

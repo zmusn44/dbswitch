@@ -19,11 +19,12 @@ import com.gitee.dbswitch.core.database.impl.DatabaseMariaDBImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMysqlImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseOracleImpl;
 import com.gitee.dbswitch.core.database.impl.DatabasePostgresImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseSqliteImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserver2000Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserverImpl;
 import java.util.HashMap;
 import java.util.Map;
-import javax.sql.DataSource;
+import java.util.concurrent.Callable;
 
 /**
  * 数据库实例构建工厂类
@@ -32,30 +33,32 @@ import javax.sql.DataSource;
  */
 public final class DatabaseFactory {
 
-  private static final Map<DatabaseTypeEnum, String> DATABASE_MAPPER = new HashMap<DatabaseTypeEnum, String>() {
+  private static final Map<DatabaseTypeEnum, Callable<AbstractDatabase>> DATABASE_MAPPER
+      = new HashMap<DatabaseTypeEnum, Callable<AbstractDatabase>>() {
 
     private static final long serialVersionUID = 9202705534880971997L;
 
     {
-      put(DatabaseTypeEnum.MYSQL, DatabaseMysqlImpl.class.getName());
-      put(DatabaseTypeEnum.ORACLE, DatabaseOracleImpl.class.getName());
-      put(DatabaseTypeEnum.SQLSERVER2000, DatabaseSqlserver2000Impl.class.getName());
-      put(DatabaseTypeEnum.SQLSERVER, DatabaseSqlserverImpl.class.getName());
-      put(DatabaseTypeEnum.POSTGRESQL, DatabasePostgresImpl.class.getName());
-      put(DatabaseTypeEnum.GREENPLUM, DatabaseGreenplumImpl.class.getName());
-      put(DatabaseTypeEnum.MARIADB, DatabaseMariaDBImpl.class.getName());
-      put(DatabaseTypeEnum.DB2, DatabaseDB2Impl.class.getName());
-      put(DatabaseTypeEnum.DM, DatabaseDmImpl.class.getName());
-      put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl.class.getName());
-      put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl.class.getName());
+      put(DatabaseTypeEnum.MYSQL, DatabaseMysqlImpl::new);
+      put(DatabaseTypeEnum.ORACLE, DatabaseOracleImpl::new);
+      put(DatabaseTypeEnum.SQLSERVER2000, DatabaseSqlserver2000Impl::new);
+      put(DatabaseTypeEnum.SQLSERVER, DatabaseSqlserverImpl::new);
+      put(DatabaseTypeEnum.POSTGRESQL, DatabasePostgresImpl::new);
+      put(DatabaseTypeEnum.GREENPLUM, DatabaseGreenplumImpl::new);
+      put(DatabaseTypeEnum.MARIADB, DatabaseMariaDBImpl::new);
+      put(DatabaseTypeEnum.DB2, DatabaseDB2Impl::new);
+      put(DatabaseTypeEnum.DM, DatabaseDmImpl::new);
+      put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
+      put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl::new);
+      put(DatabaseTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
     }
   };
 
   public static AbstractDatabase getDatabaseInstance(DatabaseTypeEnum type) {
-    if (DATABASE_MAPPER.containsKey(type)) {
-      String className = DATABASE_MAPPER.get(type);
+    Callable<AbstractDatabase> callable = DATABASE_MAPPER.get(type);
+    if (null != callable) {
       try {
-        return (AbstractDatabase) Class.forName(className).newInstance();
+        return callable.call();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -66,6 +69,7 @@ public final class DatabaseFactory {
   }
 
   private DatabaseFactory() {
+    throw new IllegalStateException();
   }
 
 }

@@ -18,5 +18,7 @@ public final class PostgresUtils {
   }
 
   private PostgresUtils() {
+    throw new IllegalStateException();
   }
+
 }

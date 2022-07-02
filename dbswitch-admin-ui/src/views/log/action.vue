@@ -1,6 +1,7 @@
 <template>
   <div style="margin-top: 15px">
     <el-table v-loading="loading"
+              :header-cell-style="{background:'#eef1f6',color:'#606266'}"
               element-loading-text="拼命加载中"
               element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(0, 0, 0, 0.8)"

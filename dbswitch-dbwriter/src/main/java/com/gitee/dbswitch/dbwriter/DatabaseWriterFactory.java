@@ -9,7 +9,16 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter;
 
+import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
+import com.gitee.dbswitch.dbwriter.db2.DB2WriterImpl;
+import com.gitee.dbswitch.dbwriter.dm.DmWriterImpl;
+import com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl;
+import com.gitee.dbswitch.dbwriter.kingbase.KingbaseInsertWriterImpl;
+import com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl;
+import com.gitee.dbswitch.dbwriter.mysql.MySqlWriterImpl;
+import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
+import com.gitee.dbswitch.dbwriter.sqlite.Sqlite3WriterImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -22,22 +31,23 @@ import javax.sql.DataSource;
  */
 public class DatabaseWriterFactory {
 
-  private static final Map<String, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER
-      = new HashMap<String, Function<DataSource, IDatabaseWriter>>() {
+  private static final Map<DatabaseTypeEnum, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER
+      = new HashMap<DatabaseTypeEnum, Function<DataSource, IDatabaseWriter>>() {
 
     private static final long serialVersionUID = 3365136872693503697L;
 
     {
-      put("MYSQL", com.gitee.dbswitch.dbwriter.mysql.MySqlWriterImpl::new);
-      put("ORACLE", com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl::new);
-      put("SQLSERVER", com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl::new);
-      put("SQLSERVER2000", com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl::new);
-      put("POSTGRESQL", com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl::new);
-      put("GREENPLUM", com.gitee.dbswitch.dbwriter.gpdb.GreenplumCopyWriterImpl::new);
-      put("DB2", com.gitee.dbswitch.dbwriter.db2.DB2WriterImpl::new);
-      put("DM", com.gitee.dbswitch.dbwriter.dm.DmWriterImpl::new);
+      put(DatabaseTypeEnum.MYSQL, MySqlWriterImpl::new);
+      put(DatabaseTypeEnum.ORACLE, OracleWriterImpl::new);
+      put(DatabaseTypeEnum.SQLSERVER, SqlServerWriterImpl::new);
+      put(DatabaseTypeEnum.SQLSERVER2000, SqlServerWriterImpl::new);
+      put(DatabaseTypeEnum.POSTGRESQL, GreenplumCopyWriterImpl::new);
+      put(DatabaseTypeEnum.GREENPLUM, GreenplumCopyWriterImpl::new);
+      put(DatabaseTypeEnum.DB2, DB2WriterImpl::new);
+      put(DatabaseTypeEnum.DM, DmWriterImpl::new);
       //对于kingbase当前只能使用insert模式
-      put("KINGBASE", com.gitee.dbswitch.dbwriter.kingbase.KingbaseInsertWriterImpl::new);
+      put(DatabaseTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
+      put(DatabaseTypeEnum.SQLITE3, Sqlite3WriterImpl::new);
     }
   };
 
@@ -59,9 +69,9 @@ public class DatabaseWriterFactory {
    * @return 写入器对象
    */
   public static IDatabaseWriter createDatabaseWriter(DataSource dataSource, boolean insert) {
-    String type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource).name();
+    DatabaseTypeEnum type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource);
     if (insert) {
-      if ("POSTGRESQL".equalsIgnoreCase(type) || "GREENPLUM".equalsIgnoreCase(type)) {
+      if (DatabaseTypeEnum.POSTGRESQL.equals(type) || DatabaseTypeEnum.GREENPLUM.equals(type)) {
         return new com.gitee.dbswitch.dbwriter.gpdb.GreenplumInsertWriterImpl(dataSource);
       }
     }
@@ -71,7 +81,7 @@ public class DatabaseWriterFactory {
           String.format("[dbwrite] Unsupported database type (%s)", type));
     }
 
-    return DATABASE_WRITER_MAPPER.get(type.trim()).apply(dataSource);
+    return DATABASE_WRITER_MAPPER.get(type).apply(dataSource);
   }
 
 }

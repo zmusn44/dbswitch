@@ -44,6 +44,7 @@ public final class DatabaseAwareUtils {
     productNameMap.put("PostgreSQL", DatabaseTypeEnum.POSTGRESQL);
     productNameMap.put("DB2 for Unix/Windows", DatabaseTypeEnum.DB2);
     productNameMap.put("Hive", DatabaseTypeEnum.HIVE);
+    productNameMap.put("SQLite", DatabaseTypeEnum.SQLITE3);
 
     driverNameMap.put("MySQL Connector Java", DatabaseTypeEnum.MYSQL);
     driverNameMap.put("MariaDB Connector/J", DatabaseTypeEnum.MARIADB);
@@ -53,6 +54,7 @@ public final class DatabaseAwareUtils {
     driverNameMap.put("IBM Data Server Driver for JDBC and SQLJ", DatabaseTypeEnum.DB2);
     driverNameMap.put("dm.jdbc.driver.DmDriver", DatabaseTypeEnum.DM);
     driverNameMap.put("Hive JDBC", DatabaseTypeEnum.HIVE);
+    driverNameMap.put("SQLite JDBC", DatabaseTypeEnum.SQLITE3);
   }
 
   /**
