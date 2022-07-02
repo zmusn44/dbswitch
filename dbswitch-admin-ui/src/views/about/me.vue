@@ -24,6 +24,9 @@
                 <p>
                   字段类型、主键信息、建表语句等的转换，并生成建表SQL语句。
                 </p>
+                <p>
+                  支持基于正则表达式转换的表名与字段名映射转换。
+                </p>
                 <li>数据迁移</li>
                 <p>
                   基于JDBC的分批次读取源端数据库数据，并基于insert/copy方式将数据分批写入目的数据库。
@@ -59,6 +62,8 @@
                 </li>
                 <li>PostgreSQL
                 </li>
+                <li>Greenplum
+                </li>
                 <li>DB2
                 </li>
                 <li>达梦数据库DM
@@ -68,6 +73,8 @@
                 <li>翰高数据库HighGo
                 </li>
                 <li>Apache Hive(只支持为源端)
+                </li>
+                <li>SQLite3
                 </li>
               </ul>
             </div>
@@ -79,14 +86,14 @@
         <div class="content_tag">
           <el-tag type="success">SpringBoot</el-tag>
           <el-tag type="danger">Quartz</el-tag>
-          <el-tag type="success">Vue/Element</el-tag>
+          <el-tag type="success">Vue/ElementUI</el-tag>
         </div>
         <div class="content_card">
           <el-card class="box-card">
             <div class="text item">
               <p>
                 dbswitch基于Springboot脚手架进行的后端模块开发，模块组成结构如下：
-                  <pre>
+              <pre>
 				└── dbswitch
 					├── dbswitch-common    // dbswitch通用定义模块
 					├── dbswitch-pgwriter  // PostgreSQL的二进制写入封装模块
@@ -98,7 +105,7 @@
 					├── dbswitch-dbsynch   // 将dbchange模块计算的变更数据同步入库模块
 					├── dbswitch-data      // 工具入口模块，读取配置文件中的参数执行异构迁移同步
 					├── dbswitch-admin     // 在以上模块的基础上，采用Quartz提供可视化调度
-					├── dbswitch-admin-ui  // 基于Vue的前端交互页面
+					├── dbswitch-admin-ui  // 基于Vue+ElementUI的前端交互页面
 					├── package-tool       // 基于maven-assembly-plugin插件的项目打包模块
                 </pre>
               </p>
@@ -119,7 +126,7 @@
                   Vue是一套用于构建用户界面的渐进式JavaScript框架。 Element是饿了么团队基于MVVM框架Vue开源出来的一套前端基于Vue 2.0的桌面端组件库。
                 </p>
                 <p>
-                 dbswitch-admin-ui模块基于Vue和ElementUI提供可视化的操作WEB界面。
+                  dbswitch-admin-ui模块基于Vue和ElementUI提供可视化的操作WEB界面。
                 </p>
               </ul>
             </div>
