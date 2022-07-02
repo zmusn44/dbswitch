@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.admin.type;
 
+import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
@@ -54,6 +55,12 @@ public enum SupportDbTypeEnum {
       "SELECT 1",
       "jdbc:hive2://",
       new String[]{"jdbc:hive2://{host}[:{port}]/[{database}][\\?{params}]"}),
+
+  // 参考文章：https://blog.csdn.net/wank1259162/article/details/104946744
+  SQLITE3(1, "sqlite3", "org.sqlite.JDBC", 0,
+      "SELECT 1",
+      "jdbc:sqlite:",
+      new String[]{"jdbc:sqlite:{file}", "jdbc:sqlite::resource:{file}"}),
   ;
 
   private int id;
@@ -65,7 +72,15 @@ public enum SupportDbTypeEnum {
   private String[] url;
 
   public boolean hasDatabaseName() {
-    return this != DM;
+    return !Arrays.asList(DM, SQLITE3).contains(this);
+  }
+
+  public boolean hasFilePath() {
+    return this == SQLITE3;
+  }
+
+  public boolean hasAddress() {
+    return this != SQLITE3;
   }
 
   public static SupportDbTypeEnum of(String name) {
@@ -78,6 +93,12 @@ public enum SupportDbTypeEnum {
     }
 
     throw new IllegalArgumentException("cannot find enum name: " + name);
+  }
+
+  public static boolean isUnsupportedTargetSqlite(String url) {
+    String prefix1 = "jdbc:sqlite::resource:";
+    //String prefix2 = "jdbc:sqlite::memory:";
+    return url.startsWith(prefix1);
   }
 
 }

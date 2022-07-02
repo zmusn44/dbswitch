@@ -126,11 +126,11 @@ public class JdbcUrlUtils {
           // + "(CONNECT_DATA=(SERVICE_NAME=%s)))",
           /// db.getHost(), db.getPort(), db.getDbname());
           //
-          // (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=172.17.207.158)(PORT=1521)))(CONNECT_DATA=(SID=orcl)))
+          // (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=172.17.20.58)(PORT=1521)))(CONNECT_DATA=(SID=orcl)))
           //
           // or
           //
-          // (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=172.17.207.158)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=orcl.ruijie.com.cn)))
+          // (DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=172.17.20.58)(PORT=1521)))(CONNECT_DATA=(SERVICE_NAME=orcl.test.com.cn)))
           return String.format("jdbc:oracle:thin:@%s", db.getDbname());
         } else {
           return String.format("jdbc:oracle:thin:@%s:%d:%s",

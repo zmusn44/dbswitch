@@ -98,6 +98,13 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
 
   protected abstract String getDatabaseProductName();
 
+  protected TransactionDefinition getTransactionDefinition() {
+    DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+    definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+    definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+    return definition;
+  }
+
   @Override
   public long write(List<String> fieldNames, List<Object[]> recordValues) {
     if (recordValues.isEmpty()) {
@@ -115,12 +122,9 @@ public abstract class AbstractDatabaseWriter implements IDatabaseWriter {
       argTypes[i] = this.columnType.get(col);
     }
 
-    DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
-    definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-    definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
     PlatformTransactionManager transactionManager = new DataSourceTransactionManager(
         this.dataSource);
-    TransactionStatus status = transactionManager.getTransaction(definition);
+    TransactionStatus status = transactionManager.getTransaction(getTransactionDefinition());
 
     try {
       //int[] affects = jdbcTemplate.batchUpdate(sqlInsert, recordValues, argTypes);

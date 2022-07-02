@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -161,7 +162,7 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int length = v.getLength();
     int precision = v.getPrecision();
@@ -257,6 +258,10 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
         break;
     }
 
+    if (withRemarks && StringUtils.isNotBlank(v.getRemarks())) {
+      retval += String.format(" COMMENT '%s' ", v.getRemarks().replace("'", "\\'"));
+    }
+
     if (addCr) {
       retval += Const.CR;
     }
@@ -275,6 +280,12 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
     }
 
     return "";
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    return Collections.emptyList();
   }
 
 }

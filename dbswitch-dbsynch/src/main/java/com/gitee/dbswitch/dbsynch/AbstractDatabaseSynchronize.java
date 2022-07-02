@@ -37,7 +37,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 @Slf4j
 public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchronize {
 
-  private final DefaultTransactionDefinition defination;
   private JdbcTemplate jdbcTemplate;
   private PlatformTransactionManager transactionManager;
   private Map<String, Integer> columnType;
@@ -51,10 +50,6 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
   protected int[] deleteArgsType;
 
   public AbstractDatabaseSynchronize(DataSource ds) {
-    this.defination = new DefaultTransactionDefinition();
-    this.defination.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
-    this.defination.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-
     this.jdbcTemplate = new JdbcTemplate(ds);
     this.transactionManager = new DataSourceTransactionManager(ds);
     this.columnType = new HashMap<>();
@@ -63,6 +58,13 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
   @Override
   public DataSource getDataSource() {
     return this.jdbcTemplate.getDataSource();
+  }
+
+  protected TransactionDefinition getTransactionDefinition() {
+    DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+    definition.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+    definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+    return definition;
   }
 
   /**
@@ -178,7 +180,7 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
 
   @Override
   public long executeInsert(List<Object[]> records) {
-    TransactionStatus status = transactionManager.getTransaction(defination);
+    TransactionStatus status = transactionManager.getTransaction(getTransactionDefinition());
     if (log.isDebugEnabled()) {
       log.debug("Execute Insert SQL : {}", this.insertStatementSql);
     }
@@ -227,7 +229,7 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
       datas.add(nr);
     }
 
-    TransactionStatus status = transactionManager.getTransaction(defination);
+    TransactionStatus status = transactionManager.getTransaction(getTransactionDefinition());
     if (log.isDebugEnabled()) {
       log.debug("Execute Update SQL : {}", this.updateStatementSql);
     }
@@ -264,7 +266,7 @@ public abstract class AbstractDatabaseSynchronize implements IDatabaseSynchroniz
       datas.add(nr);
     }
 
-    TransactionStatus status = transactionManager.getTransaction(defination);
+    TransactionStatus status = transactionManager.getTransaction(getTransactionDefinition());
     if (log.isDebugEnabled()) {
       log.debug("Execute Delete SQL : {}", this.deleteStatementSql);
     }

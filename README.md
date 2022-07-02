@@ -24,19 +24,19 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Oracle/DM的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DM的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
 
 ** 注:** 目前Hive只支持Hive version 3.x的账号密码方式认证。
 
@@ -112,7 +112,7 @@ sh ./docker-maven-build.sh
 
 (2) 基于docker-compose提供linux联网环境下的**一键安装**，安装命令见 [发行版链接地址](https://gitee.com/inrgihc/dbswitch/releases)
 
-详见文档: [build-docker/install/README.md](build-docker/install) 
+文档详见: [build-docker/install/README.md](build-docker/install) 
 
 ## 三、工具使用
 
@@ -206,21 +206,21 @@ dbswitch:
 
 - （5）对于```regex-table-mapper```和```regex-column-mappe```，为基于正则表达式替换的表名映射和字段名映射，均可以为空（代表原名映射，即源的表t_a映射到目的端也为t_a）
 
-> 提示：如果要将源端所有表名添加前缀，可以配置```"from-pattern": "^","to-value": "T_"```;
+> 提示：如果要将源端所有表名(或者字段名)添加前缀，可以配置```"from-pattern": "^","to-value": "T_"```;
 
 - （6）各个数据库的JDBC驱动连接示例如下：
 
 **mysql/mariadb的驱动配置样例**
 
 ```
-jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false
+jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true
 jdbc驱动名称： com.mysql.jdbc.Driver
 ```
 
 与:
 
 ```
-jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false
+jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true
 jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
@@ -241,7 +241,7 @@ jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 **PostgreSQL/Greenplum的驱动配置样例**
 
 ```
-jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/study
+jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/test
 jdbc驱动名称：org.postgresql.Driver
 ```
 
@@ -279,6 +279,32 @@ jdbc驱动名称：org.postgresql.Driver
 jdbc连接地址：jdbc:hive2://172.17.2.12:10000/default
 jdbc驱动名称：org.apache.hive.jdbc.HiveDriver
 ```
+
+注意：当前只支持hive version 3.x的账号密码认证方式。
+
+**SQLite数据库**
+ 
+```
+jdbc连接地址：jdbc:sqlite:/tmp/test.db   或者  jdbc:sqlite::resource:http://172.17.2.12:8080/test.db
+jdbc驱动名称：org.sqlite.JDBC
+```
+注意: 
+
+> (a) 本地文件方式：jdbc:sqlite:/tmp/test.db , 该方式适用于dbswitch为实体机器部署的场景。
+>
+> (b) 远程文件方式: jdbc:sqlite::resource:http://172.17.2.12:8080/test.db ,该方式适用于容器方式部署的场景,  搭建文件服务器的方法可使
+> 用如下docker方式快速部署(/home/sqlites为服务器上存放sqlite数据库文件的目录)：
+>
+> ```docker run -d --name http_file_server -p 8080:8080 -v /home/sqlites:/data inrgihc/http_file_server:latest```
+>
+> 说明：远程服务器文件将会被下载到本地System.getProperty("java.io.tmpdir")所指定的目录下(linux为/tmp/，Windows为C:/temp/)，并以
+> sqlite-jdbc-tmp-{XXX}.db的方式进行文件命名，其中{XXX}为文件网络地址(例如上述为http://192.168.31.57:8080/test.db) 的字符串哈希值，
+> 如果本地文件已经存在则不会再次进行下载而是直接使用该文件(当已经下载过文件后，远程服务器即使关闭了，该sqlite的jdbc-url任然可
+> 用，直至本地的sqlite-jdbc-tmp-XXX.db文件被人为手动删除)
+>
+> (c) 不支持内存及其他方式;本地文件方式可以作为源端和目的端，而远程服务器方式只能作为源端。
+>
+> (d) SQLite为单写多读方式，禁止人为方式造成多写导致锁表。
 
 #### (2)、启动方法
 
@@ -388,15 +414,17 @@ bin/startup.sh
 
 - dbswitch离线同步工具提供各种数据库间表结构转换RESTful在线API接口如下:（详见[接口文档](/INTERFACE.md)）
 
-> Swagger在线接口地址： http://127.0.0.1:9088/swagger-ui/
-
 - WEB系统的访问如下：
 
 > URL地址: ```http://127.0.0.1:9088``` 登陆账号：```admin```  登陆密码：```123456```
 
+> Swagger在线接口地址： http://127.0.0.1:9088/swagger-ui/
+
+注意：如果为服务器部署时，需要将127.0.0.1替换为服务器的IP地址。
+
 - WEB系统的使用流程为：
 
-> 建立源端数据库的连接 -> 建立目的断数据库的连接  -> 配置任务  -> 发布任务  -> 手动/系统调度执行任务  -> 查看调度记录
+> 建立源端数据库的连接 -> 建立目的断数据库的连接  -> 配置任务  -> 发布任务  -> 手动/系统调度执行任务  -> 查看调度记录 -> 数据目录查看数据结果
 
 - WEB系统的部分截图：
 

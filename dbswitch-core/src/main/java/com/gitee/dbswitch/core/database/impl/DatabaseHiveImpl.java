@@ -16,6 +16,7 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 
 public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInterface {
 
@@ -154,7 +156,7 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int type = v.getType();
 
@@ -191,11 +193,21 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
         break;
     }
 
+    if (withRemarks && StringUtils.isNotBlank(v.getRemarks())) {
+      retval += String.format(" COMMENT '%s' ", v.getRemarks().replace("'", "\\'"));
+    }
+
     if (addCr) {
       retval += Const.CR;
     }
 
     return retval;
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    return Collections.emptyList();
   }
 
 }

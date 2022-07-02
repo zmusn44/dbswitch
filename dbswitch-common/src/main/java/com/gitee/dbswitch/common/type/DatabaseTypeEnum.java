@@ -9,6 +9,8 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.common.type;
 
+import java.util.Arrays;
+
 /**
  * 数据库类型的枚举定义
  *
@@ -74,6 +76,11 @@ public enum DatabaseTypeEnum {
    * HIVE数据库
    */
   HIVE(11),
+
+  /**
+   * SQLite数据库
+   */
+  SQLITE3(12),
   ;
 
   private int index;
@@ -82,8 +89,12 @@ public enum DatabaseTypeEnum {
     this.index = idx;
   }
 
-  public int getIndex() {
-    return index;
+  public boolean noCommentStatement() {
+    return Arrays.asList(
+        DatabaseTypeEnum.MYSQL,
+        DatabaseTypeEnum.HIVE,
+        DatabaseTypeEnum.SQLITE3
+    ).contains(this);
   }
 
 }

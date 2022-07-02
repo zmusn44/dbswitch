@@ -34,7 +34,6 @@ import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,7 +56,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class MigrationHandler implements Supplier<Long> {
 
-  private final long MAX_CACHE_BYTES_SIZE = 64 * 1024 * 1024;
+  private final long MAX_CACHE_BYTES_SIZE = 128 * 1024 * 1024;
 
   private int fetchSize = 100;
   private final DbswichProperties properties;
@@ -68,6 +67,7 @@ public class MigrationHandler implements Supplier<Long> {
   private DatabaseTypeEnum sourceProductType;
   private String sourceSchemaName;
   private String sourceTableName;
+  private String sourceTableRemarks;
   private List<ColumnDescription> sourceColumnDescriptions;
   private List<String> sourcePrimaryKeys;
 
@@ -113,6 +113,10 @@ public class MigrationHandler implements Supplier<Long> {
     this.targetTableName = PatterNameUtils.getFinalName(td.getTableName(),
         sourceProperties.getRegexTableMapper());
 
+    if (StringUtils.isEmpty(this.targetTableName)) {
+      throw new RuntimeException("表名的映射规则配置有误，不能将[" + this.sourceTableName + "]映射为空");
+    }
+
     this.tableNameMapString = String.format("%s.%s --> %s.%s",
         td.getSchemaName(), td.getTableName(),
         targetSchemaName, targetTableName);
@@ -127,7 +131,9 @@ public class MigrationHandler implements Supplier<Long> {
     this.sourceMetaDataService = new MetaDataByDataSourceServiceImpl(sourceDataSource,
         sourceProductType);
 
-    // 读取源表的字段元数据
+    // 读取源表的表及字段元数据
+    this.sourceTableRemarks = sourceMetaDataService
+        .getTableRemark(sourceSchemaName, sourceTableName);
     this.sourceColumnDescriptions = sourceMetaDataService
         .queryTableColumnMeta(sourceSchemaName, sourceTableName);
     this.sourcePrimaryKeys = sourceMetaDataService
@@ -157,16 +163,26 @@ public class MigrationHandler implements Supplier<Long> {
       String targetColumnName = targetColumnDescriptions.get(i).getFieldName();
       if (StringUtils.hasLength(targetColumnName)) {
         columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
+        mapChecker.put(sourceColumnName, targetColumnName);
       } else {
-        columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, "<!Field is Deleted>"));
+        columnMapperPairs.add(String.format(
+            "%s --> %s",
+            sourceColumnName,
+            String.format("<!Field(%s) is Deleted>", (i + 1))
+        ));
       }
-      mapChecker.put(sourceColumnName, targetColumnName);
     }
     log.info("Mapping relation : \ntable mapper :\n\t{}  \ncolumn mapper :\n\t{} ",
-        tableNameMapString, columnMapperPairs.stream().collect(Collectors.joining("\n\t")));
+        tableNameMapString, String.join("\n\t", columnMapperPairs));
     Set<String> valueSet = new HashSet<>(mapChecker.values());
+    if (valueSet.size() <= 0) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表所有的字段都删除!");
+    }
+    if (!valueSet.containsAll(this.targetPrimaryKeys)) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表的主键字段删除!");
+    }
     if (mapChecker.keySet().size() != valueSet.size()) {
-      throw new RuntimeException("字段映射配置有误，多个字段映射到一个同名字段!");
+      throw new RuntimeException("字段映射配置有误，禁止将多个字段映射到一个同名字段!");
     }
 
     IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(
@@ -188,7 +204,7 @@ public class MigrationHandler implements Supplier<Long> {
       }
 
       // 生成建表语句并创建
-      String sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
+      List<String> sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
           targetProductType,
           targetColumnDescriptions.stream()
               .filter(column -> StringUtils.hasLength(column.getFieldName()))
@@ -196,15 +212,30 @@ public class MigrationHandler implements Supplier<Long> {
           targetPrimaryKeys,
           targetSchemaName,
           targetTableName,
+          sourceTableRemarks,
           properties.getTarget().getCreateTableAutoIncrement()
       );
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
-      targetJdbcTemplate.execute(sqlCreateTable);
-      log.info("Execute SQL: \n{}", sqlCreateTable);
+      for (String sql : sqlCreateTable) {
+        targetJdbcTemplate.execute(sql);
+        log.info("Execute SQL: \n{}", sql);
+      }
+
+      // 如果只想创建表，这里直接返回
+      if (null != properties.getTarget().getOnlyCreate()
+          && properties.getTarget().getOnlyCreate()) {
+        return 0L;
+      }
 
       return doFullCoverSynchronize(writer);
     } else {
+      // 对于只想创建表的情况，不提供后续的变化量数据同步功能
+      if (null != properties.getTarget().getOnlyCreate()
+          && properties.getTarget().getOnlyCreate()) {
+        return 0L;
+      }
+
       // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
       if (properties.getTarget().getChangeDataSync()) {
         // 根据主键情况判断同步的方式：增量同步或覆盖同步
@@ -240,24 +271,16 @@ public class MigrationHandler implements Supplier<Long> {
   private Long doFullCoverSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
 
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<Integer> deletedFieldIndexes = new ArrayList<>();
-    for (int i = 0; i < targetFields.size(); ++i) {
-      if (StringUtils.isEmpty(targetFields.get(i))) {
-        deletedFieldIndexes.add(i);
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
       }
     }
-    Collections.reverse(deletedFieldIndexes);
-    deletedFieldIndexes.forEach(i -> {
-      sourceFields.remove(sourceFields.get(i));
-      targetFields.remove(targetFields.get(i));
-    });
-
     // 准备目的端的数据写入操作
     writer.prepareWrite(targetSchemaName, targetTableName, targetFields);
 
@@ -293,7 +316,8 @@ public class MigrationHandler implements Supplier<Long> {
         }
 
         cache.add(record);
-        cacheBytes += SizeOf.newInstance().deepSizeOf(record);
+        long bytes = SizeOf.newInstance().deepSizeOf(record);
+        cacheBytes += bytes;
         ++totalCount;
 
         if (cache.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
@@ -332,26 +356,18 @@ public class MigrationHandler implements Supplier<Long> {
    */
   private Long doIncreaseSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<Integer> deletedFieldIndexes = new ArrayList<>();
-    for (int i = 0; i < targetFields.size(); ++i) {
-      if (StringUtils.isEmpty(targetFields.get(i))) {
-        deletedFieldIndexes.add(i);
-      }
-    }
-    Collections.reverse(deletedFieldIndexes);
-    deletedFieldIndexes.forEach(i -> {
-      sourceFields.remove(sourceFields.get(i));
-      targetFields.remove(targetFields.get(i));
-    });
+
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
     Map<String, String> columnNameMaps = new HashMap<>();
-    for (int i = 0; i < sourceFields.size(); ++i) {
-      columnNameMaps.put(sourceFields.get(i), targetFields.get(i));
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
+        columnNameMaps.put(scd.getFieldName(), tcd.getFieldName());
+      }
     }
 
     TaskParamEntity.TaskParamEntityBuilder taskBuilder = TaskParamEntity.builder();
@@ -402,8 +418,9 @@ public class MigrationHandler implements Supplier<Long> {
           countDelete++;
         }
 
-        cacheBytes += SizeOf.newInstance().deepSizeOf(record);
-        totalBytes.addAndGet(cacheBytes);
+        long bytes = SizeOf.newInstance().deepSizeOf(record);
+        cacheBytes += bytes;
+        totalBytes.addAndGet(bytes);
         countTotal++;
         checkFull(fields);
       }

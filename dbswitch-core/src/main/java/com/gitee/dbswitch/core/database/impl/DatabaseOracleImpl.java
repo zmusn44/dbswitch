@@ -23,8 +23,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支持Oracle数据库的元信息实现
@@ -167,7 +169,7 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int length = v.getLength();
     int precision = v.getPrecision();
@@ -232,6 +234,29 @@ public class DatabaseOracleImpl extends AbstractDatabase implements IDatabaseInt
     }
 
     return retval.toString();
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    List<String> results = new ArrayList<>();
+    if (StringUtils.isNotBlank(td.getRemarks())) {
+      results.add(String
+          .format("COMMENT ON TABLE \"%s\".\"%s\" IS '%s' ",
+              td.getSchemaName(), td.getTableName(),
+              td.getRemarks().replace("\"", "\\\"")));
+    }
+
+    for (ColumnDescription cd : cds) {
+      if (StringUtils.isNotBlank(cd.getRemarks())) {
+        results.add(String
+            .format("COMMENT ON COLUMN \"%s\".\"%s\".\"%s\" IS '%s' ",
+                td.getSchemaName(), td.getTableName(), cd.getFieldName(),
+                cd.getRemarks().replace("\"", "\\\"")));
+      }
+    }
+
+    return results;
   }
 
 }

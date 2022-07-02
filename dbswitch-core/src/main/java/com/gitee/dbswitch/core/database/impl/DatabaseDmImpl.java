@@ -15,11 +15,14 @@ import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
+import com.gitee.dbswitch.core.model.TableDescription;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 支持DM数据库的元信息实现
@@ -98,7 +101,7 @@ public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterfa
 
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
-      boolean addCr) {
+      boolean addCr, boolean withRemarks) {
     String fieldname = v.getName();
     int length = v.getLength();
     int precision = v.getPrecision();
@@ -162,6 +165,29 @@ public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterfa
     }
 
     return retval.toString();
+  }
+
+  @Override
+  public List<String> getTableColumnCommentDefinition(TableDescription td,
+      List<ColumnDescription> cds) {
+    List<String> results = new ArrayList<>();
+    if (StringUtils.isNotBlank(td.getRemarks())) {
+      results.add(String
+          .format("COMMENT ON TABLE \"%s\".\"%s\" IS '%s' ",
+              td.getSchemaName(), td.getTableName(),
+              td.getRemarks().replace("\"", "\\\"")));
+    }
+
+    for (ColumnDescription cd : cds) {
+      if (StringUtils.isNotBlank(cd.getRemarks())) {
+        results.add(String
+            .format("COMMENT ON COLUMN \"%s\".\"%s\".\"%s\" IS '%s' ",
+                td.getSchemaName(), td.getTableName(), cd.getFieldName(),
+                cd.getRemarks().replace("\"", "\\\"")));
+      }
+    }
+
+    return results;
   }
 
 }

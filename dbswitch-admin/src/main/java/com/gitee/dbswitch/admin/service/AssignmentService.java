@@ -75,6 +75,12 @@ public class AssignmentService {
     if (SupportDbTypeEnum.HIVE == entity.getType()) {
       throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "不支持目的端数据源为Hive");
     }
+    if (SupportDbTypeEnum.SQLITE3 == entity.getType()) {
+      if (SupportDbTypeEnum.isUnsupportedTargetSqlite(entity.getUrl())) {
+        throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG,
+            "不支持目的端数据源为远程服务器上的SQLite或内存方式下的SQLite");
+      }
+    }
 
     return ConverterFactory.getConverter(AssignmentInfoConverter.class)
         .convert(assignmentTaskDAO.getById(assignment.getId()));
@@ -101,6 +107,18 @@ public class AssignmentService {
         .toAssignmentConfig(assignmentTaskEntity.getId());
     assignmentConfigDAO.deleteByAssignmentTaskId(assignmentTaskEntity.getId());
     assignmentConfigDAO.insert(assignmentConfigEntity);
+
+    Long targetConnectionId = assignmentConfigEntity.getTargetConnectionId();
+    DatabaseConnectionEntity entity = databaseConnectionDAO.getById(targetConnectionId);
+    if (SupportDbTypeEnum.HIVE == entity.getType()) {
+      throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "不支持目的端数据源为Hive");
+    }
+    if (SupportDbTypeEnum.SQLITE3 == entity.getType()) {
+      if (SupportDbTypeEnum.isUnsupportedTargetSqlite(entity.getUrl())) {
+        throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG,
+            "不支持目的端数据源为远程服务器上的SQLite或内存方式下的SQLite");
+      }
+    }
   }
 
   public PageResult<AssignmentInfoResponse> listAll(String searchText, Integer page, Integer size) {
@@ -250,6 +268,9 @@ public class AssignmentService {
     } else {
       targetDataSourceProperties.setTargetDrop(Boolean.FALSE);
       targetDataSourceProperties.setChangeDataSync(Boolean.TRUE);
+    }
+    if (assignmentConfigEntity.getTargetOnlyCreate()) {
+      targetDataSourceProperties.setOnlyCreate(Boolean.TRUE);
     }
 
     return targetDataSourceProperties;

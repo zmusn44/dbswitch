@@ -49,24 +49,26 @@ public class DbConnectionService {
   public IMetaDataByJdbcService getMetaDataCoreService(DatabaseConnectionEntity dbConn) {
     String typeName = dbConn.getType().getName().toUpperCase();
     SupportDbTypeEnum supportDbType = SupportDbTypeEnum.valueOf(typeName);
-    for (String pattern : supportDbType.getUrl()) {
-      final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
-      if (!matcher.matches()) {
-        if (1 == supportDbType.getUrl().length) {
-          throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
-        } else {
-          continue;
+    if (supportDbType.hasAddress()) {
+      for (String pattern : supportDbType.getUrl()) {
+        final Matcher matcher = JDBCURL.getPattern(pattern).matcher(dbConn.getUrl());
+        if (!matcher.matches()) {
+          if (1 == supportDbType.getUrl().length) {
+            throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
+          } else {
+            continue;
+          }
         }
-      }
 
-      String host = matcher.group("host");
-      String port = matcher.group("port");
-      if (StringUtils.isBlank(port)) {
-        port = String.valueOf(supportDbType.getPort());
-      }
+        String host = matcher.group("host");
+        String port = matcher.group("port");
+        if (StringUtils.isBlank(port)) {
+          port = String.valueOf(supportDbType.getPort());
+        }
 
-      if (!JDBCURL.reachable(host, port)) {
-        throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
+        if (!JDBCURL.reachable(host, port)) {
+          throw new DbswitchException(ResultCode.ERROR_CANNOT_CONNECT_REMOTE, dbConn.getName());
+        }
       }
     }
     DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
@@ -222,6 +224,10 @@ public class DbConnectionService {
         if (supportDbType.hasDatabaseName() && StringUtils.isBlank(matcher.group("database"))) {
           throw new DbswitchException(ResultCode.ERROR_INVALID_JDBC_URL,
               "库名没有指定 :" + conn.getUrl());
+        }
+        if (supportDbType.hasFilePath() && StringUtils.isBlank(matcher.group("file"))) {
+          throw new DbswitchException(ResultCode.ERROR_INVALID_JDBC_URL,
+              "文件路径没有指定 :" + conn.getUrl());
         }
 
         break;

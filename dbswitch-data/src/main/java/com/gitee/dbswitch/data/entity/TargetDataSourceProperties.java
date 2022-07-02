@@ -24,6 +24,7 @@ public class TargetDataSourceProperties {
 
   private String targetSchema = "";
   private Boolean targetDrop = Boolean.TRUE;
+  private Boolean onlyCreate = Boolean.FALSE;
   private Boolean createTableAutoIncrement = Boolean.FALSE;
   private Boolean writerEngineInsert = Boolean.FALSE;
   private Boolean changeDataSync = Boolean.FALSE;

@@ -56,8 +56,9 @@
               <el-input slot="reference"
                         :disabled=false
                         v-model="createform.cronExpression"
-                        placeholder="点击选择"
-                        @click="cronPopover=true" />
+                        placeholder="点击选择或手动输入"
+                        @click="cronPopover=true"
+                        size="small" />
             </el-popover>
           </el-col>
         </el-form-item>
@@ -151,6 +152,24 @@
                        :key="index"
                        :label="item"
                        :value="item"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="只创建表"
+                      label-width="240px"
+                      :required=true
+                      prop="targetOnlyCreate"
+                      style="width:65%">
+          <el-tooltip placement="top">
+            <div slot="content">
+              只再目标端创建表，不同步数据内容；如果配置为“是”，则下面的“数据处理批次大小"将无效。
+            </div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+          <el-select v-model="createform.targetOnlyCreate">
+            <el-option label='是'
+                       :value=true></el-option>
+            <el-option label='否'
+                       :value=false></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="数据处理批次大小"
@@ -291,6 +310,7 @@
           </el-descriptions-item>
           <el-descriptions-item label="目地端数据源">[{{createform.targetConnectionId}}]{{targetConnection.name}}</el-descriptions-item>
           <el-descriptions-item label="目地端schema">{{createform.targetSchema}}</el-descriptions-item>
+          <el-descriptions-item label="只创建表">{{createform.targetOnlyCreate}}</el-descriptions-item>
           <el-descriptions-item label="数据处理批次量">{{createform.batchSize}}</el-descriptions-item>
           <el-descriptions-item label="表名映射规则">
             <span v-show="createform.tableNameMapper.length==0">[映射关系为空]</span>
@@ -418,6 +438,7 @@ export default {
         columnNameMapper: [],
         targetConnectionId: '请选择',
         targetDropTable: true,
+        targetOnlyCreate: false,
         targetSchema: "",
         batchSize: 5000
       },
@@ -736,6 +757,7 @@ export default {
                 tableNameMapper: this.createform.tableNameMapper,
                 columnNameMapper: this.createform.columnNameMapper,
                 targetDropTable: true,
+                targetOnlyCreate: this.createform.targetOnlyCreate,
                 batchSize: this.createform.batchSize
               }
             })

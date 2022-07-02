@@ -2,7 +2,7 @@
 
 set -e 
 
-DBSWITCH_VERSION=1.6.9
+DBSWITCH_VERSION=1.6.11
 BUILD_DOCKER_DIR="$( cd "$( dirname "$0"  )" && pwd  )"
 PROJECT_ROOT_DIR=$( dirname "$BUILD_DOCKER_DIR")
 DOCKER_DBSWITCH_DIR=$BUILD_DOCKER_DIR/dbswitch
