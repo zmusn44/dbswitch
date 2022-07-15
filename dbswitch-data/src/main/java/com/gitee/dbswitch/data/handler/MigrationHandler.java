@@ -307,7 +307,7 @@ public class MigrationHandler implements Supplier<Long> {
         Object[] record = new Object[sourceFields.size()];
         for (int i = 1; i <= sourceFields.size(); ++i) {
           try {
-            record[i - 1] = rs.getObject(i);
+            record[i - 1] = writer.format(rs.getObject(i));
           } catch (Exception e) {
             log.warn("!!! Read data from table [ {} ] use function ResultSet.getObject() error",
                 tableNameMapString, e);
