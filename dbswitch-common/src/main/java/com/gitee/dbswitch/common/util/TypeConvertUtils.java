@@ -3,11 +3,17 @@ package com.gitee.dbswitch.common.util;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class TypeConvertUtils {
+
+  private TypeConvertUtils() {
+    throw new IllegalStateException("Utility class can not create instance!");
+  }
 
   public static String castToString(final Object in) {
     if (in instanceof java.lang.Character) {
@@ -123,7 +129,15 @@ public final class TypeConvertUtils {
       return null;
     }
 
-    if (in instanceof java.sql.Clob) {
+    if (in instanceof BigInteger) {
+      return ((BigInteger) in).longValue();
+    } else if (in instanceof BigDecimal) {
+      BigDecimal decimal = (BigDecimal) in;
+      if (decimal.doubleValue() > 2.147483647E9D || decimal.doubleValue() < -2.147483648E9D) {
+        return 0D;
+      }
+      return decimal.doubleValue();
+    } else if (in instanceof java.sql.Clob) {
       return clob2Str((java.sql.Clob) in);
     } else if (in instanceof java.sql.Array
         || in instanceof java.sql.SQLXML) {
@@ -148,7 +162,7 @@ public final class TypeConvertUtils {
     return in;
   }
 
-  private static byte[] blob2Bytes(java.sql.Blob blob) {
+  public static byte[] blob2Bytes(java.sql.Blob blob) {
     try (java.io.InputStream inputStream = blob.getBinaryStream()) {
       try (java.io.BufferedInputStream is = new java.io.BufferedInputStream(inputStream)) {
         byte[] bytes = new byte[(int) blob.length()];
@@ -165,7 +179,7 @@ public final class TypeConvertUtils {
     }
   }
 
-  private static String clob2Str(java.sql.Clob clob) {
+  public static String clob2Str(java.sql.Clob clob) {
     try (java.io.Reader is = clob.getCharacterStream()) {
       java.io.BufferedReader reader = new java.io.BufferedReader(is);
       String line = reader.readLine();

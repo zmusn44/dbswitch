@@ -7,7 +7,7 @@
 // Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
-package com.gitee.dbswitch.dbwriter.dm;
+package com.gitee.dbswitch.dbwriter.oscar;
 
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
@@ -16,19 +16,19 @@ import java.util.List;
 import javax.sql.DataSource;
 
 /**
- * 达梦数据库写入实现类
+ * 神通数据库写入实现类
  *
  * @author tang
  */
-public class DmWriterImpl extends AbstractDatabaseWriter implements IDatabaseWriter {
+public class OscarWriterImpl extends AbstractDatabaseWriter implements IDatabaseWriter {
 
-  public DmWriterImpl(DataSource dataSource) {
+  public OscarWriterImpl(DataSource dataSource) {
     super(dataSource);
   }
 
   @Override
   protected String getDatabaseProductName() {
-    return "DM";
+    return "Oscar";
   }
 
   @Override

@@ -18,6 +18,7 @@ import com.gitee.dbswitch.dbwriter.kingbase.KingbaseInsertWriterImpl;
 import com.gitee.dbswitch.dbwriter.mssql.SqlServerWriterImpl;
 import com.gitee.dbswitch.dbwriter.mysql.MySqlWriterImpl;
 import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
+import com.gitee.dbswitch.dbwriter.oscar.OscarWriterImpl;
 import com.gitee.dbswitch.dbwriter.sqlite.Sqlite3WriterImpl;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class DatabaseWriterFactory {
       put(DatabaseTypeEnum.DM, DmWriterImpl::new);
       //对于kingbase当前只能使用insert模式
       put(DatabaseTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
+      put(DatabaseTypeEnum.OSCAR, OscarWriterImpl::new);
       put(DatabaseTypeEnum.SQLITE3, Sqlite3WriterImpl::new);
     }
   };

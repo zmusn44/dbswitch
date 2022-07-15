@@ -24,19 +24,23 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Oracle/DM的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/Kingbase8/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为DM的迁移(**支持绝大多数常规类型字段**)
+
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为OSCAR的迁移(**支持绝大多数常规类型字段**)
+
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
 
 ** 注:** 目前Hive只支持Hive version 3.x的账号密码方式认证。
 
@@ -210,7 +214,7 @@ dbswitch:
 
 - （6）各个数据库的JDBC驱动连接示例如下：
 
-**mysql/mariadb的驱动配置样例**
+**MySQL/MariaDB数据库**
 
 ```
 jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true
@@ -224,46 +228,53 @@ jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characte
 jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
-**oracle的驱动配置样例**
+**Oracle数据库**
 
 ```
 jdbc连接地址：jdbc:oracle:thin:@172.17.2.10:1521:ORCL  或   jdbc:oracle:thin:@//172.17.2.10:1521/ORCL
 jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 ```
 
-**SqlServer(>=2005)的驱动配置样例**
+**SQL Server(>=2005)数据库**
 
 ```
 jdbc连接地址：jdbc:sqlserver://172.17.2.10:1433;DatabaseName=hqtest
 jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 
-**PostgreSQL/Greenplum的驱动配置样例**
+**PostgreSQL/Greenplum数据库**
 
 ```
 jdbc连接地址：jdbc:postgresql://172.17.2.10:5432/test
 jdbc驱动名称：org.postgresql.Driver
 ```
 
-**DB2的驱动配置样例**
+**DB2数据库**
 
 ```
 jdbc连接地址：jdbc:db2://172.17.2.10:50000/testdb:driverType=4;fullyMaterializeLobData=true;fullyMaterializeInputStreams=true;progressiveStreaming=2;progresssiveLocators=2;
 jdbc驱动名称：com.ibm.db2.jcc.DB2Driver
 ```
 
-**达梦DM的驱动配置样例**
+**达梦DMDB数据库**
 
 ```
 jdbc连接地址：jdbc:dm://172.17.2.10:5236
 jdbc驱动名称：dm.jdbc.driver.DmDriver
 ```
 
-**人大金仓Kingbase8的驱动配置样例**
+**人大金仓Kingbase8数据库**
 
 ```
 jdbc连接地址：jdbc:kingbase8://172.17.2.10:54321/MYTEST
 jdbc驱动名称：com.kingbase8.Driver
+```
+
+**神通Oscar数据库**
+ 
+```
+jdbc连接地址：jdbc:oscar://172.17.2.1:2003/OSRDB
+jdbc驱动名称：com.oscar.Driver
 ```
 
 **翰高HighGo数据库(可按PostgreSQL使用)**

@@ -42,14 +42,4 @@ public interface IDatabaseWriter {
    * @return 返回实际写入的数据记录条数
    */
   long write(List<String> fieldNames, List<Object[]> recordValues);
-
-  /**
-   * 值字段转换，主要用于处理某些数据库不兼容java值类型，例如：sqlserver驱动（sqljdbc4-4.0）不支持BigInteger
-   *
-   * @param columnValue 列字段值
-   * @return 转换后的值
-   */
-  default Object format(Object columnValue) {
-      return columnValue;
-  }
 }

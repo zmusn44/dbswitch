@@ -1,9 +1,9 @@
 package com.gitee.dbswitch.dbwriter.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
+import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import java.lang.reflect.Method;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 public final class ObjectCastUtils {
 
   private ObjectCastUtils() {
+    throw new IllegalStateException("Utility class can not create instance!");
   }
 
   /**
@@ -25,23 +26,7 @@ public final class ObjectCastUtils {
    * @return java.lang.String类型数据
    */
   public static String clob2Str(java.sql.Clob clob) {
-    if (null == clob) {
-      return null;
-    }
-
-    try (java.io.Reader is = clob.getCharacterStream()) {
-      java.io.BufferedReader reader = new java.io.BufferedReader(is);
-      String line = reader.readLine();
-      StringBuilder sb = new StringBuilder();
-      while (line != null) {
-        sb.append(line);
-        line = reader.readLine();
-      }
-      return sb.toString();
-    } catch (SQLException | java.io.IOException e) {
-      log.warn("Field Value convert from java.sql.Clob to java.lang.String failed:", e);
-      return null;
-    }
+    return TypeConvertUtils.clob2Str(clob);
   }
 
   /**
@@ -51,45 +36,17 @@ public final class ObjectCastUtils {
    * @return byte数组
    */
   public static byte[] blob2Bytes(java.sql.Blob blob) {
-    if (null == blob) {
-      return null;
-    }
-
-    try (java.io.InputStream inputStream = blob.getBinaryStream();) {
-      try (java.io.BufferedInputStream is = new java.io.BufferedInputStream(inputStream)) {
-        byte[] bytes = new byte[(int) blob.length()];
-        int len = bytes.length;
-        int offset = 0;
-        int read = 0;
-        while (offset < len && (read = is.read(bytes, offset, len - offset)) >= 0) {
-          offset += read;
-        }
-        return bytes;
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return TypeConvertUtils.blob2Bytes(blob);
   }
 
   /**
    * 将Object对象转换为字节数组
    *
-   * @param obj 对象
+   * @param in 对象
    * @return 字节数组
    */
-  public static byte[] toByteArray(Object obj) {
-    if (null == obj) {
-      return null;
-    }
-
-    try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-      oos.writeObject(obj);
-      oos.flush();
-      return bos.toByteArray();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public static byte[] toByteArray(Object in) {
+    return TypeConvertUtils.castToByteArray(in);
   }
 
   /**
@@ -99,94 +56,7 @@ public final class ObjectCastUtils {
    * @return java.lang.String类型
    */
   public static String castToString(final Object in) {
-    if (in instanceof java.lang.Character) {
-      return in.toString();
-    } else if (in instanceof java.lang.String) {
-      return in.toString();
-    } else if (in instanceof java.lang.Character) {
-      return in.toString();
-    } else if (in instanceof java.sql.Clob) {
-      return clob2Str((java.sql.Clob) in);
-    } else if (in instanceof java.lang.Number) {
-      return in.toString();
-    } else if (in instanceof java.sql.RowId) {
-      return in.toString();
-    } else if (in instanceof java.lang.Boolean) {
-      return in.toString();
-    } else if (in instanceof java.util.Date) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalDate) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalTime) {
-      return in.toString();
-    } else if (in instanceof java.time.LocalDateTime) {
-      return in.toString();
-    } else if (in instanceof java.time.OffsetDateTime) {
-      return in.toString();
-    } else if (in instanceof java.util.UUID) {
-      return in.toString();
-    } else if (in instanceof org.postgresql.util.PGobject) {
-      return in.toString();
-    } else if (in instanceof org.postgresql.jdbc.PgSQLXML) {
-      try {
-        return ((org.postgresql.jdbc.PgSQLXML) in).getString();
-      } catch (Exception e) {
-        return "";
-      }
-    } else if (in instanceof java.sql.SQLXML) {
-      return in.toString();
-    } else if (in instanceof java.sql.Array) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.INTERVALDS")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.INTERVALYM")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMPLTZ")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.TIMESTAMPTZ")) {
-      return in.toString();
-    } else if (in.getClass().getName().equals("oracle.sql.BFILE")) {
-      Class<?> clz = in.getClass();
-      try {
-        Method methodFileExists = clz.getMethod("fileExists");
-        boolean exists = (boolean) methodFileExists.invoke(in);
-        if (!exists) {
-          return "";
-        }
-
-        Method methodOpenFile = clz.getMethod("openFile");
-        methodOpenFile.invoke(in);
-
-        try {
-          Method methodCharacterStreamValue = clz.getMethod("getBinaryStream");
-          java.io.InputStream is = (java.io.InputStream) methodCharacterStreamValue.invoke(in);
-
-          String line;
-          StringBuilder sb = new StringBuilder();
-
-          java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is));
-          while ((line = br.readLine()) != null) {
-            sb.append(line);
-          }
-
-          return sb.toString();
-        } finally {
-          Method methodCloseFile = clz.getMethod("closeFile");
-          methodCloseFile.invoke(in);
-        }
-      } catch (java.lang.reflect.InvocationTargetException ex) {
-        log.warn("Error for handle oracle.sql.BFILE: ", ex);
-        return "";
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else if (in.getClass().getName().equals("microsoft.sql.DateTimeOffset")) {
-      return in.toString();
-    } else if (in instanceof byte[]) {
-      return new String((byte[]) in);
-    }
-
-    return null;
+    return TypeConvertUtils.castToString(in);
   }
 
   /**
@@ -867,7 +737,15 @@ public final class ObjectCastUtils {
       return null;
     }
 
-    if (in instanceof java.sql.Clob) {
+    if (in instanceof BigInteger) {
+      return ((BigInteger) in).longValue();
+    } else if (in instanceof BigDecimal) {
+      BigDecimal decimal = (BigDecimal) in;
+      if (decimal.doubleValue() > 2.147483647E9D || decimal.doubleValue() < -2.147483648E9D) {
+        return 0D;
+      }
+      return decimal.doubleValue();
+    } else if (in instanceof java.sql.Clob) {
       return clob2Str((java.sql.Clob) in);
     } else if (in instanceof java.sql.Array
         || in instanceof java.sql.SQLXML) {

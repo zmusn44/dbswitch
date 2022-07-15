@@ -63,24 +63,29 @@ public enum DatabaseTypeEnum {
   DB2(8),
 
   /**
-   * DM数据库类型
+   * [国产]达梦数据库类型
    */
   DM(9),
 
   /**
-   * Kingbase数据库类型
+   * [国产]人大金仓数据库类型
    */
   KINGBASE(10),
 
   /**
+   * [国产]神通数据库
+   */
+  OSCAR(11),
+
+  /**
    * HIVE数据库
    */
-  HIVE(11),
+  HIVE(12),
 
   /**
    * SQLite数据库
    */
-  SQLITE3(12),
+  SQLITE3(13),
   ;
 
   private int index;
