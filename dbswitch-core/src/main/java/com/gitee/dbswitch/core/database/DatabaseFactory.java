@@ -18,6 +18,7 @@ import com.gitee.dbswitch.core.database.impl.DatabaseKingbaseImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMariaDBImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseMysqlImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseOracleImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseOscarImpl;
 import com.gitee.dbswitch.core.database.impl.DatabasePostgresImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqliteImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserver2000Impl;
@@ -49,6 +50,7 @@ public final class DatabaseFactory {
       put(DatabaseTypeEnum.DB2, DatabaseDB2Impl::new);
       put(DatabaseTypeEnum.DM, DatabaseDmImpl::new);
       put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
+      put(DatabaseTypeEnum.OSCAR, DatabaseOscarImpl::new);
       put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl::new);
       put(DatabaseTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
     }

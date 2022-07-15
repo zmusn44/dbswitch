@@ -7,7 +7,7 @@
 // Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
-package com.gitee.dbswitch.dbsynch.dm;
+package com.gitee.dbswitch.dbsynch.oscar;
 
 import com.gitee.dbswitch.common.util.TypeConvertUtils;
 import com.gitee.dbswitch.dbsynch.AbstractDatabaseSynchronize;
@@ -19,14 +19,14 @@ import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * 达梦数据库DML同步实现类
+ * 神通数据库DML同步实现类
  *
  * @author tang
  */
-public class DmDatabaseSyncImpl extends AbstractDatabaseSynchronize implements
+public class OscarDatabaseSyncImpl extends AbstractDatabaseSynchronize implements
     IDatabaseSynchronize {
 
-  public DmDatabaseSyncImpl(DataSource ds) {
+  public OscarDatabaseSyncImpl(DataSource ds) {
     super(ds);
   }
 

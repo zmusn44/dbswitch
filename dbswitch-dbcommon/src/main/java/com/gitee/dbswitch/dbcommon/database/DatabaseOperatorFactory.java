@@ -18,6 +18,7 @@ import com.gitee.dbswitch.dbcommon.database.impl.HiveDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.KingbaseDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.MysqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.OracleDatabaseOperator;
+import com.gitee.dbswitch.dbcommon.database.impl.OscarDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.PostgreSqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.SqlServerDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.SqliteDatabaseOperator;
@@ -49,6 +50,7 @@ public final class DatabaseOperatorFactory {
       put(DatabaseTypeEnum.DB2, DB2DatabaseOperator::new);
       put(DatabaseTypeEnum.DM, DmDatabaseOperator::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseOperator::new);
+      put(DatabaseTypeEnum.OSCAR, OscarDatabaseOperator::new);
       put(DatabaseTypeEnum.HIVE, HiveDatabaseOperator::new);
       put(DatabaseTypeEnum.SQLITE3, SqliteDatabaseOperator::new);
     }

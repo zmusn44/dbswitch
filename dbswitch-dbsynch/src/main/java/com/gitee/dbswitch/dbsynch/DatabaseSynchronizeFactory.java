@@ -17,6 +17,7 @@ import com.gitee.dbswitch.dbsynch.kingbase.KingbaseDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.mssql.SqlServerDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.mysql.MySqlDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.oracle.OracleDatabaseSyncImpl;
+import com.gitee.dbswitch.dbsynch.oscar.OscarDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.GreenplumDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.PostgresqlDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.sqlite.Sqlite3DatabaseSyncImpl;
@@ -47,6 +48,7 @@ public final class DatabaseSynchronizeFactory {
       put(DatabaseTypeEnum.DB2, DB2DatabaseSyncImpl::new);
       put(DatabaseTypeEnum.DM, DmDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseSyncImpl::new);
+      put(DatabaseTypeEnum.OSCAR, OscarDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.SQLITE3, Sqlite3DatabaseSyncImpl::new);
     }
   };
