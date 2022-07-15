@@ -12,6 +12,8 @@ package com.gitee.dbswitch.dbwriter.mssql;
 import com.gitee.dbswitch.dbwriter.AbstractDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
 import com.gitee.dbswitch.dbwriter.util.ObjectCastUtils;
+
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -108,4 +110,12 @@ public class SqlServerWriterImpl extends AbstractDatabaseWriter implements IData
 
   }
 
+
+  @Override
+  public Object format(Object columnValue) {
+    if (columnValue instanceof BigInteger) {
+      return ((BigInteger) columnValue).longValue();
+    }
+    return columnValue;
+  }
 }
