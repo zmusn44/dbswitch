@@ -24,23 +24,23 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为MySQL/MariaDB的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为MySQL/MariaDB/GBase8a的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为DM的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DM的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为OSCAR的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为OSCAR的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
+- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
 
 ** 注:** 目前Hive只支持Hive version 3.x的账号密码方式认证。
 
@@ -212,7 +212,7 @@ dbswitch:
 
 > 提示：如果要将源端所有表名(或者字段名)添加前缀，可以配置```"from-pattern": "^","to-value": "T_"```;
 
-- （6）各个数据库的JDBC驱动连接示例如下：
+- （6）支持的数据库产品及其JDBC驱动连接示例如下：
 
 **MySQL/MariaDB数据库**
 
@@ -275,6 +275,13 @@ jdbc驱动名称：com.kingbase8.Driver
 ```
 jdbc连接地址：jdbc:oscar://172.17.2.1:2003/OSRDB
 jdbc驱动名称：com.oscar.Driver
+```
+
+**南大通用GBase8a数据库**
+ 
+```
+jdbc连接地址：jdbc:gbase://172.17.2.1:5258/gbase
+jdbc驱动名称：com.gbase.jdbc.Driver
 ```
 
 **翰高HighGo数据库(可按PostgreSQL使用)**

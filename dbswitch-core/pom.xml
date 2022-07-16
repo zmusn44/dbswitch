@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.gitee.dbswitch</groupId>
     <artifactId>dbswitch-parent</artifactId>
-    <version>1.6.12</version>
+    <version>1.6.13</version>
   </parent>
 
   <artifactId>dbswitch-core</artifactId>
@@ -100,6 +100,15 @@
       <version>7.0.0</version>
       <scope>system</scope>
       <systemPath>${project.basedir}/lib/oscarJDBC8.jar</systemPath>
+    </dependency>
+
+    <!-- http://www.gbase8.cn/wp-content/uploads/2020/07/gbase-connector-java-8.3.81.53-build55.5.3.zip -->
+    <dependency>
+      <groupId>com.gbase.jdbc</groupId>
+      <artifactId>gbase-connector-java</artifactId>
+      <version>8.3.81.53</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/gbase-connector-java-8.3.81.53-build55.5.3-bin.jar</systemPath>
     </dependency>
 
     <dependency>
