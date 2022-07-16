@@ -39,6 +39,7 @@ public class DatabaseWriterFactory {
 
     {
       put(DatabaseTypeEnum.MYSQL, MySqlWriterImpl::new);
+      put(DatabaseTypeEnum.MARIADB, MySqlWriterImpl::new);
       put(DatabaseTypeEnum.ORACLE, OracleWriterImpl::new);
       put(DatabaseTypeEnum.SQLSERVER, SqlServerWriterImpl::new);
       put(DatabaseTypeEnum.SQLSERVER2000, SqlServerWriterImpl::new);
@@ -49,6 +50,7 @@ public class DatabaseWriterFactory {
       //对于kingbase当前只能使用insert模式
       put(DatabaseTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
       put(DatabaseTypeEnum.OSCAR, OscarWriterImpl::new);
+      put(DatabaseTypeEnum.GBASE8A, MySqlWriterImpl::new);
       put(DatabaseTypeEnum.SQLITE3, Sqlite3WriterImpl::new);
     }
   };

@@ -40,6 +40,7 @@ public final class DatabaseSynchronizeFactory {
 
     {
       put(DatabaseTypeEnum.MYSQL, MySqlDatabaseSyncImpl::new);
+      put(DatabaseTypeEnum.MARIADB, MySqlDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.ORACLE, OracleDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.SQLSERVER, SqlServerDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.SQLSERVER2000, SqlServerDatabaseSyncImpl::new);
@@ -49,6 +50,7 @@ public final class DatabaseSynchronizeFactory {
       put(DatabaseTypeEnum.DM, DmDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.OSCAR, OscarDatabaseSyncImpl::new);
+      put(DatabaseTypeEnum.GBASE8A, MySqlDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.SQLITE3, Sqlite3DatabaseSyncImpl::new);
     }
   };

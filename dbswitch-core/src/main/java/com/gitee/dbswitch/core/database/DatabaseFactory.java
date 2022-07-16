@@ -12,6 +12,7 @@ package com.gitee.dbswitch.core.database;
 import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
 import com.gitee.dbswitch.core.database.impl.DatabaseDB2Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseDmImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseGbase8aImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseGreenplumImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseHiveImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseKingbaseImpl;
@@ -41,16 +42,17 @@ public final class DatabaseFactory {
 
     {
       put(DatabaseTypeEnum.MYSQL, DatabaseMysqlImpl::new);
+      put(DatabaseTypeEnum.MARIADB, DatabaseMariaDBImpl::new);
       put(DatabaseTypeEnum.ORACLE, DatabaseOracleImpl::new);
       put(DatabaseTypeEnum.SQLSERVER2000, DatabaseSqlserver2000Impl::new);
       put(DatabaseTypeEnum.SQLSERVER, DatabaseSqlserverImpl::new);
       put(DatabaseTypeEnum.POSTGRESQL, DatabasePostgresImpl::new);
       put(DatabaseTypeEnum.GREENPLUM, DatabaseGreenplumImpl::new);
-      put(DatabaseTypeEnum.MARIADB, DatabaseMariaDBImpl::new);
       put(DatabaseTypeEnum.DB2, DatabaseDB2Impl::new);
       put(DatabaseTypeEnum.DM, DatabaseDmImpl::new);
       put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
       put(DatabaseTypeEnum.OSCAR, DatabaseOscarImpl::new);
+      put(DatabaseTypeEnum.GBASE8A, DatabaseGbase8aImpl::new);
       put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl::new);
       put(DatabaseTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
     }

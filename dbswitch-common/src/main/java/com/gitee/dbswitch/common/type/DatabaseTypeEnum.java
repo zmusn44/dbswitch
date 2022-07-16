@@ -78,14 +78,19 @@ public enum DatabaseTypeEnum {
   OSCAR(11),
 
   /**
+   * [国产]南大通用GBase8a数据库
+   */
+  GBASE8A(12),
+
+  /**
    * HIVE数据库
    */
-  HIVE(12),
+  HIVE(13),
 
   /**
    * SQLite数据库
    */
-  SQLITE3(13),
+  SQLITE3(14),
   ;
 
   private int index;
@@ -94,9 +99,15 @@ public enum DatabaseTypeEnum {
     this.index = idx;
   }
 
+  public int getIndex() {
+    return index;
+  }
+
   public boolean noCommentStatement() {
     return Arrays.asList(
         DatabaseTypeEnum.MYSQL,
+        DatabaseTypeEnum.MARIADB,
+        DatabaseTypeEnum.GBASE8A,
         DatabaseTypeEnum.HIVE,
         DatabaseTypeEnum.SQLITE3
     ).contains(this);

@@ -41,7 +41,7 @@ public final class DatabaseOperatorFactory {
 
     {
       put(DatabaseTypeEnum.MYSQL, MysqlDatabaseOperator::new);
-      put(DatabaseTypeEnum.MYSQL, MysqlDatabaseOperator::new);
+      put(DatabaseTypeEnum.MARIADB, MysqlDatabaseOperator::new);
       put(DatabaseTypeEnum.ORACLE, OracleDatabaseOperator::new);
       put(DatabaseTypeEnum.SQLSERVER, SqlServerDatabaseOperator::new);
       put(DatabaseTypeEnum.SQLSERVER2000, SqlServerDatabaseOperator::new);
@@ -51,6 +51,7 @@ public final class DatabaseOperatorFactory {
       put(DatabaseTypeEnum.DM, DmDatabaseOperator::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseOperator::new);
       put(DatabaseTypeEnum.OSCAR, OscarDatabaseOperator::new);
+      put(DatabaseTypeEnum.GBASE8A, MysqlDatabaseOperator::new);
       put(DatabaseTypeEnum.HIVE, HiveDatabaseOperator::new);
       put(DatabaseTypeEnum.SQLITE3, SqliteDatabaseOperator::new);
     }
