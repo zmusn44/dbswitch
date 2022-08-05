@@ -47,6 +47,7 @@ public final class DatabaseAwareUtils {
     productNameMap.put("SQLite", DatabaseTypeEnum.SQLITE3);
     productNameMap.put("OSCAR", DatabaseTypeEnum.OSCAR);
     productNameMap.put("GBase", DatabaseTypeEnum.GBASE8A);
+    productNameMap.put("Adaptive Server Enterprise", DatabaseTypeEnum.SYBASE);
 
     driverNameMap.put("MySQL Connector Java", DatabaseTypeEnum.MYSQL);
     driverNameMap.put("MariaDB Connector/J", DatabaseTypeEnum.MARIADB);
@@ -59,6 +60,7 @@ public final class DatabaseAwareUtils {
     driverNameMap.put("SQLite JDBC", DatabaseTypeEnum.SQLITE3);
     driverNameMap.put("OSCAR JDBC DRIVER", DatabaseTypeEnum.OSCAR);
     driverNameMap.put("GBase JDBC Driver", DatabaseTypeEnum.GBASE8A);
+    driverNameMap.put("jConnect (TM) for JDBC (TM)", DatabaseTypeEnum.SYBASE);
   }
 
   /**

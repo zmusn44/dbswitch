@@ -21,6 +21,7 @@ import com.gitee.dbswitch.dbsynch.oscar.OscarDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.GreenplumDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.pgsql.PostgresqlDatabaseSyncImpl;
 import com.gitee.dbswitch.dbsynch.sqlite.Sqlite3DatabaseSyncImpl;
+import com.gitee.dbswitch.dbsynch.sybase.SybaseDatabaseSyncImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -48,6 +49,7 @@ public final class DatabaseSynchronizeFactory {
       put(DatabaseTypeEnum.GREENPLUM, GreenplumDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.DB2, DB2DatabaseSyncImpl::new);
       put(DatabaseTypeEnum.DM, DmDatabaseSyncImpl::new);
+      put(DatabaseTypeEnum.SYBASE, SybaseDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.OSCAR, OscarDatabaseSyncImpl::new);
       put(DatabaseTypeEnum.GBASE8A, MySqlDatabaseSyncImpl::new);

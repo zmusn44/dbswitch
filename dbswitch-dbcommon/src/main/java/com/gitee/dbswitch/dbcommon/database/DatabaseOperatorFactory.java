@@ -22,6 +22,7 @@ import com.gitee.dbswitch.dbcommon.database.impl.OscarDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.PostgreSqlDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.SqlServerDatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.SqliteDatabaseOperator;
+import com.gitee.dbswitch.dbcommon.database.impl.SybaseDatabaseOperator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -49,6 +50,7 @@ public final class DatabaseOperatorFactory {
       put(DatabaseTypeEnum.GREENPLUM, GreenplumDatabaseOperator::new);
       put(DatabaseTypeEnum.DB2, DB2DatabaseOperator::new);
       put(DatabaseTypeEnum.DM, DmDatabaseOperator::new);
+      put(DatabaseTypeEnum.SYBASE, SybaseDatabaseOperator::new);
       put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseOperator::new);
       put(DatabaseTypeEnum.OSCAR, OscarDatabaseOperator::new);
       put(DatabaseTypeEnum.GBASE8A, MysqlDatabaseOperator::new);

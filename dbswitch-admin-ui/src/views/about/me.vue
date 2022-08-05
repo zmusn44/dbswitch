@@ -64,14 +64,20 @@
                 </li>
                 <li>Greenplum
                 </li>
-                <li>DB2
+                <li>IBM的DB2
                 </li>
-                <li>达梦数据库DM
+                <li>Sybase数据库
                 </li>
-                <li>人大金仓数据库Kingbase8
+                <li>国产达梦数据库DMDB
                 </li>
-                <li>翰高数据库HighGo
+                <li>国产人大金仓数据库Kingbase8
                 </li>
+                <li>国产翰高数据库HighGo
+                </li>
+                <li>国产神通数据库Oscar
+                </li>  
+                <li>国产南大通用数据库GBase8a
+                </li>  
                 <li>Apache Hive(只支持为源端)
                 </li>
                 <li>SQLite3

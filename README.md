@@ -24,23 +24,23 @@
  
 ### 3、详细功能
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Greenplum/PostgreSQL/HighGo的迁移(**支持绝大多数常规类型字段**)
  
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Oracle的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLServer的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLServer/Sybase的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为MySQL/MariaDB/GBase8a的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为MySQL/MariaDB/GBase8a的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DB2的迁移(**字段类型兼容测试中...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为Kingbase8的迁移(**支持绝大多数常规类型字段...**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DM的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为DM的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为OSCAR的迁移(**支持绝大多数常规类型字段**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为OSCAR的迁移(**支持绝大多数常规类型字段**)
 
-- 源端oracle/SqlServer/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
+- 源端oracle/SqlServer/Sybase/MySQL/MariaDB/PostgreSQL/DB2/DM/OSCAR/Kingbase8/GBase8a/HighGo/Hive/SQLite向目的端为SQLite的迁移(**支持部分常规类型字段...**)
 
 ** 注:** 目前Hive只支持Hive version 3.x的账号密码方式认证。
 
@@ -217,14 +217,14 @@ dbswitch:
 **MySQL/MariaDB数据库**
 
 ```
-jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true
+jdbc连接地址：jdbc:mysql://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true&useCompression=true
 jdbc驱动名称： com.mysql.jdbc.Driver
 ```
 
 与:
 
 ```
-jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true
+jdbc连接地址：jdbc:mariadb://172.17.2.10:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&tinyInt1isBit=false&rewriteBatchedStatements=true&useCompression=true
 jdbc驱动名称： org.mariadb.jdbc.Driver
 ```
 
@@ -238,8 +238,15 @@ jdbc驱动名称：oracle.jdbc.driver.OracleDriver
 **SQL Server(>=2005)数据库**
 
 ```
-jdbc连接地址：jdbc:sqlserver://172.17.2.10:1433;DatabaseName=hqtest
+jdbc连接地址：jdbc:sqlserver://172.17.2.10:1433;DatabaseName=test
 jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
+```
+
+**Sybase数据库**
+
+```
+jdbc连接地址：jdbc:sybase:Tds:172.17.2.10:5000/test
+jdbc驱动名称：com.sybase.jdbc4.jdbc.SybDriver
 ```
 
 **PostgreSQL/Greenplum数据库**

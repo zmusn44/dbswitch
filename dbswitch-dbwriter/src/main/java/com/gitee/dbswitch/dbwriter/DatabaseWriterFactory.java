@@ -20,6 +20,7 @@ import com.gitee.dbswitch.dbwriter.mysql.MySqlWriterImpl;
 import com.gitee.dbswitch.dbwriter.oracle.OracleWriterImpl;
 import com.gitee.dbswitch.dbwriter.oscar.OscarWriterImpl;
 import com.gitee.dbswitch.dbwriter.sqlite.Sqlite3WriterImpl;
+import com.gitee.dbswitch.dbwriter.sybase.SybaseWriterImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -47,6 +48,7 @@ public class DatabaseWriterFactory {
       put(DatabaseTypeEnum.GREENPLUM, GreenplumCopyWriterImpl::new);
       put(DatabaseTypeEnum.DB2, DB2WriterImpl::new);
       put(DatabaseTypeEnum.DM, DmWriterImpl::new);
+      put(DatabaseTypeEnum.SYBASE, SybaseWriterImpl::new);
       //对于kingbase当前只能使用insert模式
       put(DatabaseTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
       put(DatabaseTypeEnum.OSCAR, OscarWriterImpl::new);

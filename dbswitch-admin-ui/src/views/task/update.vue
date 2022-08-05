@@ -179,7 +179,7 @@
                       style="width:65%">
           <el-tooltip placement="top">
             <div slot="content">
-              数据同步时单个批次处理的行记录总数，该值越到越占用内存空间。建议：小字段表设置为10000，大字段表设置为1000
+              数据同步时单个批次处理的行记录总数，该值越到越占用内存空间。建议：小字段表设置为10000或20000，大字段表设置为1000
             </div>
             <i class="el-icon-question"></i>
           </el-tooltip>
@@ -200,6 +200,8 @@
           <p>说明：(1) 当表名映射规则记录为空时，代表目标表名与源表名的名称相同;</p>
           <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             (2) 当字段名映射规则记录为空时，代表目标表的字段名与源表名的字段名相同</p>
+          <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            (3) 在字段名映射规则中，如果目标字段名为空（未填写），则代表剔除该字段（不能是主键）的同步</p>
         </div>
         <el-button type="success"
                    @click="addTableNameMapperListRow()"
