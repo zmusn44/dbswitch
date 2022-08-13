@@ -91,6 +91,11 @@ public enum DatabaseTypeEnum {
    * SQLite数据库
    */
   SQLITE3(14),
+
+  /**
+   * Sybase数据库类型
+   */
+  SYBASE(15),
   ;
 
   private int index;
@@ -109,7 +114,8 @@ public enum DatabaseTypeEnum {
         DatabaseTypeEnum.MARIADB,
         DatabaseTypeEnum.GBASE8A,
         DatabaseTypeEnum.HIVE,
-        DatabaseTypeEnum.SQLITE3
+        DatabaseTypeEnum.SQLITE3,
+        DatabaseTypeEnum.SYBASE
     ).contains(this);
   }
 

@@ -24,6 +24,7 @@ import com.gitee.dbswitch.core.database.impl.DatabasePostgresImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqliteImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserver2000Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseSqlserverImpl;
+import com.gitee.dbswitch.core.database.impl.DatabaseSybaseImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -50,9 +51,11 @@ public final class DatabaseFactory {
       put(DatabaseTypeEnum.GREENPLUM, DatabaseGreenplumImpl::new);
       put(DatabaseTypeEnum.DB2, DatabaseDB2Impl::new);
       put(DatabaseTypeEnum.DM, DatabaseDmImpl::new);
+      put(DatabaseTypeEnum.SYBASE, DatabaseSybaseImpl::new);
       put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
       put(DatabaseTypeEnum.OSCAR, DatabaseOscarImpl::new);
       put(DatabaseTypeEnum.GBASE8A, DatabaseGbase8aImpl::new);
+      put(DatabaseTypeEnum.SYBASE, DatabaseSybaseImpl::new);
       put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl::new);
       put(DatabaseTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
     }
