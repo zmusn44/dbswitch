@@ -34,7 +34,6 @@ import com.gitee.dbswitch.dbwriter.IDatabaseWriter;
 import com.zaxxer.hikari.HikariDataSource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -114,6 +113,10 @@ public class MigrationHandler implements Supplier<Long> {
     this.targetTableName = PatterNameUtils.getFinalName(td.getTableName(),
         sourceProperties.getRegexTableMapper());
 
+    if (StringUtils.isEmpty(this.targetTableName)) {
+      throw new RuntimeException("表名的映射规则配置有误，不能将[" + this.sourceTableName + "]映射为空");
+    }
+
     this.tableNameMapString = String.format("%s.%s --> %s.%s",
         td.getSchemaName(), td.getTableName(),
         targetSchemaName, targetTableName);
@@ -160,16 +163,26 @@ public class MigrationHandler implements Supplier<Long> {
       String targetColumnName = targetColumnDescriptions.get(i).getFieldName();
       if (StringUtils.hasLength(targetColumnName)) {
         columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, targetColumnName));
+        mapChecker.put(sourceColumnName, targetColumnName);
       } else {
-        columnMapperPairs.add(String.format("%s --> %s", sourceColumnName, "<!Field is Deleted>"));
+        columnMapperPairs.add(String.format(
+            "%s --> %s",
+            sourceColumnName,
+            String.format("<!Field(%s) is Deleted>", (i + 1))
+        ));
       }
-      mapChecker.put(sourceColumnName, targetColumnName);
     }
     log.info("Mapping relation : \ntable mapper :\n\t{}  \ncolumn mapper :\n\t{} ",
-        tableNameMapString, columnMapperPairs.stream().collect(Collectors.joining("\n\t")));
+        tableNameMapString, String.join("\n\t", columnMapperPairs));
     Set<String> valueSet = new HashSet<>(mapChecker.values());
+    if (valueSet.size() <= 0) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表所有的字段都删除!");
+    }
+    if (!valueSet.containsAll(this.targetPrimaryKeys)) {
+      throw new RuntimeException("字段映射配置有误，禁止通过映射将表的主键字段删除!");
+    }
     if (mapChecker.keySet().size() != valueSet.size()) {
-      throw new RuntimeException("字段映射配置有误，多个字段映射到一个同名字段!");
+      throw new RuntimeException("字段映射配置有误，禁止将多个字段映射到一个同名字段!");
     }
 
     IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(
@@ -258,24 +271,16 @@ public class MigrationHandler implements Supplier<Long> {
   private Long doFullCoverSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
 
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<Integer> deletedFieldIndexes = new ArrayList<>();
-    for (int i = 0; i < targetFields.size(); ++i) {
-      if (StringUtils.isEmpty(targetFields.get(i))) {
-        deletedFieldIndexes.add(i);
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
       }
     }
-    Collections.reverse(deletedFieldIndexes);
-    deletedFieldIndexes.forEach(i -> {
-      sourceFields.remove(sourceFields.get(i));
-      targetFields.remove(targetFields.get(i));
-    });
-
     // 准备目的端的数据写入操作
     writer.prepareWrite(targetSchemaName, targetTableName, targetFields);
 
@@ -351,26 +356,18 @@ public class MigrationHandler implements Supplier<Long> {
    */
   private Long doIncreaseSynchronize(IDatabaseWriter writer) {
     final int BATCH_SIZE = fetchSize;
-    List<String> sourceFields = sourceColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<String> targetFields = targetColumnDescriptions.stream()
-        .map(ColumnDescription::getFieldName)
-        .collect(Collectors.toList());
-    List<Integer> deletedFieldIndexes = new ArrayList<>();
-    for (int i = 0; i < targetFields.size(); ++i) {
-      if (StringUtils.isEmpty(targetFields.get(i))) {
-        deletedFieldIndexes.add(i);
-      }
-    }
-    Collections.reverse(deletedFieldIndexes);
-    deletedFieldIndexes.forEach(i -> {
-      sourceFields.remove(sourceFields.get(i));
-      targetFields.remove(targetFields.get(i));
-    });
+
+    List<String> sourceFields = new ArrayList<>();
+    List<String> targetFields = new ArrayList<>();
     Map<String, String> columnNameMaps = new HashMap<>();
-    for (int i = 0; i < sourceFields.size(); ++i) {
-      columnNameMaps.put(sourceFields.get(i), targetFields.get(i));
+    for (int i = 0; i < targetColumnDescriptions.size(); ++i) {
+      ColumnDescription scd = sourceColumnDescriptions.get(i);
+      ColumnDescription tcd = targetColumnDescriptions.get(i);
+      if (!StringUtils.isEmpty(tcd.getFieldName())) {
+        sourceFields.add(scd.getFieldName());
+        targetFields.add(tcd.getFieldName());
+        columnNameMaps.put(scd.getFieldName(), tcd.getFieldName());
+      }
     }
 
     TaskParamEntity.TaskParamEntityBuilder taskBuilder = TaskParamEntity.builder();
