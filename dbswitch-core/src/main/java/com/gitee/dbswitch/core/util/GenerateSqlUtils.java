@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.util;
 
 import com.gitee.dbswitch.common.constant.Const;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 public final class GenerateSqlUtils {
 
   public static String getDDLCreateTableSQL(
-      DatabaseTypeEnum type,
+      ProductTypeEnum type,
       List<ColumnDescription> fieldNames,
       List<String> primaryKeys,
       String schemaName,
@@ -56,7 +56,7 @@ public final class GenerateSqlUtils {
       boolean withRemarks,
       String tableRemarks,
       boolean autoIncr) {
-    DatabaseTypeEnum type = db.getDatabaseType();
+    ProductTypeEnum type = db.getDatabaseType();
     StringBuilder sb = new StringBuilder();
     List<String> pks = fieldNames.stream()
         .filter((cd) -> primaryKeys.contains(cd.getFieldName()))
@@ -87,7 +87,7 @@ public final class GenerateSqlUtils {
     }
 
     sb.append(")");
-    if (DatabaseTypeEnum.MYSQL == type) {
+    if (ProductTypeEnum.MYSQL == type) {
       sb.append("ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin");
       if (withRemarks && StringUtils.isNotBlank(tableRemarks)) {
         sb.append(String.format(" COMMENT='%s' ", tableRemarks.replace("'", "\\'")));
@@ -98,7 +98,7 @@ public final class GenerateSqlUtils {
   }
 
   public static List<String> getDDLCreateTableSQL(
-      DatabaseTypeEnum type,
+      ProductTypeEnum type,
       List<ColumnDescription> fieldNames,
       List<String> primaryKeys,
       String schemaName,

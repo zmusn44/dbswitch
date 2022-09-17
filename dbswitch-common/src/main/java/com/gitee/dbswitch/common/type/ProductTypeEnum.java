@@ -12,11 +12,11 @@ package com.gitee.dbswitch.common.type;
 import java.util.Arrays;
 
 /**
- * 数据库类型的枚举定义
+ * 数据库产品类型的枚举定义
  *
  * @author Tang
  */
-public enum DatabaseTypeEnum {
+public enum ProductTypeEnum {
   /**
    * 未知数据库类型
    */
@@ -100,7 +100,7 @@ public enum DatabaseTypeEnum {
 
   private int index;
 
-  DatabaseTypeEnum(int idx) {
+  ProductTypeEnum(int idx) {
     this.index = idx;
   }
 
@@ -110,12 +110,12 @@ public enum DatabaseTypeEnum {
 
   public boolean noCommentStatement() {
     return Arrays.asList(
-        DatabaseTypeEnum.MYSQL,
-        DatabaseTypeEnum.MARIADB,
-        DatabaseTypeEnum.GBASE8A,
-        DatabaseTypeEnum.HIVE,
-        DatabaseTypeEnum.SQLITE3,
-        DatabaseTypeEnum.SYBASE
+        ProductTypeEnum.MYSQL,
+        ProductTypeEnum.MARIADB,
+        ProductTypeEnum.GBASE8A,
+        ProductTypeEnum.HIVE,
+        ProductTypeEnum.SQLITE3,
+        ProductTypeEnum.SYBASE
     ).contains(this);
   }
 

@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.model;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 
 /**
  * 数据库连接描述符信息定义(Database Description)
@@ -18,7 +18,7 @@ import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
  */
 public class DatabaseDescription {
 
-  protected DatabaseTypeEnum type;
+  protected ProductTypeEnum type;
   protected String host;
   protected int port;
   /**
@@ -32,7 +32,7 @@ public class DatabaseDescription {
 
   public DatabaseDescription(String dbtype, String host, int port, String mode, String dbname,
       String charset, String username, String password) {
-    this.type = DatabaseTypeEnum.valueOf(dbtype.toUpperCase());
+    this.type = ProductTypeEnum.valueOf(dbtype.toUpperCase());
     this.host = host;
     this.port = port;
     this.mode = mode;
@@ -42,7 +42,7 @@ public class DatabaseDescription {
     this.password = password;
   }
 
-  public DatabaseTypeEnum getType() {
+  public ProductTypeEnum getType() {
     return type;
   }
 

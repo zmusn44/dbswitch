@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.constant.Const;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -48,23 +48,19 @@ public class DatabaseMysqlImpl extends AbstractDatabase implements IDatabaseInte
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.MYSQL;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.MYSQL;
   }
 
   @Override
   public List<String> querySchemaList(Connection connection) {
-    String mysqlJdbcUrl = null;
     try {
-      mysqlJdbcUrl = connection.getMetaData().getURL();
+      String mysqlJdbcUrl = connection.getMetaData().getURL();
+      Map<String, String> data = JdbcUrlUtils.findParamsByMySqlJdbcUrl(mysqlJdbcUrl);
+      return Collections.singletonList(data.get("schema"));
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
-
-    Map<String, String> data = JdbcUrlUtils.findParamsByMySqlJdbcUrl(mysqlJdbcUrl);
-    List<String> ret = new ArrayList<String>();
-    ret.add(data.get("schema"));
-    return ret;
   }
 
   @Override

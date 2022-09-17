@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 
 /**
  * 支持GBase8a数据库的元信息实现
@@ -23,8 +23,8 @@ public class DatabaseGbase8aImpl extends DatabaseMysqlImpl {
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.GBASE8A;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.GBASE8A;
   }
 
 }

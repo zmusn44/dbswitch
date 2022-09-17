@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.model;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 
 /**
  * 数据库列描述符信息定义(Column Description)
@@ -30,7 +30,7 @@ public class ColumnDescription {
   private boolean isNullable;
   private String remarks;
   private boolean signed = false;
-  private DatabaseTypeEnum dbtype;
+  private ProductTypeEnum dbtype;
 
   public String getFieldName() {
     if (null != this.fieldName) {
@@ -128,11 +128,11 @@ public class ColumnDescription {
     this.signed = signed;
   }
 
-  public DatabaseTypeEnum getDbType() {
+  public ProductTypeEnum getDbType() {
     return this.dbtype;
   }
 
-  public void setDbType(DatabaseTypeEnum dbtype) {
+  public void setDbType(ProductTypeEnum dbtype) {
     this.dbtype = dbtype;
   }
 

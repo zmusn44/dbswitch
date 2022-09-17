@@ -13,7 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.DatabaseDescription;
 import com.gitee.dbswitch.core.model.TableDescription;
@@ -395,7 +395,7 @@ public class StructureController {
     List<ColumnDescription> columnDescs = migrationService
         .queryTableColumnMeta(src_model, src_table);
     List<String> primaryKeys = migrationService.queryTablePrimaryKeys(src_model, src_table);
-    DatabaseTypeEnum targetDatabaseType = DatabaseTypeEnum.valueOf(target.trim().toUpperCase());
+    ProductTypeEnum targetDatabaseType = ProductTypeEnum.valueOf(target.trim().toUpperCase());
     String sql = migrationService
         .getDDLCreateTableSQL(targetDatabaseType, columnDescs, primaryKeys, dest_model, dest_table,
             false);

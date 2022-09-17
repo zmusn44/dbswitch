@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.constant.Const;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -68,8 +68,8 @@ public class DatabaseSybaseImpl extends AbstractDatabase implements IDatabaseInt
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.SYBASE;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.SYBASE;
   }
 
   private void setCatalogName(Connection connection){
@@ -118,7 +118,7 @@ public class DatabaseSybaseImpl extends AbstractDatabase implements IDatabaseInt
   public String getTableDDL(Connection connection, String schemaName, String tableName) {
     List<ColumnDescription> columnDescriptions = queryTableColumnMeta(connection, schemaName, tableName);
     List<String> pks = queryTablePrimaryKeys(connection, schemaName, tableName);
-    return GenerateSqlUtils.getDDLCreateTableSQL(DatabaseTypeEnum.SYBASE,
+    return GenerateSqlUtils.getDDLCreateTableSQL(ProductTypeEnum.SYBASE,
         columnDescriptions, pks, schemaName, tableName, false);
   }
 

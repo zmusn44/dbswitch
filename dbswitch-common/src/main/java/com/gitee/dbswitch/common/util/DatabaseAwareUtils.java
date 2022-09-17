@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.common.util;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,42 +25,42 @@ import javax.sql.DataSource;
  */
 public final class DatabaseAwareUtils {
 
-  private static final Map<String, DatabaseTypeEnum> productNameMap;
+  private static final Map<String, ProductTypeEnum> productNameMap;
 
-  private static final Map<String, DatabaseTypeEnum> driverNameMap;
+  private static final Map<String, ProductTypeEnum> driverNameMap;
 
   static {
     productNameMap = new HashMap<>();
     driverNameMap = new HashMap<>();
 
-    productNameMap.put("Greenplum", DatabaseTypeEnum.GREENPLUM);
-    productNameMap.put("Microsoft SQL Server", DatabaseTypeEnum.SQLSERVER);
-    productNameMap.put("DM DBMS", DatabaseTypeEnum.DM);
-    productNameMap.put("KingbaseES", DatabaseTypeEnum.KINGBASE);
-    productNameMap.put("Apache Hive", DatabaseTypeEnum.HIVE);
-    productNameMap.put("MySQL", DatabaseTypeEnum.MYSQL);
-    productNameMap.put("MariaDB", DatabaseTypeEnum.MARIADB);
-    productNameMap.put("Oracle", DatabaseTypeEnum.ORACLE);
-    productNameMap.put("PostgreSQL", DatabaseTypeEnum.POSTGRESQL);
-    productNameMap.put("DB2 for Unix/Windows", DatabaseTypeEnum.DB2);
-    productNameMap.put("Hive", DatabaseTypeEnum.HIVE);
-    productNameMap.put("SQLite", DatabaseTypeEnum.SQLITE3);
-    productNameMap.put("OSCAR", DatabaseTypeEnum.OSCAR);
-    productNameMap.put("GBase", DatabaseTypeEnum.GBASE8A);
-    productNameMap.put("Adaptive Server Enterprise", DatabaseTypeEnum.SYBASE);
+    productNameMap.put("Greenplum", ProductTypeEnum.GREENPLUM);
+    productNameMap.put("Microsoft SQL Server", ProductTypeEnum.SQLSERVER);
+    productNameMap.put("DM DBMS", ProductTypeEnum.DM);
+    productNameMap.put("KingbaseES", ProductTypeEnum.KINGBASE);
+    productNameMap.put("Apache Hive", ProductTypeEnum.HIVE);
+    productNameMap.put("MySQL", ProductTypeEnum.MYSQL);
+    productNameMap.put("MariaDB", ProductTypeEnum.MARIADB);
+    productNameMap.put("Oracle", ProductTypeEnum.ORACLE);
+    productNameMap.put("PostgreSQL", ProductTypeEnum.POSTGRESQL);
+    productNameMap.put("DB2 for Unix/Windows", ProductTypeEnum.DB2);
+    productNameMap.put("Hive", ProductTypeEnum.HIVE);
+    productNameMap.put("SQLite", ProductTypeEnum.SQLITE3);
+    productNameMap.put("OSCAR", ProductTypeEnum.OSCAR);
+    productNameMap.put("GBase", ProductTypeEnum.GBASE8A);
+    productNameMap.put("Adaptive Server Enterprise", ProductTypeEnum.SYBASE);
 
-    driverNameMap.put("MySQL Connector Java", DatabaseTypeEnum.MYSQL);
-    driverNameMap.put("MariaDB Connector/J", DatabaseTypeEnum.MARIADB);
-    driverNameMap.put("Oracle JDBC driver", DatabaseTypeEnum.ORACLE);
-    driverNameMap.put("PostgreSQL JDBC Driver", DatabaseTypeEnum.POSTGRESQL);
-    driverNameMap.put("Kingbase8 JDBC Driver", DatabaseTypeEnum.KINGBASE);
-    driverNameMap.put("IBM Data Server Driver for JDBC and SQLJ", DatabaseTypeEnum.DB2);
-    driverNameMap.put("dm.jdbc.driver.DmDriver", DatabaseTypeEnum.DM);
-    driverNameMap.put("Hive JDBC", DatabaseTypeEnum.HIVE);
-    driverNameMap.put("SQLite JDBC", DatabaseTypeEnum.SQLITE3);
-    driverNameMap.put("OSCAR JDBC DRIVER", DatabaseTypeEnum.OSCAR);
-    driverNameMap.put("GBase JDBC Driver", DatabaseTypeEnum.GBASE8A);
-    driverNameMap.put("jConnect (TM) for JDBC (TM)", DatabaseTypeEnum.SYBASE);
+    driverNameMap.put("MySQL Connector Java", ProductTypeEnum.MYSQL);
+    driverNameMap.put("MariaDB Connector/J", ProductTypeEnum.MARIADB);
+    driverNameMap.put("Oracle JDBC driver", ProductTypeEnum.ORACLE);
+    driverNameMap.put("PostgreSQL JDBC Driver", ProductTypeEnum.POSTGRESQL);
+    driverNameMap.put("Kingbase8 JDBC Driver", ProductTypeEnum.KINGBASE);
+    driverNameMap.put("IBM Data Server Driver for JDBC and SQLJ", ProductTypeEnum.DB2);
+    driverNameMap.put("dm.jdbc.driver.DmDriver", ProductTypeEnum.DM);
+    driverNameMap.put("Hive JDBC", ProductTypeEnum.HIVE);
+    driverNameMap.put("SQLite JDBC", ProductTypeEnum.SQLITE3);
+    driverNameMap.put("OSCAR JDBC DRIVER", ProductTypeEnum.OSCAR);
+    driverNameMap.put("GBase JDBC Driver", ProductTypeEnum.GBASE8A);
+    driverNameMap.put("jConnect (TM) for JDBC (TM)", ProductTypeEnum.SYBASE);
   }
 
   /**
@@ -69,7 +69,7 @@ public final class DatabaseAwareUtils {
    * @param dataSource 数据源
    * @return 数据库产品名称字符串
    */
-  public static DatabaseTypeEnum getDatabaseTypeByDataSource(DataSource dataSource) {
+  public static ProductTypeEnum getDatabaseTypeByDataSource(DataSource dataSource) {
     try (Connection connection = dataSource.getConnection()) {
       String productName = connection.getMetaData().getDatabaseProductName();
       String driverName = connection.getMetaData().getDriverName();
@@ -77,7 +77,7 @@ public final class DatabaseAwareUtils {
         return driverNameMap.get(driverName);
       }
 
-      DatabaseTypeEnum type = productNameMap.get(productName);
+      ProductTypeEnum type = productNameMap.get(productName);
       if (null == type) {
         throw new IllegalStateException("Unable to detect database type from data source instance");
       }

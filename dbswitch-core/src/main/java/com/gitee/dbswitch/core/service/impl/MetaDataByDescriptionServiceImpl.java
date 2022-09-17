@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.service.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -204,7 +204,7 @@ public class MetaDataByDescriptionServiceImpl implements IMetaDataByDescriptionS
   }
 
   @Override
-  public String getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
+  public String getDDLCreateTableSQL(ProductTypeEnum type, List<ColumnDescription> fieldNames,
       List<String> primaryKeys, String schemaName, String tableName, boolean autoIncr) {
     return GenerateSqlUtils.getDDLCreateTableSQL(
         type, fieldNames, primaryKeys, schemaName, tableName, autoIncr);

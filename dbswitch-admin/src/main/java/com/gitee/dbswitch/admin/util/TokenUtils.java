@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
  * Token工具类
  */
 @Slf4j
-public class TokenUtils {
+public final class TokenUtils {
 
   private static final char[] hexCode = "0123456789abcdefgh".toCharArray();
 

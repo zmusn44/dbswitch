@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbcommon.database;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.dbcommon.database.impl.DB2DatabaseOperator;
 import com.gitee.dbswitch.dbcommon.database.impl.DmDatabaseOperator;
@@ -35,27 +35,27 @@ import javax.sql.DataSource;
  */
 public final class DatabaseOperatorFactory {
 
-  private static final Map<DatabaseTypeEnum, Function<DataSource, IDatabaseOperator>> DATABASE_OPERATOR_MAPPER
-      = new HashMap<DatabaseTypeEnum, Function<DataSource, IDatabaseOperator>>() {
+  private static final Map<ProductTypeEnum, Function<DataSource, IDatabaseOperator>> DATABASE_OPERATOR_MAPPER
+      = new HashMap<ProductTypeEnum, Function<DataSource, IDatabaseOperator>>() {
 
     private static final long serialVersionUID = -5278835613240515265L;
 
     {
-      put(DatabaseTypeEnum.MYSQL, MysqlDatabaseOperator::new);
-      put(DatabaseTypeEnum.MARIADB, MysqlDatabaseOperator::new);
-      put(DatabaseTypeEnum.ORACLE, OracleDatabaseOperator::new);
-      put(DatabaseTypeEnum.SQLSERVER, SqlServerDatabaseOperator::new);
-      put(DatabaseTypeEnum.SQLSERVER2000, SqlServerDatabaseOperator::new);
-      put(DatabaseTypeEnum.POSTGRESQL, PostgreSqlDatabaseOperator::new);
-      put(DatabaseTypeEnum.GREENPLUM, GreenplumDatabaseOperator::new);
-      put(DatabaseTypeEnum.DB2, DB2DatabaseOperator::new);
-      put(DatabaseTypeEnum.DM, DmDatabaseOperator::new);
-      put(DatabaseTypeEnum.SYBASE, SybaseDatabaseOperator::new);
-      put(DatabaseTypeEnum.KINGBASE, KingbaseDatabaseOperator::new);
-      put(DatabaseTypeEnum.OSCAR, OscarDatabaseOperator::new);
-      put(DatabaseTypeEnum.GBASE8A, MysqlDatabaseOperator::new);
-      put(DatabaseTypeEnum.HIVE, HiveDatabaseOperator::new);
-      put(DatabaseTypeEnum.SQLITE3, SqliteDatabaseOperator::new);
+      put(ProductTypeEnum.MYSQL, MysqlDatabaseOperator::new);
+      put(ProductTypeEnum.MARIADB, MysqlDatabaseOperator::new);
+      put(ProductTypeEnum.ORACLE, OracleDatabaseOperator::new);
+      put(ProductTypeEnum.SQLSERVER, SqlServerDatabaseOperator::new);
+      put(ProductTypeEnum.SQLSERVER2000, SqlServerDatabaseOperator::new);
+      put(ProductTypeEnum.POSTGRESQL, PostgreSqlDatabaseOperator::new);
+      put(ProductTypeEnum.GREENPLUM, GreenplumDatabaseOperator::new);
+      put(ProductTypeEnum.DB2, DB2DatabaseOperator::new);
+      put(ProductTypeEnum.DM, DmDatabaseOperator::new);
+      put(ProductTypeEnum.SYBASE, SybaseDatabaseOperator::new);
+      put(ProductTypeEnum.KINGBASE, KingbaseDatabaseOperator::new);
+      put(ProductTypeEnum.OSCAR, OscarDatabaseOperator::new);
+      put(ProductTypeEnum.GBASE8A, MysqlDatabaseOperator::new);
+      put(ProductTypeEnum.HIVE, HiveDatabaseOperator::new);
+      put(ProductTypeEnum.SQLITE3, SqliteDatabaseOperator::new);
     }
   };
 
@@ -66,7 +66,7 @@ public final class DatabaseOperatorFactory {
    * @return 指定类型的数据库读取器
    */
   public static IDatabaseOperator createDatabaseOperator(DataSource dataSource) {
-    DatabaseTypeEnum type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource);
+    ProductTypeEnum type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource);
     if (!DATABASE_OPERATOR_MAPPER.containsKey(type)) {
       throw new RuntimeException(
           String.format("[dbcommon] Unsupported database type (%s)", type));

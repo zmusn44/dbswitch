@@ -11,7 +11,7 @@ package com.gitee.dbswitch.sql.service.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.sql.service.ISqlGeneratorService;
 import com.gitee.dbswitch.sql.ddl.AbstractDatabaseDialect;
 import com.gitee.dbswitch.sql.ddl.AbstractSqlDdlOperator;
@@ -33,16 +33,16 @@ import com.gitee.dbswitch.sql.ddl.sql.impl.PostgresDialectImpl;
  */
 public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 
-	private static final Map<DatabaseTypeEnum, String> DATABASE_MAPPER = new HashMap<DatabaseTypeEnum, String>();
+	private static final Map<ProductTypeEnum, String> DATABASE_MAPPER = new HashMap<ProductTypeEnum, String>();
 
 	static {
-		DATABASE_MAPPER.put(DatabaseTypeEnum.MYSQL, MySqlDialectImpl.class.getName());
-		DATABASE_MAPPER.put(DatabaseTypeEnum.ORACLE, OracleDialectImpl.class.getName());
-		DATABASE_MAPPER.put(DatabaseTypeEnum.POSTGRESQL, PostgresDialectImpl.class.getName());
-		DATABASE_MAPPER.put(DatabaseTypeEnum.GREENPLUM, GreenplumDialectImpl.class.getName());
+		DATABASE_MAPPER.put(ProductTypeEnum.MYSQL, MySqlDialectImpl.class.getName());
+		DATABASE_MAPPER.put(ProductTypeEnum.ORACLE, OracleDialectImpl.class.getName());
+		DATABASE_MAPPER.put(ProductTypeEnum.POSTGRESQL, PostgresDialectImpl.class.getName());
+		DATABASE_MAPPER.put(ProductTypeEnum.GREENPLUM, GreenplumDialectImpl.class.getName());
 	}
 
-	public static AbstractDatabaseDialect getDatabaseInstance(DatabaseTypeEnum type) {
+	public static AbstractDatabaseDialect getDatabaseInstance(ProductTypeEnum type) {
 		if (DATABASE_MAPPER.containsKey(type)) {
 			String className = DATABASE_MAPPER.get(type);
 			try {
@@ -57,7 +57,7 @@ public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 
 	@Override
 	public String createTable(String dbType, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
+		ProductTypeEnum type = ProductTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlCreateTable(t);
 		return operator.toSqlString(dialect);
@@ -65,7 +65,7 @@ public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 
 	@Override
 	public String alterTable(String dbType, String handle, TableDefinition t){
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
+		ProductTypeEnum type = ProductTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlAlterTable(t,handle);
 		return operator.toSqlString(dialect);
@@ -73,7 +73,7 @@ public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 
 	@Override
 	public String dropTable(String dbType, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
+		ProductTypeEnum type = ProductTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlDropTable(t);
 		return operator.toSqlString(dialect);
@@ -81,7 +81,7 @@ public class MyselfSqlGeneratorServiceImpl implements ISqlGeneratorService {
 
 	@Override
 	public String truncateTable(String dbType, TableDefinition t) {
-		DatabaseTypeEnum type = DatabaseTypeEnum.valueOf(dbType.toUpperCase());
+		ProductTypeEnum type = ProductTypeEnum.valueOf(dbType.toUpperCase());
 		AbstractDatabaseDialect dialect = getDatabaseInstance(type);
 		AbstractSqlDdlOperator operator = new DdlSqlTruncateTable(t);
 		return operator.toSqlString(dialect);

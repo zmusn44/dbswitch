@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.ColumnMetaData;
 import com.gitee.dbswitch.core.model.SchemaTableData;
@@ -29,7 +29,7 @@ public interface IDatabaseInterface {
    *
    * @return 数据库类型
    */
-  DatabaseTypeEnum getDatabaseType();
+  ProductTypeEnum getDatabaseType();
 
   /**
    * 获取数据库的JDBC驱动类

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * @date 2021-11-20 22:54:21
  * @since 1.0
  */
-public class JDBCURL {
+public final class JDBCURL {
 
   public static final String PROP_HOST = "host"; //$NON-NLS-1$
   public static final String PROP_PORT = "port"; //$NON-NLS-1$

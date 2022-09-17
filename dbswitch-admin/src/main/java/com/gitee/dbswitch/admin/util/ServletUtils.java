@@ -19,7 +19,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * 获取Servlet服务器的HTTP参数相关工具类
  */
 @Slf4j
-public class ServletUtils {
+public final class ServletUtils {
 
   public static HttpServletRequest getHttpServletRequest() {
     return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
