@@ -21,6 +21,8 @@ import org.quartz.CronExpression;
  */
 public final class CronExprUtils {
 
+  public static final int MIN_INTERVAL_SECONDS = 120;
+
   /**
    * 检查CRON表达式的有效性
    *
@@ -33,7 +35,7 @@ public final class CronExprUtils {
       try {
         expression = new CronExpression(cronExpression);
       } catch (ParseException e) {
-        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT, String.format("正则表达式%s无效"));
+        throw new DbswitchException(ResultCode.ERROR_INVALID_ARGUMENT, String.format("cron表达式%s无效"));
       }
       Date nextDate = expression.getNextValidTimeAfter(new Date(System.currentTimeMillis()));
       if (null == nextDate) {

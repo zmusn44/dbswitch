@@ -11,5 +11,7 @@ USER        root
 
 WORKDIR /dbswitch-release
 
+RUN chmod u+x /dbswitch-release/bin/startup.sh
+
 CMD  ["/dbswitch-release/bin/startup.sh"]
 

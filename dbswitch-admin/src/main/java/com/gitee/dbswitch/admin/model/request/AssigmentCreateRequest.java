@@ -17,6 +17,7 @@ import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import com.gitee.dbswitch.admin.util.CronExprUtils;
 import com.gitee.dbswitch.common.entity.PatternMapper;
+import com.gitee.dbswitch.common.type.DBTableType;
 import com.gitee.dbswitch.common.util.PatterNameUtils;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +42,7 @@ public class AssigmentCreateRequest {
 
     private Long sourceConnectionId;
     private String sourceSchema;
+    private DBTableType tableType;
     private IncludeExcludeEnum includeOrExclude;
     private List<String> sourceTables;
     private Long targetConnectionId;
@@ -59,7 +61,7 @@ public class AssigmentCreateRequest {
     assignment.setDescription(description);
     assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
-      CronExprUtils.checkCronExpressionValid(this.getCronExpression(), 120);
+      CronExprUtils.checkCronExpressionValid(this.getCronExpression(), CronExprUtils.MIN_INTERVAL_SECONDS);
       assignment.setCronExpression(this.getCronExpression());
     }
 
@@ -67,7 +69,7 @@ public class AssigmentCreateRequest {
   }
 
   public AssignmentConfigEntity toAssignmentConfig(Long assignmentId) {
-    if (config.getSourceConnectionId().equals(config.getTargetConnectionId())) {
+    if (Objects.equals(config.getSourceConnectionId(), config.getTargetConnectionId())) {
       throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "源端与目标端不能相同");
     }
 
@@ -75,6 +77,7 @@ public class AssigmentCreateRequest {
     assignmentConfigEntity.setAssignmentId(assignmentId);
     assignmentConfigEntity.setSourceConnectionId(this.getConfig().getSourceConnectionId());
     assignmentConfigEntity.setSourceSchema(this.getConfig().getSourceSchema());
+    assignmentConfigEntity.setTableType(this.getConfig().getTableType());
     assignmentConfigEntity.setSourceTables(this.getConfig().getSourceTables());
     assignmentConfigEntity.setExcluded(
         this.getConfig().getIncludeOrExclude() == IncludeExcludeEnum.EXCLUDE

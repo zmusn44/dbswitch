@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
+import org.springframework.util.StringUtils;
 
 /**
  * 数据迁移主逻辑类
@@ -119,10 +120,13 @@ public class MigrationService {
             if (tableList.isEmpty()) {
               log.warn("### Find source database table list empty for schema name is : {}", schema);
             } else {
+              String allTableType = sourceProperties.getTableType();
               for (TableDescription td : tableList) {
-                // 当没有配置迁移的表是，默认为所有物理表(不含有视图表)
-                if (includes.isEmpty() && DBTableType.VIEW.name().equals(td.getTableType())) {
-                  continue;
+                // 当没有配置迁移的表名时，默认为根据类型同步所有
+                if (includes.isEmpty()) {
+                  if (null != allTableType && !allTableType.equals(td.getTableType())) {
+                    continue;
+                  }
                 }
 
                 String tableName = td.getTableName();

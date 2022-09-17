@@ -9,9 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
-import com.gitee.dbswitch.core.model.ColumnDescription;
-import java.util.List;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 
 /**
  * 支持MariaDB数据库的元信息实现
@@ -25,8 +23,8 @@ public class DatabaseMariaDBImpl extends DatabaseMysqlImpl {
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.MARIADB;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.MARIADB;
   }
 
 }

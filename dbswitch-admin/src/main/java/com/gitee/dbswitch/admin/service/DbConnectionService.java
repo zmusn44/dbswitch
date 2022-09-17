@@ -26,7 +26,7 @@ import com.gitee.dbswitch.admin.model.response.DbConnectionNameResponse;
 import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
 import com.gitee.dbswitch.admin.util.JDBCURL;
 import com.gitee.dbswitch.admin.util.PageUtils;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.service.IMetaDataByJdbcService;
 import com.gitee.dbswitch.core.service.impl.MetaDataByJdbcServiceImpl;
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class DbConnectionService {
         }
       }
     }
-    DatabaseTypeEnum prd = DatabaseTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
+    ProductTypeEnum prd = ProductTypeEnum.valueOf(dbConn.getType().getName().toUpperCase());
     IMetaDataByJdbcService metaDataService = new MetaDataByJdbcServiceImpl(prd);
     return metaDataService;
   }
@@ -139,6 +139,21 @@ public class DbConnectionService {
             schema))
         .orElseGet(ArrayList::new).stream()
         .filter(t -> !t.isViewTable())
+        .map(t -> t.getTableName())
+        .collect(Collectors.toList());
+    return Result.success(tables);
+  }
+
+  public Result<List<String>> getSchemaViews(Long id, String schema) {
+    DatabaseConnectionEntity dbConn = getDatabaseConnectionById(id);
+    IMetaDataByJdbcService metaDataService = getMetaDataCoreService(dbConn);
+    List<String> tables = Optional.ofNullable(
+        metaDataService.queryTableList(dbConn.getUrl(),
+            dbConn.getUsername(),
+            dbConn.getPassword(),
+            schema))
+        .orElseGet(ArrayList::new).stream()
+        .filter(t -> t.isViewTable())
         .map(t -> t.getTableName())
         .collect(Collectors.toList());
     return Result.success(tables);

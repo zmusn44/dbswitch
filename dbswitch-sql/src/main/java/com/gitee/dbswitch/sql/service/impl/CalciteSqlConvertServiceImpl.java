@@ -23,7 +23,7 @@ import com.gitee.dbswitch.sql.calcite.TheMssqlSqlDialect;
 import com.gitee.dbswitch.sql.calcite.TheMysqlSqlDialect;
 import com.gitee.dbswitch.sql.calcite.TheOracleSqlDialect;
 import com.gitee.dbswitch.sql.calcite.ThePostgresqlSqlDialect;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.sql.service.ISqlConvertService;
 
 /**
@@ -40,7 +40,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CalciteSqlConvertServiceImpl.class);
 	
-	private Lex getDatabaseLex(DatabaseTypeEnum type) {
+	private Lex getDatabaseLex(ProductTypeEnum type) {
 		switch (type) {
 		case MYSQL:
 			return Lex.MYSQL;
@@ -55,7 +55,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 		}
 	}
 	
-	private SqlDialect getDatabaseDialect(DatabaseTypeEnum type) {
+	private SqlDialect getDatabaseDialect(ProductTypeEnum type) {
 		switch (type) {
 		case MYSQL:
 			return TheMysqlSqlDialect.DEFAULT;
@@ -94,7 +94,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	}
 
 	@Override
-	public String dmlSentence(String sql, DatabaseTypeEnum target) {
+	public String dmlSentence(String sql, ProductTypeEnum target) {
 		logger.info("DML SQL: [{}] {} ", target.name(), sql);
 		SqlParser.Config config = SqlParser.configBuilder().build();
 		SqlParser parser = SqlParser.create(sql, config);
@@ -109,7 +109,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	}
 
 	@Override
-	public String dmlSentence(DatabaseTypeEnum source, DatabaseTypeEnum target, String sql) {
+	public String dmlSentence(ProductTypeEnum source, ProductTypeEnum target, String sql) {
 		logger.info("DML SQL: [{}->{}] {} ", source.name(), target.name(), sql);
 		SqlParser.Config config = SqlParser.configBuilder().setLex(this.getDatabaseLex(source)).build();
 		SqlParser parser = SqlParser.create(sql, config);
@@ -149,7 +149,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	}
 
 	@Override
-	public String ddlSentence(String sql, DatabaseTypeEnum target) {
+	public String ddlSentence(String sql, ProductTypeEnum target) {
 		logger.info("DDL SQL: [{}] {} ", target.name(), sql);
 		SqlParser.Config config = SqlParser.configBuilder()
 				.setParserFactory(SqlDdlParserImpl.FACTORY)
@@ -168,7 +168,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	}
 
 	@Override
-	public String ddlSentence(DatabaseTypeEnum source, DatabaseTypeEnum target, String sql) {
+	public String ddlSentence(ProductTypeEnum source, ProductTypeEnum target, String sql) {
 		logger.info("DDL SQL: [{}->{}] {} ", source.name(), target.name(), sql);
 		SqlParser.Config config = SqlParser.configBuilder()
 				.setParserFactory(SqlDdlParserImpl.FACTORY)
@@ -193,7 +193,7 @@ public class CalciteSqlConvertServiceImpl implements ISqlConvertService {
 	}
 	
 	@Override
-	public String  dclSentence(DatabaseTypeEnum source,DatabaseTypeEnum target,String sql) {
+	public String  dclSentence(ProductTypeEnum source, ProductTypeEnum target,String sql) {
 		throw new RuntimeException("Unimplement!");
 	}
 	

@@ -79,11 +79,19 @@ public class DbConnectionController {
   }
 
   @TokenCheck
-  @ApiOperation(value = "查询连接在制定Schema下的所有表列表")
+  @ApiOperation(value = "查询连接在制定Schema下的所有物理表列表")
   @GetMapping(value = "/tables/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result getSchemaTables(@PathVariable("id") Long id,
       @RequestParam("schema") String schema) {
     return databaseConnectionService.getSchemaTables(id, schema);
+  }
+
+  @TokenCheck
+  @ApiOperation(value = "查询连接在制定Schema下的所有视图表列表")
+  @GetMapping(value = "/views/get/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result getSchemaViews(@PathVariable("id") Long id,
+      @RequestParam("schema") String schema) {
+    return databaseConnectionService.getSchemaViews(id, schema);
   }
 
   @TokenCheck

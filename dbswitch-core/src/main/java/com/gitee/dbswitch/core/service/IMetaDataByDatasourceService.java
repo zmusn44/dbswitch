@@ -1,6 +1,6 @@
 package com.gitee.dbswitch.core.service;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.model.ColumnDescription;
 import com.gitee.dbswitch.core.model.SchemaTableData;
 import com.gitee.dbswitch.core.model.SchemaTableMeta;
@@ -131,7 +131,7 @@ public interface IMetaDataByDatasourceService {
    * @param autoIncr    是否允许主键自增
    * @return 对应数据库的DDL建表语句
    */
-  List<String> getDDLCreateTableSQL(DatabaseTypeEnum type, List<ColumnDescription> fieldNames,
+  List<String> getDDLCreateTableSQL(ProductTypeEnum type, List<ColumnDescription> fieldNames,
       List<String> primaryKeys, String schemaName, String tableName, String tableRemarks,
       boolean autoIncr);
 }

@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class CacheUtils {
+public final class CacheUtils {
 
   // 缓存时间 2 hours
   public static final long CACHE_DURATION_SECONDS = 7200;

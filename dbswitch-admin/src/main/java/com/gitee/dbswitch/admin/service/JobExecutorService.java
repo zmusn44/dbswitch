@@ -40,8 +40,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
  * <p>
- * 如果你使用了@PersistJobDataAfterExecution注解，则强烈建议你同时使用@DisallowConcurrentExecution注
- * 解，因为当同一个job（JobDetail）的两个实例被并发执行时，由于竞争，JobDataMap中存储的数据很可能是不确定的。
+ * 如果你使用了@PersistJobDataAfterExecution注解，则强烈建议你同时使用@DisallowConcurrentExecution注 解，因为当同一个job（JobDetail）的两个实例被并发执行时，由于竞争，JobDataMap中存储的数据很可能是不确定的。
  * </p>
  */
 @Slf4j
@@ -61,7 +60,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
   /**
    * 作为一个是否被中断的标识
    */
-  private boolean interrupted = false;
+  private volatile boolean interrupted = false;
 
   /**
    * 记录当前线程
@@ -106,7 +105,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
     currentThread = Thread.currentThread();
     JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();
     if (interrupted) {
-      log.info("Quartz task id:{} interrupted", jobDataMap.getLong(TASK_ID));
+      log.info("Quartz task id:{} interrupted when thread begin", jobDataMap.getLong(TASK_ID));
       return;
     }
 
@@ -119,6 +118,10 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
     try {
       ReentrantLock lock = mutexes.get(taskId.toString(), ReentrantLock::new);
       while (!lock.tryLock(1, TimeUnit.SECONDS)) {
+        if (interrupted) {
+          log.info("Quartz task id:{} interrupted when get lock", jobDataMap.getLong(TASK_ID));
+          return;
+        }
         TimeUnit.SECONDS.sleep(1);
       }
 
@@ -145,7 +148,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
 
           MigrationService mainService = new MigrationService(properties);
           if (interrupted) {
-            log.info("Quartz task id:{} interrupted", jobDataMap.getLong(TASK_ID));
+            log.info("Quartz task id:{} interrupted when prepare stage", jobDataMap.getLong(TASK_ID));
             return;
           }
 

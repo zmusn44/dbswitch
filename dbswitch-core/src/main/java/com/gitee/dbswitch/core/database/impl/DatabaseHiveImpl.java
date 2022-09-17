@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.constant.Const;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.HivePrepareUtils;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
@@ -37,8 +37,8 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.HIVE;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.HIVE;
   }
 
   @Override
@@ -115,7 +115,7 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
             // nothing more we can do here by catch the exception.
           }
           cd.setSigned(signed);
-          cd.setDbType(DatabaseTypeEnum.HIVE);
+          cd.setDbType(ProductTypeEnum.HIVE);
 
           ret.add(cd);
         }

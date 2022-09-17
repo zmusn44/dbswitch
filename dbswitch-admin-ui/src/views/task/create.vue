@@ -92,6 +92,20 @@
                        :value="item"></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="源端表类型"
+                      label-width="240px"
+                      :required=true
+                      prop="tableType"
+                      style="width:65%">
+          <el-select placeholder="请选择表类型"
+                     @change="selectCreateChangedTableType"
+                     v-model="createform.tableType">
+            <el-option label="物理表"
+                       value="TABLE"></el-option>
+            <el-option label="视图表"
+                       value="VIEW"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="配置方式"
                       label-width="240px"
                       :required=true
@@ -297,6 +311,7 @@
                                 label="CRON表达式">{{createform.cronExpression}}</el-descriptions-item>
           <el-descriptions-item label="源端数据源">[{{createform.sourceConnectionId}}]{{sourceConnection.name}}</el-descriptions-item>
           <el-descriptions-item label="源端schema">{{createform.sourceSchema}}</el-descriptions-item>
+          <el-descriptions-item label="源端表类型">{{createform.tableType}}</el-descriptions-item>
           <el-descriptions-item label="源端表选择方式">
             <span v-if="createform.includeOrExclude == 'INCLUDE'">
               包含表
@@ -434,6 +449,7 @@ export default {
         cronExpression: "",
         sourceConnectionId: '请选择',
         sourceSchema: "",
+        tableType: "TABLE",
         includeOrExclude: "",
         sourceTables: [],
         tableNameMapper: [],
@@ -473,6 +489,14 @@ export default {
             required: true,
             type: 'string',
             message: "必选选择一个Schema名",
+            trigger: "change"
+          }
+        ],
+        tableType: [
+          {
+            required: true,
+            type: 'string',
+            message: "表类型必须选择",
             trigger: "change"
           }
         ],
@@ -584,16 +608,55 @@ export default {
     },
     selectCreateChangedSourceSchema: function (value) {
       this.sourceSchemaTables = [];
-      this.$http.get(
-        "/dbswitch/admin/api/v1/connection/tables/get/" + this.createform.sourceConnectionId + "?schema=" + value
-      ).then(res => {
-        if (0 === res.data.code) {
-          this.sourceSchemaTables = res.data.data;
-        } else {
-          this.$message.error("查询来源端数据库在制定Schema下的表列表失败," + res.data.message);
-          this.sourceSchemaTables = [];
-        }
-      });
+      if ('TABLE' === this.createform.tableType) {
+        this.$http.get(
+          "/dbswitch/admin/api/v1/connection/tables/get/" + this.createform.sourceConnectionId + "?schema=" + value
+        ).then(res => {
+          if (0 === res.data.code) {
+            this.sourceSchemaTables = res.data.data;
+          } else {
+            this.$message.error("查询来源端数据库在指定Schema下的物理表列表失败," + res.data.message);
+            this.sourceSchemaTables = [];
+          }
+        });
+      } else {
+        this.$http.get(
+          "/dbswitch/admin/api/v1/connection/views/get/" + this.createform.sourceConnectionId + "?schema=" + value
+        ).then(res => {
+          if (0 === res.data.code) {
+            this.sourceSchemaTables = res.data.data;
+          } else {
+            this.$message.error("查询来源端数据库在指定Schema下的视图表列表失败," + res.data.message);
+            this.sourceSchemaTables = [];
+          }
+        });
+      }
+    },
+    selectCreateChangedTableType: function (value) {
+      this.sourceSchemaTables = [];
+      if ('TABLE' === value) {
+        this.$http.get(
+          "/dbswitch/admin/api/v1/connection/tables/get/" + this.createform.sourceConnectionId + "?schema=" + this.createform.sourceSchema
+        ).then(res => {
+          if (0 === res.data.code) {
+            this.sourceSchemaTables = res.data.data;
+          } else {
+            this.$message.error("查询来源端数据库在指定Schema下的物理表列表失败," + res.data.message);
+            this.sourceSchemaTables = [];
+          }
+        });
+      } else {
+        this.$http.get(
+          "/dbswitch/admin/api/v1/connection/views/get/" + this.createform.sourceConnectionId + "?schema=" + this.createform.sourceSchema
+        ).then(res => {
+          if (0 === res.data.code) {
+            this.sourceSchemaTables = res.data.data;
+          } else {
+            this.$message.error("查询来源端数据库在指定Schema下的视图表列表失败," + res.data.message);
+            this.sourceSchemaTables = [];
+          }
+        });
+      }
     },
     selectChangedTargetConnection: function (value) {
       this.targetConnection = this.connectionNameList.find(
@@ -752,6 +815,7 @@ export default {
               config: {
                 sourceConnectionId: this.createform.sourceConnectionId,
                 sourceSchema: this.createform.sourceSchema,
+                tableType: this.createform.tableType,
                 includeOrExclude: this.createform.includeOrExclude,
                 sourceTables: this.createform.sourceTables,
                 targetConnectionId: this.createform.targetConnectionId,

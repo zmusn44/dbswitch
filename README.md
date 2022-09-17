@@ -132,8 +132,8 @@ sh ./docker-maven-build.sh
 dbswitch:
   source:
     # source database connection information
-    ## support MySQL/MariaDB/DB2/DM/Kingbase8/Oracle/SQLServer/PostgreSQL/Greenplum
-    ## support mutiple source database connection
+    ## support MySQL/MariaDB/DB2/DM/Kingbase8/Oracle/SQLServer/PostgreSQL/Greenplum etc.
+    ## support multiple source database connection
     - url: jdbc:oracle:thin:@172.17.2.10:1521:ORCL
       driver-class-name: 'oracle.jdbc.driver.OracleDriver'
       username: 'system'
@@ -143,20 +143,22 @@ dbswitch:
       fetch-size: 10000
       ## schema name for query source schemas, separate by ','
       source-schema: 'TANG'
+      ## table type which include or exclude,option: TABLE,VIEW
+      table-type: 'TABLE'
       ## table name include from table lists, separate by ','
       source-includes: ''
       ## table name exclude from table lists, separate by ','
       source-excludes: ''
       ## table name convert mapper by regular expression
       regex-table-mapper:
-        - 'from-pattern': '^'
-          'to-value': 'T_'
+        - from-pattern: '^'
+          to-value: 'T_'
       ## columns name convert mapper by regular expression like regex-table-mapper
       regex-column-mapper:
 
   target:
     # target database connection information
-    ## Best support for Oracle/PostgreSQL/Greenplum/DM/Kingbase8
+    ## Best support for Oracle/PostgreSQL/Greenplum/DM etc.
     url: jdbc:postgresql://172.17.2.10:5432/test
     driver-class-name: org.postgresql.Driver
     username: tang
@@ -183,6 +185,7 @@ dbswitch:
 | dbswitch.source[i].password | 来源端连接帐号密码 | tangyibo | 无 |
 | dbswitch.source[i].fetch-size | 来源端数据库查询时的fetch_size设置 | 10000 | 需要大于100有效 |
 | dbswitch.source[i].source-schema | 来源端的schema名称 | dbo,test | 多个之间用英文逗号分隔 |
+| dbswitch.source[i].table-type | 来源端表的类型 | TABLE | 可选值为：TABLE、VIEW ,分别代表物理表和试图表 |
 | dbswitch.source[i].source-includes | 来源端schema下的表中需要包含的表名称 | users1,orgs1 | 支持多个表（多个之间用英文逗号分隔）；支持支持正则表达式(不能含有逗号) |
 | dbswitch.source[i].source-excludes | 来源端schema下的表中需要过滤的表名称 | users,orgs | 不包含的表名称，多个之间用英文逗号分隔 |
 | dbswitch.source[i].regex-table-mapper | 基于正则表达式的表名称映射关系 | [{"from-pattern": "^","to-value": "T_"}] | 为list类型，元素存在顺序关系 |

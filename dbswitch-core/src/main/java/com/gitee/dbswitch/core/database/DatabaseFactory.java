@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.impl.DatabaseDB2Impl;
 import com.gitee.dbswitch.core.database.impl.DatabaseDmImpl;
 import com.gitee.dbswitch.core.database.impl.DatabaseGbase8aImpl;
@@ -36,32 +36,32 @@ import java.util.concurrent.Callable;
  */
 public final class DatabaseFactory {
 
-  private static final Map<DatabaseTypeEnum, Callable<AbstractDatabase>> DATABASE_MAPPER
-      = new HashMap<DatabaseTypeEnum, Callable<AbstractDatabase>>() {
+  private static final Map<ProductTypeEnum, Callable<AbstractDatabase>> DATABASE_MAPPER
+      = new HashMap<ProductTypeEnum, Callable<AbstractDatabase>>() {
 
     private static final long serialVersionUID = 9202705534880971997L;
 
     {
-      put(DatabaseTypeEnum.MYSQL, DatabaseMysqlImpl::new);
-      put(DatabaseTypeEnum.MARIADB, DatabaseMariaDBImpl::new);
-      put(DatabaseTypeEnum.ORACLE, DatabaseOracleImpl::new);
-      put(DatabaseTypeEnum.SQLSERVER2000, DatabaseSqlserver2000Impl::new);
-      put(DatabaseTypeEnum.SQLSERVER, DatabaseSqlserverImpl::new);
-      put(DatabaseTypeEnum.POSTGRESQL, DatabasePostgresImpl::new);
-      put(DatabaseTypeEnum.GREENPLUM, DatabaseGreenplumImpl::new);
-      put(DatabaseTypeEnum.DB2, DatabaseDB2Impl::new);
-      put(DatabaseTypeEnum.DM, DatabaseDmImpl::new);
-      put(DatabaseTypeEnum.SYBASE, DatabaseSybaseImpl::new);
-      put(DatabaseTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
-      put(DatabaseTypeEnum.OSCAR, DatabaseOscarImpl::new);
-      put(DatabaseTypeEnum.GBASE8A, DatabaseGbase8aImpl::new);
-      put(DatabaseTypeEnum.SYBASE, DatabaseSybaseImpl::new);
-      put(DatabaseTypeEnum.HIVE, DatabaseHiveImpl::new);
-      put(DatabaseTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
+      put(ProductTypeEnum.MYSQL, DatabaseMysqlImpl::new);
+      put(ProductTypeEnum.MARIADB, DatabaseMariaDBImpl::new);
+      put(ProductTypeEnum.ORACLE, DatabaseOracleImpl::new);
+      put(ProductTypeEnum.SQLSERVER2000, DatabaseSqlserver2000Impl::new);
+      put(ProductTypeEnum.SQLSERVER, DatabaseSqlserverImpl::new);
+      put(ProductTypeEnum.POSTGRESQL, DatabasePostgresImpl::new);
+      put(ProductTypeEnum.GREENPLUM, DatabaseGreenplumImpl::new);
+      put(ProductTypeEnum.DB2, DatabaseDB2Impl::new);
+      put(ProductTypeEnum.DM, DatabaseDmImpl::new);
+      put(ProductTypeEnum.SYBASE, DatabaseSybaseImpl::new);
+      put(ProductTypeEnum.KINGBASE, DatabaseKingbaseImpl::new);
+      put(ProductTypeEnum.OSCAR, DatabaseOscarImpl::new);
+      put(ProductTypeEnum.GBASE8A, DatabaseGbase8aImpl::new);
+      put(ProductTypeEnum.SYBASE, DatabaseSybaseImpl::new);
+      put(ProductTypeEnum.HIVE, DatabaseHiveImpl::new);
+      put(ProductTypeEnum.SQLITE3, DatabaseSqliteImpl::new);
     }
   };
 
-  public static AbstractDatabase getDatabaseInstance(DatabaseTypeEnum type) {
+  public static AbstractDatabase getDatabaseInstance(ProductTypeEnum type) {
     Callable<AbstractDatabase> callable = DATABASE_MAPPER.get(type);
     if (null != callable) {
       try {

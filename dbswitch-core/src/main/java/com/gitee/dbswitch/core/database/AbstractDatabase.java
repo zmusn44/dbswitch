@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.database;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.DbswitchStrUtils;
 import com.gitee.dbswitch.common.util.HivePrepareUtils;
 import com.gitee.dbswitch.common.util.TypeConvertUtils;
@@ -171,7 +171,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
     data.setColumns(new ArrayList<>());
     data.setRows(new ArrayList<>());
     try (Statement st = connection.createStatement()) {
-      if (getDatabaseType() == DatabaseTypeEnum.HIVE) {
+      if (getDatabaseType() == ProductTypeEnum.HIVE) {
         HivePrepareUtils.prepare(connection, schemaName, tableName);
       }
 
@@ -259,7 +259,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   protected List<ColumnDescription> getSelectSqlColumnMeta(Connection connection, String querySQL) {
     List<ColumnDescription> ret = new ArrayList<>();
     try (Statement st = connection.createStatement()) {
-      if (getDatabaseType() == DatabaseTypeEnum.HIVE) {
+      if (getDatabaseType() == ProductTypeEnum.HIVE) {
         HivePrepareUtils.setResultSetColumnNameNotUnique(connection);
       }
 

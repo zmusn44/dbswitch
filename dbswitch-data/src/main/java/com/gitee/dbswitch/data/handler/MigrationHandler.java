@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data.handler;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.common.util.PatterNameUtils;
 import com.gitee.dbswitch.core.model.ColumnDescription;
@@ -64,7 +64,7 @@ public class MigrationHandler implements Supplier<Long> {
 
   // 来源端
   private final HikariDataSource sourceDataSource;
-  private DatabaseTypeEnum sourceProductType;
+  private ProductTypeEnum sourceProductType;
   private String sourceSchemaName;
   private String sourceTableName;
   private String sourceTableRemarks;
@@ -75,7 +75,7 @@ public class MigrationHandler implements Supplier<Long> {
 
   // 目的端
   private final HikariDataSource targetDataSource;
-  private DatabaseTypeEnum targetProductType;
+  private ProductTypeEnum targetProductType;
   private String targetSchemaName;
   private String targetTableName;
   private List<ColumnDescription> targetColumnDescriptions;
@@ -247,7 +247,7 @@ public class MigrationHandler implements Supplier<Long> {
         if (!targetPrimaryKeys.isEmpty() && !dbTargetPks.isEmpty()
             && targetPrimaryKeys.containsAll(dbTargetPks)
             && dbTargetPks.containsAll(targetPrimaryKeys)) {
-          if (targetProductType == DatabaseTypeEnum.MYSQL
+          if (targetProductType == ProductTypeEnum.MYSQL
               && !DatabaseAwareUtils.isMysqlInnodbStorageEngine(
               targetSchemaName, targetTableName, targetDataSource)) {
             return doFullCoverSynchronize(writer);

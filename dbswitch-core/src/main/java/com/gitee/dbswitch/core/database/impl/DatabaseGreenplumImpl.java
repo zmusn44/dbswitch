@@ -10,7 +10,7 @@
 package com.gitee.dbswitch.core.database.impl;
 
 import com.gitee.dbswitch.common.constant.Const;
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.IDatabaseInterface;
 import com.gitee.dbswitch.core.database.constant.PostgresqlConst;
@@ -54,8 +54,8 @@ public class DatabaseGreenplumImpl extends AbstractDatabase implements IDatabase
   }
 
   @Override
-  public DatabaseTypeEnum getDatabaseType() {
-    return DatabaseTypeEnum.GREENPLUM;
+  public ProductTypeEnum getDatabaseType() {
+    return ProductTypeEnum.GREENPLUM;
   }
 
   @Override

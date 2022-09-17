@@ -17,6 +17,7 @@ import com.gitee.dbswitch.admin.type.IncludeExcludeEnum;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import com.gitee.dbswitch.admin.util.CronExprUtils;
 import com.gitee.dbswitch.common.entity.PatternMapper;
+import com.gitee.dbswitch.common.type.DBTableType;
 import java.util.List;
 import java.util.Objects;
 import lombok.Data;
@@ -39,6 +40,7 @@ public class AssigmentUpdateRequest {
 
     private Long sourceConnectionId;
     private String sourceSchema;
+    private DBTableType tableType;
     private IncludeExcludeEnum includeOrExclude;
     private List<String> sourceTables;
     private Long targetConnectionId;
@@ -57,7 +59,7 @@ public class AssigmentUpdateRequest {
     assignment.setDescription(description);
     assignment.setScheduleMode(scheduleMode);
     if (ScheduleModeEnum.SYSTEM_SCHEDULED == this.getScheduleMode()) {
-      CronExprUtils.checkCronExpressionValid(this.getCronExpression(), 120);
+      CronExprUtils.checkCronExpressionValid(this.getCronExpression(), CronExprUtils.MIN_INTERVAL_SECONDS);
       assignment.setCronExpression(this.getCronExpression());
     }
 
@@ -65,7 +67,7 @@ public class AssigmentUpdateRequest {
   }
 
   public AssignmentConfigEntity toAssignmentConfig(Long assignmentId) {
-    if (config.getSourceConnectionId() == config.getTargetConnectionId()) {
+    if (Objects.equals(config.getSourceConnectionId(), config.getTargetConnectionId())) {
       throw new DbswitchException(ResultCode.ERROR_INVALID_ASSIGNMENT_CONFIG, "源端与目标端不能相同");
     }
 
@@ -73,6 +75,7 @@ public class AssigmentUpdateRequest {
     assignmentConfigEntity.setAssignmentId(assignmentId);
     assignmentConfigEntity.setSourceConnectionId(this.getConfig().getSourceConnectionId());
     assignmentConfigEntity.setSourceSchema(this.getConfig().getSourceSchema());
+    assignmentConfigEntity.setTableType(this.getConfig().getTableType());
     assignmentConfigEntity.setSourceTables(this.getConfig().getSourceTables());
     assignmentConfigEntity.setExcluded(
         this.getConfig().getIncludeOrExclude() == IncludeExcludeEnum.EXCLUDE

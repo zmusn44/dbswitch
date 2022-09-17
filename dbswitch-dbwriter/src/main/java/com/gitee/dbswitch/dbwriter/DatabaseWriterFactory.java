@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.dbwriter;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.dbwriter.db2.DB2WriterImpl;
 import com.gitee.dbswitch.dbwriter.dm.DmWriterImpl;
@@ -33,27 +33,27 @@ import javax.sql.DataSource;
  */
 public class DatabaseWriterFactory {
 
-  private static final Map<DatabaseTypeEnum, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER
-      = new HashMap<DatabaseTypeEnum, Function<DataSource, IDatabaseWriter>>() {
+  private static final Map<ProductTypeEnum, Function<DataSource, IDatabaseWriter>> DATABASE_WRITER_MAPPER
+      = new HashMap<ProductTypeEnum, Function<DataSource, IDatabaseWriter>>() {
 
     private static final long serialVersionUID = 3365136872693503697L;
 
     {
-      put(DatabaseTypeEnum.MYSQL, MySqlWriterImpl::new);
-      put(DatabaseTypeEnum.MARIADB, MySqlWriterImpl::new);
-      put(DatabaseTypeEnum.ORACLE, OracleWriterImpl::new);
-      put(DatabaseTypeEnum.SQLSERVER, SqlServerWriterImpl::new);
-      put(DatabaseTypeEnum.SQLSERVER2000, SqlServerWriterImpl::new);
-      put(DatabaseTypeEnum.POSTGRESQL, GreenplumCopyWriterImpl::new);
-      put(DatabaseTypeEnum.GREENPLUM, GreenplumCopyWriterImpl::new);
-      put(DatabaseTypeEnum.DB2, DB2WriterImpl::new);
-      put(DatabaseTypeEnum.DM, DmWriterImpl::new);
-      put(DatabaseTypeEnum.SYBASE, SybaseWriterImpl::new);
+      put(ProductTypeEnum.MYSQL, MySqlWriterImpl::new);
+      put(ProductTypeEnum.MARIADB, MySqlWriterImpl::new);
+      put(ProductTypeEnum.ORACLE, OracleWriterImpl::new);
+      put(ProductTypeEnum.SQLSERVER, SqlServerWriterImpl::new);
+      put(ProductTypeEnum.SQLSERVER2000, SqlServerWriterImpl::new);
+      put(ProductTypeEnum.POSTGRESQL, GreenplumCopyWriterImpl::new);
+      put(ProductTypeEnum.GREENPLUM, GreenplumCopyWriterImpl::new);
+      put(ProductTypeEnum.DB2, DB2WriterImpl::new);
+      put(ProductTypeEnum.DM, DmWriterImpl::new);
+      put(ProductTypeEnum.SYBASE, SybaseWriterImpl::new);
       //对于kingbase当前只能使用insert模式
-      put(DatabaseTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
-      put(DatabaseTypeEnum.OSCAR, OscarWriterImpl::new);
-      put(DatabaseTypeEnum.GBASE8A, MySqlWriterImpl::new);
-      put(DatabaseTypeEnum.SQLITE3, Sqlite3WriterImpl::new);
+      put(ProductTypeEnum.KINGBASE, KingbaseInsertWriterImpl::new);
+      put(ProductTypeEnum.OSCAR, OscarWriterImpl::new);
+      put(ProductTypeEnum.GBASE8A, MySqlWriterImpl::new);
+      put(ProductTypeEnum.SQLITE3, Sqlite3WriterImpl::new);
     }
   };
 
@@ -75,9 +75,9 @@ public class DatabaseWriterFactory {
    * @return 写入器对象
    */
   public static IDatabaseWriter createDatabaseWriter(DataSource dataSource, boolean insert) {
-    DatabaseTypeEnum type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource);
+    ProductTypeEnum type = DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource);
     if (insert) {
-      if (DatabaseTypeEnum.POSTGRESQL.equals(type) || DatabaseTypeEnum.GREENPLUM.equals(type)) {
+      if (ProductTypeEnum.POSTGRESQL.equals(type) || ProductTypeEnum.GREENPLUM.equals(type)) {
         return new com.gitee.dbswitch.dbwriter.gpdb.GreenplumInsertWriterImpl(dataSource);
       }
     }

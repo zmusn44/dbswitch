@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  * Spring容器获取BEAN工具类
  */
 @Component
-public class SpringUtils implements ApplicationContextAware {
+public final class SpringUtils implements ApplicationContextAware {
 
   private static ApplicationContext applicationContext;
 

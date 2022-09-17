@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.core.service.impl;
 
-import com.gitee.dbswitch.common.type.DatabaseTypeEnum;
+import com.gitee.dbswitch.common.type.ProductTypeEnum;
 import com.gitee.dbswitch.common.util.DatabaseAwareUtils;
 import com.gitee.dbswitch.core.database.AbstractDatabase;
 import com.gitee.dbswitch.core.database.DatabaseFactory;
@@ -40,7 +40,7 @@ public class MetaDataByDataSourceServiceImpl implements IMetaDataByDatasourceSer
     this(dataSource, DatabaseAwareUtils.getDatabaseTypeByDataSource(dataSource));
   }
 
-  public MetaDataByDataSourceServiceImpl(DataSource dataSource, DatabaseTypeEnum type) {
+  public MetaDataByDataSourceServiceImpl(DataSource dataSource, ProductTypeEnum type) {
     this.dataSource = dataSource;
     this.database = DatabaseFactory.getDatabaseInstance(type);
   }
@@ -188,7 +188,7 @@ public class MetaDataByDataSourceServiceImpl implements IMetaDataByDatasourceSer
   }
 
   @Override
-  public List<String> getDDLCreateTableSQL(DatabaseTypeEnum type,
+  public List<String> getDDLCreateTableSQL(ProductTypeEnum type,
       List<ColumnDescription> fieldNames, List<String> primaryKeys, String schemaName,
       String tableName, String tableRemarks, boolean autoIncr) {
     return GenerateSqlUtils.getDDLCreateTableSQL(
