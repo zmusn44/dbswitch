@@ -23,7 +23,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +56,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
 
   @Override
   public List<String> querySchemaList(Connection connection) {
-    Set<String> ret = new HashSet<>();
+    Set<String> ret = new LinkedHashSet<>();
     try (ResultSet schemas = connection.getMetaData().getSchemas()) {
       while (schemas.next()) {
         ret.add(schemas.getString("TABLE_SCHEM"));
@@ -70,7 +70,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   @Override
   public List<TableDescription> queryTableList(Connection connection, String schemaName) {
     List<TableDescription> ret = new ArrayList<>();
-    Set<String> uniqueSet = new HashSet<>();
+    Set<String> uniqueSet = new LinkedHashSet<>();
     String[] types = new String[]{"TABLE", "VIEW"};
     try (ResultSet tables = connection.getMetaData()
         .getTables(this.catalogName, schemaName, "%", types)) {
@@ -106,7 +106,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   @Override
   public List<String> queryTableColumnName(Connection connection, String schemaName,
       String tableName) {
-    Set<String> columns = new HashSet<>();
+    Set<String> columns = new LinkedHashSet<>();
     try (ResultSet rs = connection.getMetaData()
         .getColumns(this.catalogName, schemaName, tableName, null)) {
       while (rs.next()) {
@@ -145,14 +145,11 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   @Override
   public List<String> queryTablePrimaryKeys(Connection connection, String schemaName,
       String tableName) {
-    Set<String> ret = new HashSet<>();
+    Set<String> ret = new LinkedHashSet<>();
     try (ResultSet primaryKeys = connection.getMetaData()
         .getPrimaryKeys(this.catalogName, schemaName, tableName)) {
       while (primaryKeys.next()) {
-        String name = primaryKeys.getString("COLUMN_NAME");
-        if (!ret.contains(name)) {
-          ret.add(name);
-        }
+        ret.add(primaryKeys.getString("COLUMN_NAME"));
       }
       return new ArrayList<>(ret);
     } catch (SQLException e) {
@@ -187,11 +184,11 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
           List<Object> row = new ArrayList<>(count);
           for (int i = 1; i <= count; i++) {
             Object value = rs.getObject(i);
-            if (value != null && value instanceof byte[]) {
+            if (value instanceof byte[]) {
               row.add(DbswitchStrUtils.toHexString((byte[]) value));
-            } else if (value != null && value instanceof java.sql.Clob) {
+            } else if (value instanceof java.sql.Clob) {
               row.add(TypeConvertUtils.castToString(value));
-            } else if (value != null && value instanceof java.sql.Blob) {
+            } else if (value instanceof java.sql.Blob) {
               byte[] bytes = TypeConvertUtils.castToByteArray(value);
               row.add(DbswitchStrUtils.toHexString(bytes));
             } else {
@@ -211,7 +208,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
   @Override
   public void testQuerySQL(Connection connection, String sql) {
     String wrapperSql = this.getTestQuerySQL(sql);
-    try (Statement statement = connection.createStatement();) {
+    try (Statement statement = connection.createStatement()) {
       statement.execute(wrapperSql);
     } catch (SQLException e) {
       throw new RuntimeException(e);
