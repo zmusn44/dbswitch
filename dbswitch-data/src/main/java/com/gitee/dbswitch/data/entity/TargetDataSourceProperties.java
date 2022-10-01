@@ -20,7 +20,7 @@ public class TargetDataSourceProperties {
   private String username;
   private String password;
   private Long connectionTimeout = TimeUnit.SECONDS.toMillis(60);
-  private Long maxLifeTime = TimeUnit.MINUTES.toMillis(60);
+  private Long maxLifeTime = TimeUnit.MINUTES.toMillis(30);
 
   private String targetSchema = "";
   private Boolean targetDrop = Boolean.TRUE;

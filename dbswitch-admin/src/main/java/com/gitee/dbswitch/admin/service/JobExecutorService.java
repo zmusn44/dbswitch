@@ -36,12 +36,15 @@ import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.quartz.PersistJobDataAfterExecution;
 import org.quartz.UnableToInterruptJobException;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
  * <p>
- * 如果你使用了@PersistJobDataAfterExecution注解，则强烈建议你同时使用@DisallowConcurrentExecution注 解，因为当同一个job（JobDetail）的两个实例被并发执行时，由于竞争，JobDataMap中存储的数据很可能是不确定的。
- * </p>
+ * 如果你使用了@PersistJobDataAfterExecution注解，则强烈建议你同时使用@DisallowConcurrentExecution注解，
+ * <p>
+ * 因为当同一个job（JobDetail）的两个实例被并发执行时，由于竞争，JobDataMap中存储的数据很可能是不确定的。
+ * <p>
  */
 @Slf4j
 @PersistJobDataAfterExecution
@@ -83,6 +86,9 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
 
   @Resource
   private AssignmentJobDAO assignmentJobDAO;
+
+  @Resource
+  private AsyncTaskExecutor migrationTaskExecutor;
 
   /**
    * 实现setter方法，Quartz会给成员变量taskId注入值
@@ -146,7 +152,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
             properties.getTarget().setChangeDataSync(true);
           }
 
-          MigrationService mainService = new MigrationService(properties);
+          MigrationService mainService = new MigrationService(properties, migrationTaskExecutor);
           if (interrupted) {
             log.info("Quartz task id:{} interrupted when prepare stage", jobDataMap.getLong(TASK_ID));
             return;

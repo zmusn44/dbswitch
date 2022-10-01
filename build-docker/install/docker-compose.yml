@@ -13,7 +13,7 @@ services:
       MYSQL_ROOT_HOST: '%'
   dbswitch:
     container_name: dbswitch_webui
-    image: inrgihc/dbswitch:1.6.15
+    image: inrgihc/dbswitch:1.6.16
     environment:
       MYSQLDB_HOST: dbswitch_mysqldb
       MYSQLDB_PORT: 3306

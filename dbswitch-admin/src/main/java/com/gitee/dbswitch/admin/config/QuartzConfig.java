@@ -25,7 +25,7 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 @Slf4j
-@Configuration
+@Configuration("dbswitchQuartzConfig")
 public class QuartzConfig {
 
   @Bean
@@ -63,7 +63,6 @@ public class QuartzConfig {
     // Configure JobStore 作业存储配置
     /////////////////////////////////////
 
-    prop.put("org.quartz.jobStore.misfireThreshold", "60000");
     // 数据库方式 JobStore配置
     prop.put("org.quartz.jobStore.class", "org.quartz.impl.jdbcjobstore.JobStoreTX");
     //持久化方式配置数据驱动

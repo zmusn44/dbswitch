@@ -24,6 +24,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Slf4j
 public final class DataSourceUtils {
 
+  public static final int MAX_THREAD_COUNT = 10;
+  public static final int MAX_TIMEOUT_MS = 60000;
+
   /**
    * 创建于指定数据库连接描述符的连接池
    *
@@ -46,11 +49,11 @@ public final class DataSourceUtils {
     } else {
       ds.setConnectionTestQuery("SELECT 1");
     }
-    ds.setMaximumPoolSize(8);
-    ds.setMinimumIdle(5);
+    ds.setMaximumPoolSize(MAX_THREAD_COUNT);
+    ds.setMinimumIdle(MAX_THREAD_COUNT);
     ds.setMaxLifetime(properties.getMaxLifeTime());
     ds.setConnectionTimeout(properties.getConnectionTimeout());
-    ds.setIdleTimeout(60000);
+    ds.setIdleTimeout(MAX_TIMEOUT_MS);
 
     return ds;
   }
@@ -79,11 +82,11 @@ public final class DataSourceUtils {
     } else {
       ds.setConnectionTestQuery("SELECT 1");
     }
-    ds.setMaximumPoolSize(8);
-    ds.setMinimumIdle(5);
+    ds.setMaximumPoolSize(MAX_THREAD_COUNT);
+    ds.setMinimumIdle(MAX_THREAD_COUNT);
     ds.setMaxLifetime(properties.getMaxLifeTime());
     ds.setConnectionTimeout(properties.getConnectionTimeout());
-    ds.setIdleTimeout(60000);
+    ds.setIdleTimeout(MAX_TIMEOUT_MS);
 
     // 如果是Greenplum数据库，这里需要关闭会话的查询优化器
     if (properties.getDriverClassName().contains("postgresql")) {
