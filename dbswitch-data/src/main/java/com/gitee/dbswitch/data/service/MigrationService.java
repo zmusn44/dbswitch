@@ -55,6 +55,16 @@ public class MigrationService {
   private final List<PerfStat> perfStats = new ArrayList<>();
 
   /**
+   * 线程是否被中断的标识
+   */
+  private volatile boolean interrupted = false;
+
+  /**
+   * 任务列表
+   */
+  private List<MigrationHandler> migrationHandlers = new ArrayList<>();
+
+  /**
    * 配置参数
    */
   private final DbswichProperties properties;
@@ -75,6 +85,14 @@ public class MigrationService {
   }
 
   /**
+   * 中断执行中的任务
+   */
+  synchronized public void interrupt() {
+    this.interrupted = true;
+    migrationHandlers.forEach(MigrationHandler::interrupt);
+  }
+
+  /**
    * 执行主逻辑
    */
   public void run() throws Exception {
@@ -89,7 +107,9 @@ public class MigrationService {
       int totalTableCount = 0;
       List<SourceDataSourceProperties> sourcesProperties = properties.getSource();
       for (SourceDataSourceProperties sourceProperties : sourcesProperties) {
-
+        if (interrupted) {
+          throw new RuntimeException("task is interrupted");
+        }
         try (HikariDataSource sourceDataSource = DataSourceUtils.createSourceDataSource(sourceProperties)) {
           IMetaDataByDatasourceService
               sourceMetaDataService = new MetaDataByDataSourceServiceImpl(sourceDataSource);
@@ -119,6 +139,9 @@ public class MigrationService {
           AtomicLong totalBytesSize = new AtomicLong(0L);
           final int indexInternal = sourcePropertiesIndex;
           for (String schema : schemas) {
+            if (interrupted) {
+              break;
+            }
             List<TableDescription> tableList = sourceMetaDataService.queryTableList(schema);
             if (tableList.isEmpty()) {
               log.warn("### Find source database table list empty for schema name is : {}", schema);
@@ -159,16 +182,17 @@ public class MigrationService {
             }
 
           }
-
-          CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).join();
-          log.info(
-              "#### Complete data migration for the [ {} ] data source:\ntotal count={}\nfailure count={}\ntotal bytes size={}",
-              sourcePropertiesIndex, futures.size(), numberOfFailures.get(),
-              BytesUnitUtils.bytesSizeToHuman(totalBytesSize.get()));
-          perfStats.add(new PerfStat(sourcePropertiesIndex, futures.size(),
-              numberOfFailures.get(), totalBytesSize.get()));
-          ++sourcePropertiesIndex;
-          totalTableCount += futures.size();
+          if (!interrupted) {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[]{})).join();
+            log.info(
+                "#### Complete data migration for the [ {} ] data source:\ntotal count={}\nfailure count={}\ntotal bytes size={}",
+                sourcePropertiesIndex, futures.size(), numberOfFailures.get(),
+                BytesUnitUtils.bytesSizeToHuman(totalBytesSize.get()));
+            perfStats.add(new PerfStat(sourcePropertiesIndex, futures.size(),
+                numberOfFailures.get(), totalBytesSize.get()));
+            ++sourcePropertiesIndex;
+            totalTableCount += futures.size();
+          }
         }
       }
       log.info("service run all success, total migrate table count={} ", totalTableCount);
@@ -229,7 +253,9 @@ public class MigrationService {
       Integer indexInternal,
       HikariDataSource sds,
       HikariDataSource tds) {
-    return () -> MigrationHandler.createInstance(td, properties, indexInternal, sds, tds).get();
+    MigrationHandler instance = MigrationHandler.createInstance(td, properties, indexInternal, sds, tds);
+    migrationHandlers.add(instance);
+    return instance;
   }
 
   /**

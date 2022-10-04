@@ -62,6 +62,8 @@ public class MigrationHandler implements Supplier<Long> {
   private final DbswichProperties properties;
   private final SourceDataSourceProperties sourceProperties;
 
+  private volatile boolean interrupted = false;
+
   // 来源端
   private final HikariDataSource sourceDataSource;
   private ProductTypeEnum sourceProductType;
@@ -120,6 +122,10 @@ public class MigrationHandler implements Supplier<Long> {
     this.tableNameMapString = String.format("%s.%s --> %s.%s",
         td.getSchemaName(), td.getTableName(),
         targetSchemaName, targetTableName);
+  }
+
+  public void interrupt() {
+    this.interrupted = true;
   }
 
   @Override
@@ -184,7 +190,9 @@ public class MigrationHandler implements Supplier<Long> {
     if (mapChecker.keySet().size() != valueSet.size()) {
       throw new RuntimeException("字段映射配置有误，禁止将多个字段映射到一个同名字段!");
     }
-
+    if (interrupted) {
+      throw new RuntimeException("task is interrupted");
+    }
     IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(
         targetDataSource, properties.getTarget().getWriterEngineInsert());
 
@@ -218,6 +226,9 @@ public class MigrationHandler implements Supplier<Long> {
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
       for (String sql : sqlCreateTable) {
+        if (interrupted) {
+          throw new RuntimeException("task is interrupted");
+        }
         targetJdbcTemplate.execute(sql);
         log.info("Execute SQL: \n{}", sql);
       }
@@ -228,12 +239,20 @@ public class MigrationHandler implements Supplier<Long> {
         return 0L;
       }
 
+      if (interrupted) {
+        throw new RuntimeException("task is interrupted");
+      }
+
       return doFullCoverSynchronize(writer);
     } else {
       // 对于只想创建表的情况，不提供后续的变化量数据同步功能
       if (null != properties.getTarget().getOnlyCreate()
           && properties.getTarget().getOnlyCreate()) {
         return 0L;
+      }
+
+      if (interrupted) {
+        throw new RuntimeException("task is interrupted");
       }
 
       // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
@@ -304,6 +323,9 @@ public class MigrationHandler implements Supplier<Long> {
     long totalBytes = 0;
     try (ResultSet rs = srs.getResultset()) {
       while (rs.next()) {
+        if (interrupted) {
+          throw new RuntimeException("task is interrupted");
+        }
         Object[] record = new Object[sourceFields.size()];
         for (int i = 1; i <= sourceFields.size(); ++i) {
           try {
@@ -431,6 +453,9 @@ public class MigrationHandler implements Supplier<Long> {
        * @param fields 同步的字段列表
        */
       private void checkFull(List<String> fields) {
+        if (interrupted) {
+          throw new RuntimeException("task is interrupted");
+        }
         if (cacheInsert.size() >= BATCH_SIZE || cacheUpdate.size() >= BATCH_SIZE
             || cacheDelete.size() >= BATCH_SIZE || cacheBytes >= MAX_CACHE_BYTES_SIZE) {
           if (cacheDelete.size() > 0) {

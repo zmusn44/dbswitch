@@ -23,6 +23,7 @@ import com.gitee.dbswitch.data.service.MigrationService;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -76,6 +77,11 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
   private String taskId;
 
   /**
+   * 迁移服务类
+   */
+  private MigrationService migrationService;
+
+  /**
    * 这里可以使用Spring容器中的bean进行注入
    */
   @Resource
@@ -103,6 +109,9 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
   public void interrupt() throws UnableToInterruptJobException {
     log.info("Quartz Schedule Task job is interrupting : taskId={} ", taskId);
     interrupted = true;
+    if (Objects.nonNull(migrationService)) {
+      migrationService.interrupt();
+    }
     currentThread.interrupt();
   }
 
@@ -152,14 +161,14 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
             properties.getTarget().setChangeDataSync(true);
           }
 
-          MigrationService mainService = new MigrationService(properties, migrationTaskExecutor);
+          migrationService = new MigrationService(properties, migrationTaskExecutor);
           if (interrupted) {
             log.info("Quartz task id:{} interrupted when prepare stage", jobDataMap.getLong(TASK_ID));
             return;
           }
 
           // 实际执行JOB
-          mainService.run();
+          migrationService.run();
 
           if (assignmentConfigEntity.getFirstFlag()) {
             AssignmentConfigEntity config = new AssignmentConfigEntity();
