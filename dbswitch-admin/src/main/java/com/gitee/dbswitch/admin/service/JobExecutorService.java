@@ -157,8 +157,14 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
           DbswichProperties properties = JsonUtils.toBeanObject(
               task.getContent(), DbswichProperties.class);
           if (!assignmentConfigEntity.getFirstFlag()) {
-            properties.getTarget().setTargetDrop(false);
-            properties.getTarget().setChangeDataSync(true);
+            if (!assignmentConfigEntity.getTargetOnlyCreate()) {
+              properties.getTarget().setTargetDrop(false);
+              properties.getTarget().setOnlyCreate(false);
+              properties.getTarget().setChangeDataSync(true);
+            }
+          }
+          if (assignmentConfigEntity.getTargetOnlyCreate()) {
+            properties.getTarget().setTargetDrop(true);
           }
 
           migrationService = new MigrationService(properties, migrationTaskExecutor);
@@ -173,7 +179,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
           if (assignmentConfigEntity.getFirstFlag()) {
             AssignmentConfigEntity config = new AssignmentConfigEntity();
             config.setId(assignmentConfigEntity.getId());
-            config.setTargetDropTable(Boolean.FALSE);
+            config.setTargetDropTable(assignmentConfigEntity.getTargetOnlyCreate());
             config.setFirstFlag(Boolean.FALSE);
             assignmentConfigDAO.updateSelective(config);
           }
