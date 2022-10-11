@@ -102,7 +102,9 @@ public class ScheduleService {
     List<AssignmentJobEntity> jobs = assignmentJobDAO.getByAssignmentId(taskId);
     if (CollectionUtils.isNotEmpty(jobs)) {
       for (AssignmentJobEntity job : jobs) {
-        cancelJob(job.getId());
+        if (job.getStatus() == JobStatusEnum.RUNNING.getValue()) {
+          cancelJob(job.getId());
+        }
       }
     }
   }
