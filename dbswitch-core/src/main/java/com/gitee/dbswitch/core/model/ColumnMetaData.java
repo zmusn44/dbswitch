@@ -276,6 +276,7 @@ public class ColumnMetaData {
 
     switch (type) {
       case java.sql.Types.CHAR:
+      case java.sql.Types.NCHAR:
       case java.sql.Types.VARCHAR:
       case java.sql.Types.NVARCHAR:
         valtype = ColumnMetaData.TYPE_STRING;
@@ -283,8 +284,11 @@ public class ColumnMetaData {
         break;
 
       case java.sql.Types.LONGVARCHAR:
+      case java.sql.Types.LONGNVARCHAR:
       case java.sql.Types.CLOB:
       case java.sql.Types.NCLOB:
+      case java.sql.Types.SQLXML:
+      case java.sql.Types.ROWID:
         valtype = ColumnMetaData.TYPE_STRING;
         length = AbstractDatabase.CLOB_LENGTH;
         break;
@@ -429,6 +433,7 @@ public class ColumnMetaData {
         break;
 
       case java.sql.Types.TIMESTAMP:
+      case java.sql.Types.TIMESTAMP_WITH_TIMEZONE:
         valtype = ColumnMetaData.TYPE_TIMESTAMP;
         length = desc.getScaleSize();
         break;
@@ -438,6 +443,7 @@ public class ColumnMetaData {
         break;
 
       case java.sql.Types.TIME:
+      case java.sql.Types.TIME_WITH_TIMEZONE:
         valtype = ColumnMetaData.TYPE_TIME;
         break;
 
@@ -455,6 +461,16 @@ public class ColumnMetaData {
         break;
 
       default:
+        // others total 9 value, set default STRING type:
+        // java.sql.Types.JAVA_OBJECT
+        // java.sql.Types.OTHER
+        // java.sql.Types.NULL
+        // java.sql.Types.DISTINCT
+        // java.sql.Types.STRUCT
+        // java.sql.Types.ARRAY
+        // java.sql.Types.REF
+        // java.sql.Types.DATALINK
+        // java.sql.Types.REF_CURSOR
         valtype = ColumnMetaData.TYPE_STRING;
         precision = desc.getScaleSize();
         break;
