@@ -13,10 +13,12 @@ import java.io.IOException;
 import java.util.Properties;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.spi.JobFactory;
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -28,8 +30,8 @@ import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 @Configuration("dbswitchQuartzConfig")
 public class QuartzConfig {
 
-  @Bean
-  public Properties quartzProperties() throws IOException {
+  @Bean("quartzProperties")
+  public Properties quartzProperties(DataSourceProperties dataSourceProperties) throws IOException {
     PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
 
     Properties prop = new Properties();
@@ -76,6 +78,13 @@ public class QuartzConfig {
     //quartz相关数据表前缀名
     prop.put("org.quartz.jobStore.tablePrefix", "DBSWITCH_");
 
+    // 如果使用的PostgreSQL作为配置数据库，则需要补充如下配置：
+    // https://blog.csdn.net/wsdhla/article/details/122460119
+    if (StringUtils.isNotBlank(dataSourceProperties.getUrl())
+        && dataSourceProperties.getUrl().startsWith("jdbc:postgresql://")) {
+      prop.put("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
+    }
+
     propertiesFactoryBean.setProperties(prop);
     propertiesFactoryBean.afterPropertiesSet();
 
@@ -86,14 +95,14 @@ public class QuartzConfig {
    * SchedulerFactoryBean提供了对org.quartz.Scheduler的创建与配置，并且会管理它的生命周期与Spring同步
    */
   @Bean
-  public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory)
-      throws IOException {
+  public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory,
+      Properties quartzProperties) {
     SchedulerFactoryBean factory = new SchedulerFactoryBean();
     factory.setOverwriteExistingJobs(true);
     factory.setAutoStartup(true);
     factory.setDataSource(dataSource);
     factory.setJobFactory(jobFactory);
-    factory.setQuartzProperties(quartzProperties());
+    factory.setQuartzProperties(quartzProperties);
     return factory;
   }
 

@@ -11,8 +11,11 @@ package com.gitee.dbswitch.admin.dao;
 
 import com.gitee.dbswitch.admin.entity.SystemUserEntity;
 import com.gitee.dbswitch.admin.mapper.SystemUserMapper;
+import java.util.Objects;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Repository;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.Sqls;
 
 @Repository
 public class SystemUserDAO {
@@ -25,10 +28,22 @@ public class SystemUserDAO {
   }
 
   public SystemUserEntity findByUsername(String username) {
-    return systemUserMapper.findByUsername(username);
+    return systemUserMapper.selectOneByExample(
+        Example.builder(SystemUserEntity.class)
+            .where(
+                Sqls.custom()
+                    .andEqualTo("username", username)
+            )
+            .build()
+    );
   }
 
   public void updateUserPassword(String username, String newPassword) {
-    systemUserMapper.updateUserPassword(username, newPassword);
+    SystemUserEntity userEntity = findByUsername(username);
+    if (Objects.nonNull(userEntity)) {
+      userEntity.setPassword(newPassword);
+      systemUserMapper.updateByPrimaryKeySelective(userEntity);
+    }
   }
+
 }

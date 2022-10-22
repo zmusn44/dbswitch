@@ -375,9 +375,13 @@ dbswitch.target.writer-engine-insert=true
 
 ### 2、基于conf/application.yml配置的dbswitch-admin模块启动的WEB使用方式
 
-#### (1)、准备一个MySQL(建议为：版本为 5.7+ )的数据库
+#### (1)、准备一个MySQL(建议版本为: 5.7+ )或PostgreSQL(建议版本：11.7+ )的数据库
 
-#### (2)、配置conf/application.yml
+> dbswitch-admin模块后端同时支持MySQL、PostgreSQL作为配置数据库。
+
+#### (2)、配置conf/application.yml(MySQL可参考application_sample_mysql.yml配置，PostgreSQL可参考application_sample_postgresql.yml配置)
+
+MySQL的application.yml配置内容示例如下：
 
 ```
 server:
@@ -526,15 +530,18 @@ cd dbswitch && mvn clean install
 ### 3、代码集成开发
 
 ```
+// 构建任务执行的线程池
+AsyncTaskExecutor taskExecutor=new ThreadPoolTaskExecutor();
+taskExecutor.setXXXX();
+
 // 构造dbswitch所需的配置参数，参数说明请参考第三章第1小节
 DbswichProperties properties = new DbswichProperties();
 properties.setXXXX();
 
 // 将参数传递给dbswitch启动同步方式执行
-MigrationService service = new MigrationService(properties);
+MigrationService service = new MigrationService(properties, taskExecutor);
 service.run();
 ```
-
 
 ## 五、常见问题解决
 

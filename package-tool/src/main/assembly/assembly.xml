@@ -78,7 +78,7 @@
 			</includes>
 		</fileSet>
 
-		<!-- 将模块dbswitch-webapi的jar文件放到打包目录/lib 下 -->
+		<!-- 将模块dbswitch-admin的jar文件放到打包目录/lib 下 -->
 		<fileSet>
 			<directory>${project.parent.basedir}/dbswitch-admin/target
 			</directory>
