@@ -18,11 +18,10 @@ import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import com.gitee.dbswitch.admin.util.UuidUtils;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -55,27 +54,11 @@ public class ScheduleService {
   @Resource
   private AssignmentJobDAO assignmentJobDAO;
 
-//  public Trigger getQuartzJobDetail(String jobKey) {
-//    Scheduler scheduler = schedulerFactoryBean.getScheduler();
-//
-//    String triggerName = jobKey;
-//    String triggerGroup = JobExecutorService.GROUP;
-//    TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
-//    try {
-//      Trigger trigger = scheduler.getTrigger(triggerKey);
-//      return trigger;
-//    } catch (SchedulerException e) {
-//      log.error("Query job trigger detail failed:", e);
-//    }
-//
-//    return null;
-//  }
-
   public void scheduleTask(Long taskId, ScheduleModeEnum scheduleMode) {
     /** 准备JobDetail */
-    String jobName = UuidUtils.generateUuid() + "@" + taskId.toString();
+    String jobKeyName = UuidUtils.generateUuid() + "@" + taskId.toString();
     String jobGroup = JobExecutorService.GROUP;
-    JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
+    JobKey jobKey = JobKey.jobKey(jobKeyName, jobGroup);
 
     JobBuilder jobBuilder = JobBuilder.newJob(JobExecutorService.class)
         .withIdentity(jobKey)
@@ -83,7 +66,7 @@ public class ScheduleService {
         .usingJobData(JobExecutorService.SCHEDULE, scheduleMode.getValue().toString());
 
     /** 准备TriggerKey，注意这里的triggerName与jobName配置相同 */
-    String triggerName = jobName;
+    String triggerName = jobKeyName;
     String triggerGroup = JobExecutorService.GROUP;
     TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
 
@@ -96,30 +79,19 @@ public class ScheduleService {
       scheduleCron(jobBuilder.storeDurably(true).build(), triggerKey, task.getCronExpression());
     }
 
+    task.setJobKey(jobKeyName);
+    assignmentTaskDAO.updateById(task);
   }
 
-  public void cancelJobByTaskId(Long taskId) {
-    List<AssignmentJobEntity> jobs = assignmentJobDAO.getByAssignmentId(taskId);
-    if (CollectionUtils.isNotEmpty(jobs)) {
-      for (AssignmentJobEntity job : jobs) {
-        if (job.getStatus() == JobStatusEnum.RUNNING.getValue()) {
-          cancelJob(job.getId());
-        }
-      }
-    }
-  }
-
-  public boolean cancelJob(Long jobId) {
-    AssignmentJobEntity assignmentJobEntity = assignmentJobDAO.getById(jobId);
-    if (Objects.isNull(assignmentJobEntity)) {
-      return true;
+  public void cancelByJobKey(String jobKeyName) {
+    if (StringUtils.isBlank(jobKeyName)) {
+      return;
     }
 
-    String jobName = assignmentJobEntity.getJobKey();
     String jobGroup = JobExecutorService.GROUP;
-    JobKey jobKey = JobKey.jobKey(jobName, jobGroup);
+    JobKey jobKey = JobKey.jobKey(jobKeyName, jobGroup);
 
-    String triggerName = jobName;
+    String triggerName = jobKeyName;
     String triggerGroup = JobExecutorService.GROUP;
     TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroup);
 
@@ -128,17 +100,26 @@ public class ScheduleService {
     try {
       scheduler.interrupt(jobKey);
       scheduler.pauseTrigger(triggerKey);
-      return scheduler.unscheduleJob(triggerKey) && scheduler.deleteJob(jobKey);
+      scheduler.unscheduleJob(triggerKey);
+      scheduler.deleteJob(jobKey);
+      log.info("Quartz delete task job for JobKey: {}", jobKey);
     } catch (SchedulerException e) {
       log.error("Quartz stop task job failed. JobKey: {}", jobKey);
-    } finally {
+    }
+
+    log.info("cancel task by job key: {}", jobKeyName);
+  }
+
+  public void cancelJob(Long jobId) {
+    AssignmentJobEntity assignmentJobEntity = assignmentJobDAO.getById(jobId);
+    if (Objects.nonNull(assignmentJobEntity)) {
+      String jobKeyName = assignmentJobEntity.getJobKey();
+      cancelByJobKey(jobKeyName);
       assignmentJobEntity.setStatus(JobStatusEnum.FAIL.getValue());
       assignmentJobEntity.setFinishTime(new Timestamp(System.currentTimeMillis()));
       assignmentJobEntity.setErrorLog("Job was canceled!!!!");
       assignmentJobDAO.updateSelective(assignmentJobEntity);
     }
-
-    return false;
   }
 
   private void scheduleOnce(JobDetail jobDetail, TriggerKey triggerKey) {

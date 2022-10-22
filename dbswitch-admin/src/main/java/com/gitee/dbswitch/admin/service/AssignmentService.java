@@ -198,9 +198,10 @@ public class AssignmentService {
       AssignmentTaskEntity assignmentTaskEntity = assignmentTaskDAO.getById(id);
       if (Objects.nonNull(assignmentTaskEntity.getPublished())
           && assignmentTaskEntity.getPublished()) {
-        scheduleService.cancelJobByTaskId(id);
+        scheduleService.cancelByJobKey(assignmentTaskEntity.getJobKey());
         assignmentTaskEntity.setPublished(Boolean.FALSE);
         assignmentTaskEntity.setContent("{}");
+        assignmentTaskEntity.setJobKey("");
         assignmentTaskDAO.updateById(assignmentTaskEntity);
       }
     }

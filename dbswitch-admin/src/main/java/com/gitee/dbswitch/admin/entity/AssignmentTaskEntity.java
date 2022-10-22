@@ -48,6 +48,9 @@ public class AssignmentTaskEntity {
   @Column(name = "content")
   private String content;
 
+  @Column(name = "job_key")
+  private String jobKey;
+
   @Column(name = "create_time", insertable = false, updatable = false)
   private Timestamp createTime;
 
