@@ -226,9 +226,6 @@ public class MigrationHandler implements Supplier<Long> {
 
       JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
       for (String sql : sqlCreateTable) {
-        if (interrupted) {
-          throw new RuntimeException("task is interrupted");
-        }
         targetJdbcTemplate.execute(sql);
         log.info("Execute SQL: \n{}", sql);
       }
@@ -255,11 +252,43 @@ public class MigrationHandler implements Supplier<Long> {
         throw new RuntimeException("task is interrupted");
       }
 
+      IMetaDataByDatasourceService metaDataByDatasourceService =
+          new MetaDataByDataSourceServiceImpl(targetDataSource, targetProductType);
+      List<String> targetTableNames = metaDataByDatasourceService
+          .queryTableList(targetSchemaName)
+          .stream().map(TableDescription::getTableName)
+          .collect(Collectors.toList());
+
+      if (!targetTableNames.contains(targetSchemaName)) {
+        // 当目标端不存在该表时，则生成建表语句并创建
+        List<String> sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
+            targetProductType,
+            targetColumnDescriptions.stream()
+                .filter(column -> StringUtils.hasLength(column.getFieldName()))
+                .collect(Collectors.toList()),
+            targetPrimaryKeys,
+            targetSchemaName,
+            targetTableName,
+            sourceTableRemarks,
+            properties.getTarget().getCreateTableAutoIncrement()
+        );
+
+        JdbcTemplate targetJdbcTemplate = new JdbcTemplate(targetDataSource);
+        for (String sql : sqlCreateTable) {
+          targetJdbcTemplate.execute(sql);
+          log.info("Execute SQL: \n{}", sql);
+        }
+
+        if (interrupted) {
+          throw new RuntimeException("task is interrupted");
+        }
+
+        return doFullCoverSynchronize(writer);
+      }
+
       // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
       if (properties.getTarget().getChangeDataSync()) {
         // 根据主键情况判断同步的方式：增量同步或覆盖同步
-        IMetaDataByDatasourceService metaDataByDatasourceService =
-            new MetaDataByDataSourceServiceImpl(targetDataSource, targetProductType);
         List<String> dbTargetPks = metaDataByDatasourceService.queryTablePrimaryKeys(
             targetSchemaName, targetTableName);
 
