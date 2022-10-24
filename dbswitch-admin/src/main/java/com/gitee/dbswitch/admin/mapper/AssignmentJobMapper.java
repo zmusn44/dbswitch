@@ -41,7 +41,7 @@ public interface AssignmentJobMapper extends Mapper<AssignmentJobEntity> {
       + "  FROM \n"
       + " ( \n"
       + " \t SELECT * FROM DBSWITCH_ASSIGNMENT_JOB\n"
-      + " \t WHERE CURRENT_DATE - INTERVAL'1 day' &lt;= create_time::date\n"
+      + " \t WHERE CURRENT_DATE - INTERVAL'${days} day' &lt;= create_time::date\n"
       + " ) t \n"
       + " GROUP BY of_date; "
       + "</if>"
