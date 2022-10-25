@@ -99,6 +99,13 @@ public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterfa
     return String.format("explain %s", sql.replace(";", ""));
   }
 
+  /**
+   * https://eco.dameng.com/document/dm/zh-cn/sql-dev/dmpl-sql-datatype.html
+   * <p>
+   * https://eco.dameng.com/document/dm/zh-cn/pm/dm8_sql-data-types-operators.html
+   * <p>
+   * 违反表[xxx]唯一性约束: https://www.cnblogs.com/theli/p/12858875.html
+   */
   @Override
   public String getFieldDefinition(ColumnMetaData v, List<String> pks, boolean useAutoInc,
       boolean addCr, boolean withRemarks) {
@@ -123,33 +130,31 @@ public class DatabaseDmImpl extends AbstractDatabase implements IDatabaseInterfa
         break;
       case ColumnMetaData.TYPE_NUMBER:
       case ColumnMetaData.TYPE_BIGNUMBER:
-        retval.append("NUMBER");
-        if (length > 0) {
-          if (length > 38) {
-            length = 38;
-          }
+        if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
+          retval.append("BIGINT");
+        } else {
+          retval.append("NUMERIC");
+          if (length > 0) {
+            if (length > 38) {
+              length = 38;
+            }
 
-          retval.append('(').append(length);
-          if (precision > 0) {
-            retval.append(", ").append(precision);
+            retval.append('(').append(length);
+            if (precision > 0) {
+              retval.append(", ").append(precision);
+            }
+            retval.append(')');
           }
-          retval.append(')');
         }
         break;
       case ColumnMetaData.TYPE_INTEGER:
-        retval.append("INTEGER");
+        retval.append("BIGINT");
         break;
       case ColumnMetaData.TYPE_STRING:
-        if (2 * length >= AbstractDatabase.CLOB_LENGTH) {
-          retval.append("CLOB");
+        if (null != pks && pks.contains(fieldname)) {
+          retval.append("VARCHAR(" + length + ")");
         } else {
-          if (length == 1) {
-            retval.append("NVARCHAR2(2)");
-          } else if (length > 0 && length < 2048) {
-            retval.append("NVARCHAR2(").append(2 * length).append(')');
-          } else {
-            retval.append("CLOB");
-          }
+          retval.append("TEXT");
         }
         break;
       case ColumnMetaData.TYPE_BINARY:

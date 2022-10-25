@@ -24,12 +24,14 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -103,6 +105,9 @@ public class MigrationService {
     //log.info("Application properties configuration \n{}", properties);
 
     try (HikariDataSource targetDataSource = DataSourceUtils.createTargetDataSource(properties.getTarget())) {
+      IMetaDataByDatasourceService tdsService = new MetaDataByDataSourceServiceImpl(targetDataSource);
+      Set<String> tablesAlreadyExist = tdsService.queryTableList(properties.getTarget().getTargetSchema())
+          .stream().map(TableDescription::getTableName).collect(Collectors.toSet());
       int sourcePropertiesIndex = 0;
       int totalTableCount = 0;
       List<SourceDataSourceProperties> sourcesProperties = properties.getSource();
@@ -160,19 +165,19 @@ public class MigrationService {
                 if (useExcludeTables) {
                   if (!filters.contains(tableName)) {
                     futures.add(
-                        makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource,
+                        makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, tablesAlreadyExist,
                             numberOfFailures, totalBytesSize));
                   }
                 } else {
                   if (includes.size() == 1 && (includes.get(0).contains("*") || includes.get(0).contains("?"))) {
                     if (Pattern.matches(includes.get(0), tableName)) {
                       futures.add(
-                          makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource,
+                          makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, tablesAlreadyExist,
                               numberOfFailures, totalBytesSize));
                     }
                   } else if (includes.contains(tableName)) {
                     futures.add(
-                        makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource,
+                        makeFutureTask(td, indexInternal, sourceDataSource, targetDataSource, tablesAlreadyExist,
                             numberOfFailures, totalBytesSize));
                   }
                 }
@@ -222,6 +227,7 @@ public class MigrationService {
    * @param indexInternal    源端索引号
    * @param sds              源端的DataSource数据源
    * @param tds              目的端的DataSource数据源
+   * @param exists           目的端已经存在的表名列表
    * @param numberOfFailures 失败的数量
    * @param totalBytesSize   同步的字节大小
    * @return CompletableFuture<Void>
@@ -231,10 +237,11 @@ public class MigrationService {
       Integer indexInternal,
       HikariDataSource sds,
       HikariDataSource tds,
+      Set<String> exists,
       AtomicInteger numberOfFailures,
       AtomicLong totalBytesSize) {
     return CompletableFuture
-        .supplyAsync(getMigrateHandler(td, indexInternal, sds, tds), this.taskExecutor)
+        .supplyAsync(getMigrateHandler(td, indexInternal, sds, tds, exists), this.taskExecutor)
         .exceptionally(getExceptHandler(td, numberOfFailures))
         .thenAccept(totalBytesSize::addAndGet);
   }
@@ -246,14 +253,16 @@ public class MigrationService {
    * @param indexInternal 源端索引号
    * @param sds           源端的DataSource数据源
    * @param tds           目的端的DataSource数据源
+   * @param exists        目的端已经存在的表名列表
    * @return Supplier<Long>
    */
   private Supplier<Long> getMigrateHandler(
       TableDescription td,
       Integer indexInternal,
       HikariDataSource sds,
-      HikariDataSource tds) {
-    MigrationHandler instance = MigrationHandler.createInstance(td, properties, indexInternal, sds, tds);
+      HikariDataSource tds,
+      Set<String> exists) {
+    MigrationHandler instance = MigrationHandler.createInstance(td, properties, indexInternal, sds, tds, exists);
     migrationHandlers.add(instance);
     return instance;
   }

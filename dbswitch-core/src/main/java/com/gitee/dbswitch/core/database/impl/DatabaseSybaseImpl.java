@@ -181,7 +181,7 @@ public class DatabaseSybaseImpl extends AbstractDatabase implements IDatabaseInt
         }
         break;
       case ColumnMetaData.TYPE_BOOLEAN:
-        retval += "BOOLEAN";
+        retval += "TINYINT";
         if (null != pks && !pks.isEmpty() && pks.contains(fieldname)) {
           retval += " NOT NULL";
         }

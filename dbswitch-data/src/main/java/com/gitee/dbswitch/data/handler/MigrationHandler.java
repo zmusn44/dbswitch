@@ -78,6 +78,7 @@ public class MigrationHandler implements Supplier<Long> {
   // 目的端
   private final HikariDataSource targetDataSource;
   private ProductTypeEnum targetProductType;
+  private Set<String> targetExistTables;
   private String targetSchemaName;
   private String targetTableName;
   private List<ColumnDescription> targetColumnDescriptions;
@@ -90,15 +91,17 @@ public class MigrationHandler implements Supplier<Long> {
       DbswichProperties properties,
       Integer sourcePropertiesIndex,
       HikariDataSource sds,
-      HikariDataSource tds) {
-    return new MigrationHandler(td, properties, sourcePropertiesIndex, sds, tds);
+      HikariDataSource tds,
+      Set<String> targetExistTables) {
+    return new MigrationHandler(td, properties, sourcePropertiesIndex, sds, tds, targetExistTables);
   }
 
   private MigrationHandler(TableDescription td,
       DbswichProperties properties,
       Integer sourcePropertiesIndex,
       HikariDataSource sds,
-      HikariDataSource tds) {
+      HikariDataSource tds,
+      Set<String> targetExistTables) {
     this.sourceSchemaName = td.getSchemaName();
     this.sourceTableName = td.getTableName();
     this.properties = properties;
@@ -110,6 +113,7 @@ public class MigrationHandler implements Supplier<Long> {
       fetchSize = sourceProperties.getFetchSize();
     }
 
+    this.targetExistTables = targetExistTables;
     // 获取映射转换后新的表名
     this.targetSchemaName = properties.getTarget().getTargetSchema();
     this.targetTableName = PatterNameUtils.getFinalName(td.getTableName(),
@@ -252,14 +256,7 @@ public class MigrationHandler implements Supplier<Long> {
         throw new RuntimeException("task is interrupted");
       }
 
-      IMetaDataByDatasourceService metaDataByDatasourceService =
-          new MetaDataByDataSourceServiceImpl(targetDataSource, targetProductType);
-      List<String> targetTableNames = metaDataByDatasourceService
-          .queryTableList(targetSchemaName)
-          .stream().map(TableDescription::getTableName)
-          .collect(Collectors.toList());
-
-      if (!targetTableNames.contains(targetSchemaName)) {
+      if (!targetExistTables.contains(targetTableName)) {
         // 当目标端不存在该表时，则生成建表语句并创建
         List<String> sqlCreateTable = sourceMetaDataService.getDDLCreateTableSQL(
             targetProductType,
@@ -289,6 +286,8 @@ public class MigrationHandler implements Supplier<Long> {
       // 判断是否具备变化量同步的条件：（1）两端表结构一致，且都有一样的主键字段；(2)MySQL使用Innodb引擎；
       if (properties.getTarget().getChangeDataSync()) {
         // 根据主键情况判断同步的方式：增量同步或覆盖同步
+        IMetaDataByDatasourceService metaDataByDatasourceService =
+            new MetaDataByDataSourceServiceImpl(targetDataSource, targetProductType);
         List<String> dbTargetPks = metaDataByDatasourceService.queryTablePrimaryKeys(
             targetSchemaName, targetTableName);
 

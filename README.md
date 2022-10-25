@@ -248,9 +248,10 @@ jdbc驱动名称：com.microsoft.sqlserver.jdbc.SQLServerDriver
 **Sybase数据库**
 
 ```
-jdbc连接地址：jdbc:sybase:Tds:172.17.2.10:5000/test
+jdbc连接地址：jdbc:sybase:Tds:172.17.2.10:5000/test?charset=cp936
 jdbc驱动名称：com.sybase.jdbc4.jdbc.SybDriver
 ```
+> JDBC连接Sybase数据库使用中文时只能使用CP936这个字符集
 
 **PostgreSQL/Greenplum数据库**
 
