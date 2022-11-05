@@ -30,9 +30,9 @@ public class DatabaseDescription {
   protected String username;
   protected String password;
 
-  public DatabaseDescription(String dbtype, String host, int port, String mode, String dbname,
+  public DatabaseDescription(String productType, String host, int port, String mode, String dbname,
       String charset, String username, String password) {
-    this.type = ProductTypeEnum.valueOf(dbtype.toUpperCase());
+    this.type = ProductTypeEnum.valueOf(productType.toUpperCase());
     this.host = host;
     this.port = port;
     this.mode = mode;

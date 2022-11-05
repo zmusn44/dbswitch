@@ -115,7 +115,7 @@ public class DatabaseHiveImpl extends AbstractDatabase implements IDatabaseInter
             // nothing more we can do here by catch the exception.
           }
           cd.setSigned(signed);
-          cd.setDbType(ProductTypeEnum.HIVE);
+          cd.setProductType(ProductTypeEnum.HIVE);
 
           ret.add(cd);
         }

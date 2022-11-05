@@ -84,8 +84,7 @@ public class ColumnMetaData {
    * The Constant typeCodes.
    */
   public static final String[] TYPE_CODES = new String[]{"-", "Number", "String", "Date", "Boolean",
-      "Integer",
-      "BigNumber", "Serializable", "Binary", "Timestamp", "Time", "Internet Address",};
+      "Integer", "BigNumber", "Serializable", "Binary", "Timestamp", "Time", "Internet Address",};
 
   //////////////////////////////////////////////////////////////////////
 
@@ -353,7 +352,10 @@ public class ColumnMetaData {
           }
 
           // If we're dealing with PostgreSQL and double precision types
-          if (desc.getDbType() == ProductTypeEnum.POSTGRESQL && type == java.sql.Types.DOUBLE
+          if ((desc.getProductType() == ProductTypeEnum.POSTGRESQL
+              || desc.getProductType() == ProductTypeEnum.GREENPLUM
+              || desc.getProductType() == ProductTypeEnum.KINGBASE)
+              && type == java.sql.Types.DOUBLE
               && precision >= 16
               && length >= 16) {
             precision = -1;
@@ -362,7 +364,8 @@ public class ColumnMetaData {
 
           // MySQL: max resolution is double precision floating point (double)
           // The (12,31) that is given back is not correct
-          if (desc.getDbType() == ProductTypeEnum.MYSQL) {
+          if (desc.getProductType() == ProductTypeEnum.MYSQL
+              || desc.getProductType() == ProductTypeEnum.MARIADB) {
             if (precision >= length) {
               precision = -1;
               length = -1;
@@ -370,7 +373,7 @@ public class ColumnMetaData {
           }
 
           // If we're dealing with Hive and double/float precision types
-          if (desc.getDbType() == ProductTypeEnum.HIVE) {
+          if (desc.getProductType() == ProductTypeEnum.HIVE) {
             if (type == java.sql.Types.DOUBLE
                 && precision >= 15
                 && length >= 15) {
@@ -386,14 +389,9 @@ public class ColumnMetaData {
             }
           }
 
-          // if the length or precision needs a BIGNUMBER
-          //if (length > 15 || precision > 15) {
-          //	valtype = ColumnMetaData.TYPE_BIGNUMBER;
-          //}
         } else {
           if (precision == 0) {
-            if (length <= 18 && length > 0) { // Among others Oracle is affected
-              // here.
+            if (length <= 18 && length > 0) { // Among others Oracle is affected here.
               valtype = ColumnMetaData.TYPE_INTEGER; // Long can hold up to 18
               // significant digits
             } else if (length > 18) {
@@ -406,8 +404,9 @@ public class ColumnMetaData {
           }
         }
 
-        if (desc.getDbType() == ProductTypeEnum.POSTGRESQL
-            || desc.getDbType() == ProductTypeEnum.GREENPLUM) {
+        if (desc.getProductType() == ProductTypeEnum.POSTGRESQL
+            || desc.getProductType() == ProductTypeEnum.KINGBASE
+            || desc.getProductType() == ProductTypeEnum.GREENPLUM) {
           // undefined size => arbitrary precision
           if (type == java.sql.Types.NUMERIC && length == 0 && precision == 0) {
             valtype = ColumnMetaData.TYPE_BIGNUMBER;
@@ -416,7 +415,8 @@ public class ColumnMetaData {
           }
         }
 
-        if (desc.getDbType() == ProductTypeEnum.ORACLE) {
+        if (desc.getProductType() == ProductTypeEnum.ORACLE ||
+            desc.getProductType() == ProductTypeEnum.DM) {
           if (precision == 0 && length == 38) {
             valtype = ColumnMetaData.TYPE_INTEGER;
           }

@@ -14,9 +14,7 @@ import java.util.List;
 public class SchemaTableMeta extends TableDescription {
 
   private List<String> primaryKeys;
-
   private String createSql;
-
   private List<ColumnDescription> columns;
 
   public List<String> getPrimaryKeys() {

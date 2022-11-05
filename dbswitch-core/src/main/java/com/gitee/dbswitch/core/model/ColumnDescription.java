@@ -26,11 +26,11 @@ public class ColumnDescription {
   private int displaySize;
   private int scaleSize;
   private int precisionSize;
-  private boolean isAutoIncrement;
-  private boolean isNullable;
+  private boolean autoIncrement;
+  private boolean nullable;
   private String remarks;
   private boolean signed = false;
-  private ProductTypeEnum dbtype;
+  private ProductTypeEnum productType;
 
   public String getFieldName() {
     if (null != this.fieldName) {
@@ -52,8 +52,8 @@ public class ColumnDescription {
     return this.fieldName;
   }
 
-  public void setLabelName(String labalName) {
-    this.labelName = labalName;
+  public void setLabelName(String labelName) {
+    this.labelName = labelName;
   }
 
   public String getFieldTypeName() {
@@ -105,19 +105,19 @@ public class ColumnDescription {
   }
 
   public boolean isAutoIncrement() {
-    return isAutoIncrement;
+    return autoIncrement;
   }
 
-  public void setAutoIncrement(boolean isAutoIncrement) {
-    this.isAutoIncrement = isAutoIncrement;
+  public void setAutoIncrement(boolean autoIncrement) {
+    this.autoIncrement = autoIncrement;
   }
 
   public boolean isNullable() {
-    return isNullable;
+    return nullable;
   }
 
   public void setNullable(boolean isNullable) {
-    this.isNullable = isNullable;
+    this.nullable = isNullable;
   }
 
   public boolean isSigned() {
@@ -128,12 +128,12 @@ public class ColumnDescription {
     this.signed = signed;
   }
 
-  public ProductTypeEnum getDbType() {
-    return this.dbtype;
+  public ProductTypeEnum getProductType() {
+    return this.productType;
   }
 
-  public void setDbType(ProductTypeEnum dbtype) {
-    this.dbtype = dbtype;
+  public void setProductType(ProductTypeEnum productType) {
+    this.productType = productType;
   }
 
   public String getRemarks() {
@@ -154,11 +154,11 @@ public class ColumnDescription {
     description.setDisplaySize(displaySize);
     description.setScaleSize(scaleSize);
     description.setPrecisionSize(precisionSize);
-    description.setAutoIncrement(isAutoIncrement);
-    description.setNullable(isNullable);
+    description.setAutoIncrement(autoIncrement);
+    description.setNullable(nullable);
     description.setRemarks(remarks);
     description.setSigned(signed);
-    description.setDbType(dbtype);
+    description.setProductType(productType);
     return description;
   }
 

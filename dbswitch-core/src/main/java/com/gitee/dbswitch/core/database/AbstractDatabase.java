@@ -300,7 +300,7 @@ public abstract class AbstractDatabase implements IDatabaseInterface {
             // nothing more we can do here by catch the exception.
           }
           cd.setSigned(signed);
-          cd.setDbType(getDatabaseType());
+          cd.setProductType(getDatabaseType());
 
           ret.add(cd);
         }

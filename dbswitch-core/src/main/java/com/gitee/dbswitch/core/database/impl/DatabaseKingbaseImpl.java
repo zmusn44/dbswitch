@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 public class DatabaseKingbaseImpl extends AbstractDatabase implements IDatabaseInterface {
 
   private static final String SHOW_CREATE_VIEW_SQL =
-      "SELECT pg_get_viewdef((select pg_class.relfilenode from pg_catalog.pg_class \n"
+      "SELECT pg_get_viewdef((select pg_class.oid from pg_catalog.pg_class \n"
           + "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid \n"
           + "where pg_namespace.nspname='%s' and pg_class.relname ='%s'),true) ";
 

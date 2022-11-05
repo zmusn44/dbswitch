@@ -35,9 +35,8 @@ public final class GenerateSqlUtils {
       String schemaName,
       String tableName,
       boolean autoIncr) {
-    AbstractDatabase db = DatabaseFactory.getDatabaseInstance(type);
     return getDDLCreateTableSQL(
-        db,
+        DatabaseFactory.getDatabaseInstance(type),
         fieldNames,
         primaryKeys,
         schemaName,
