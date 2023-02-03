@@ -9,7 +9,10 @@
 /////////////////////////////////////////////////////////////
 package com.gitee.dbswitch.data.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gitee.dbswitch.common.entity.LoggingFunction;
+import com.gitee.dbswitch.common.entity.LoggingRunnable;
+import com.gitee.dbswitch.common.entity.LoggingSupplier;
+import com.gitee.dbswitch.common.entity.MdcKeyValue;
 import com.gitee.dbswitch.common.util.DbswitchStrUtils;
 import com.gitee.dbswitch.core.model.TableDescription;
 import com.gitee.dbswitch.core.service.IMetaDataByDatasourceService;
@@ -20,6 +23,7 @@ import com.gitee.dbswitch.data.entity.SourceDataSourceProperties;
 import com.gitee.dbswitch.data.handler.MigrationHandler;
 import com.gitee.dbswitch.data.util.BytesUnitUtils;
 import com.gitee.dbswitch.data.util.DataSourceUtils;
+import com.gitee.dbswitch.data.util.JsonUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +37,7 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
@@ -45,11 +50,6 @@ import org.springframework.util.StopWatch;
 @Slf4j
 @Service
 public class MigrationService {
-
-  /**
-   * JSON序列化工具
-   */
-  private final ObjectMapper jackson = new ObjectMapper();
 
   /**
    * 性能统计记录表
@@ -77,6 +77,11 @@ public class MigrationService {
   private final AsyncTaskExecutor taskExecutor;
 
   /**
+   * 任务执行实时记录MDC
+   */
+  private MdcKeyValue mdcKeyValue;
+
+  /**
    * 构造函数
    *
    * @param properties 配置信息
@@ -84,6 +89,10 @@ public class MigrationService {
   public MigrationService(DbswichProperties properties, AsyncTaskExecutor tableMigrationExecutor) {
     this.properties = Objects.requireNonNull(properties, "properties is null");
     this.taskExecutor = Objects.requireNonNull(tableMigrationExecutor, "taskExecutor is null");
+  }
+
+  public void setMdcKeyValue(MdcKeyValue mdcKeyValue) {
+    this.mdcKeyValue = Objects.requireNonNull(mdcKeyValue, "mdcKeyValue is null");
   }
 
   /**
@@ -95,9 +104,21 @@ public class MigrationService {
   }
 
   /**
+   * 执行入口
+   */
+  public void run() {
+    if (Objects.nonNull(mdcKeyValue)) {
+      Runnable runnable = new LoggingRunnable(this::doRun, this.mdcKeyValue);
+      runnable.run();
+    } else {
+      doRun();
+    }
+  }
+
+  /**
    * 执行主逻辑
    */
-  public void run() throws Exception {
+  private void doRun() {
     StopWatch watch = new StopWatch();
     watch.start();
 
@@ -113,6 +134,7 @@ public class MigrationService {
       List<SourceDataSourceProperties> sourcesProperties = properties.getSource();
       for (SourceDataSourceProperties sourceProperties : sourcesProperties) {
         if (interrupted) {
+          log.info("task job is interrupted!");
           throw new RuntimeException("task is interrupted");
         }
         try (HikariDataSource sourceDataSource = DataSourceUtils.createSourceDataSource(sourceProperties)) {
@@ -121,10 +143,10 @@ public class MigrationService {
 
           // 判断处理的策略：是排除还是包含
           List<String> includes = DbswitchStrUtils.stringToList(sourceProperties.getSourceIncludes());
-          log.info("Includes tables is :{}", jackson.writeValueAsString(includes));
+          log.info("Includes tables is :{}", JsonUtils.toJsonString(includes));
           List<String> filters = DbswitchStrUtils
               .stringToList(sourceProperties.getSourceExcludes());
-          log.info("Filter tables is :{}", jackson.writeValueAsString(filters));
+          log.info("Filter tables is :{}", JsonUtils.toJsonString(filters));
 
           boolean useExcludeTables = includes.isEmpty();
           if (useExcludeTables) {
@@ -138,13 +160,14 @@ public class MigrationService {
           List<CompletableFuture<Void>> futures = new ArrayList<>();
 
           List<String> schemas = DbswitchStrUtils.stringToList(sourceProperties.getSourceSchema());
-          log.info("Source schema names is :{}", jackson.writeValueAsString(schemas));
+          log.info("Source schema names is :{}", JsonUtils.toJsonString(schemas));
 
           AtomicInteger numberOfFailures = new AtomicInteger(0);
           AtomicLong totalBytesSize = new AtomicLong(0L);
           final int indexInternal = sourcePropertiesIndex;
           for (String schema : schemas) {
             if (interrupted) {
+              log.info("task job is interrupted!");
               break;
             }
             List<TableDescription> tableList = sourceMetaDataService.queryTableList(schema);
@@ -201,6 +224,9 @@ public class MigrationService {
         }
       }
       log.info("service run all success, total migrate table count={} ", totalTableCount);
+    } catch (Throwable t) {
+      log.error("service run failed:{}", t.getMessage(), ExceptionUtils.getRootCause(t));
+      throw t;
     } finally {
       watch.stop();
       log.info("total ellipse = {} s", watch.getTotalTimeSeconds());
@@ -264,7 +290,7 @@ public class MigrationService {
       Set<String> exists) {
     MigrationHandler instance = MigrationHandler.createInstance(td, properties, indexInternal, sds, tds, exists);
     migrationHandlers.add(instance);
-    return instance;
+    return Objects.isNull(mdcKeyValue) ? instance : new LoggingSupplier<>(instance, mdcKeyValue);
   }
 
   /**
@@ -277,12 +303,13 @@ public class MigrationService {
   private Function<Throwable, Long> getExceptHandler(
       TableDescription td,
       AtomicInteger numberOfFailures) {
-    return (e) -> {
+    Function<Throwable, Long> function = (e) -> {
       log.error("Error migration for table: {}.{}, error message: {}",
           td.getSchemaName(), td.getTableName(), e.getMessage());
       numberOfFailures.incrementAndGet();
       throw new RuntimeException(e);
     };
+    return Objects.isNull(mdcKeyValue) ? function : new LoggingFunction<>(function, mdcKeyValue);
   }
 
 }

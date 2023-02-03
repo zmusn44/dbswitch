@@ -14,6 +14,8 @@ import com.gitee.dbswitch.admin.common.response.PageResult;
 import com.gitee.dbswitch.admin.common.response.Result;
 import com.gitee.dbswitch.admin.config.SwaggerConfig;
 import com.gitee.dbswitch.admin.model.response.TaskJobDetailResponse;
+import com.gitee.dbswitch.admin.model.response.TaskJobLogbackResponse;
+import com.gitee.dbswitch.admin.service.JobLogbackService;
 import com.gitee.dbswitch.admin.service.JobManagerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,6 +34,8 @@ public class JobManagerController {
 
   @Resource
   private JobManagerService opsManagerService;
+  @Resource
+  private JobLogbackService jobLogbackService;
 
   @TokenCheck
   @ApiOperation(value = "根据任务ID查询作业执行记录")
@@ -54,6 +58,20 @@ public class JobManagerController {
   @GetMapping(value = "/job/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
   public Result<Boolean> cancelJob(@RequestParam("id") Long id) {
     return opsManagerService.cancelJob(id);
+  }
+
+  @TokenCheck
+  @ApiOperation(value = "根据作业的ID查询最后N条日志")
+  @GetMapping(value = "/job/logs/tail", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result<TaskJobLogbackResponse> tailLogs(@RequestParam("id") Long id, @RequestParam("size") Integer size) {
+    return jobLogbackService.tailLog(id, size);
+  }
+
+  @TokenCheck
+  @ApiOperation(value = "根据作业的ID查询后续日志")
+  @GetMapping(value = "/job/logs/next", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Result<TaskJobLogbackResponse> nextLogs(@RequestParam("id") Long id, @RequestParam("baseId") Long baseId) {
+    return jobLogbackService.nextLog(id, baseId);
   }
 
 }

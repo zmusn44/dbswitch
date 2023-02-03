@@ -20,6 +20,7 @@ public enum JobStatusEnum {
   RUNNING(1, "运行中"),
   FAIL(2, "失败"),
   PASS(3, "成功"),
+  CANCEL(4, "手动终止"),
   ;
 
   private int value;

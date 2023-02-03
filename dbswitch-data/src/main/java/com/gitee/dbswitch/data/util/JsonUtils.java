@@ -7,7 +7,7 @@
 // Date : 2020/1/2
 // Location: beijing , china
 /////////////////////////////////////////////////////////////
-package com.gitee.dbswitch.admin.util;
+package com.gitee.dbswitch.data.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;

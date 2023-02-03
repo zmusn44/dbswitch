@@ -39,35 +39,12 @@
                 <el-form label-position="left"
                          inline
                          class="demo-table-expand">
-                  <el-form-item label="JOB编号:">
-                    <span>{{ props.row.jobId }}</span>
-                  </el-form-item>
-                  <el-form-item label="调度方式:">
-                    <span>{{ props.row.scheduleMode }}</span>
-                  </el-form-item>
-                  <el-form-item label="开始时间:">
-                    <span>{{ props.row.startTime }}</span>
-                  </el-form-item>
-                  <el-form-item label="结束时间:">
-                    <span>{{ props.row.finishTime }}</span>
-                  </el-form-item>
-                  <el-form-item label="执行状态:">
-                    <span>{{ props.row.jobStatus }}</span>
-                  </el-form-item>
-                  <el-form-item label="操作:">
+                  <el-form-item label="执行日志:">
                     <el-button size="small"
                                type="danger"
-                               v-if="props.row.status=='1'"
-                               @click="handleCancelJob(props.row.jobId)">
-                      停止
+                               @click="handleShowJobLogs(props.row.jobId)">
+                      查看
                     </el-button>
-                  </el-form-item>
-                  <el-form-item label="异常日志:">
-                    <el-input type="textarea"
-                              style="font-size:12px;width: 700px"
-                              :autosize="{ minRows: 2, maxRows: 5}"
-                              v-model="props.row.errorLog">
-                    </el-input>
                   </el-form-item>
                 </el-form>
               </template>
@@ -105,6 +82,61 @@
                            :total="totalCount"></el-pagination>
           </div>
         </div>
+
+        <el-dialog title="日志详情"
+                   :visible.sync="dialogShowLogVisible"
+                   :showClose="false"
+                   :before-close="handleClose">
+          <el-alert v-if="status===0"
+                    title="执行状态：未执行"
+                    type="info"
+                    center
+                    show-icon>
+          </el-alert>
+          <el-alert v-if="status===1"
+                    title="执行状态：执行中"
+                    type="success"
+                    center
+                    show-icon>
+          </el-alert>
+          <el-alert v-if="status===2"
+                    title="执行状态：执行失败"
+                    type="error"
+                    center
+                    show-icon>
+          </el-alert>
+          <el-alert v-if="status===3"
+                    title="执行状态：执行成功"
+                    type="success"
+                    center
+                    show-icon>
+          </el-alert>
+          <el-alert v-if="status===4"
+                    title="执行状态：手动取消"
+                    type="warning"
+                    center
+                    show-icon>
+          </el-alert>
+          <el-input type="textarea"
+                    id="log_textarea_id"
+                    class="log_textarea_style"
+                    :rows="20"
+                    v-model="logContent">
+          </el-input>
+          <div slot="footer"
+               class="dialog-footer">
+            <el-button size="small"
+                       id="butten_cancel_id"
+                       type="danger"
+                       v-if="status=='1'"
+                       @click="handleCancelJob(jobId)">
+              终 止
+            </el-button>
+            <el-button size="small"
+                       type="success"
+                       @click="handleCloseLogDialog">关 闭</el-button>
+          </div>
+        </el-dialog>
       </div>
     </el-card>
   </div>
@@ -128,6 +160,12 @@ export default {
       jobScheduleTime: '',
       isActive: -1,
       array: [],
+      dialogShowLogVisible: false,
+      logContent: "",
+      jobId: 0,
+      baseId: 0,
+      status: 0,
+      timer: null,
     };
   },
   methods: {
@@ -192,6 +230,10 @@ export default {
         "/dbswitch/admin/api/v1/ops/job/cancel?id=" + jobId
       ).then(res => {
         if (0 === res.data.code) {
+          // 禁用取消按钮
+          var cancelButton = document.getElementById('butten_cancel_id');
+          cancelButton.value = "已取消"
+          cancelButton.disabled = true;
           this.$message("停止JOB成功");
           this.loadJobsData();
         } else {
@@ -200,11 +242,73 @@ export default {
           }
         }
       });
+    },
+    handleShowJobLogs: function (jobId) {
+      this.dialogShowLogVisible = true
+      this.jobId = jobId;
+      this.$http.get(
+        "/dbswitch/admin/api/v1/ops/job/logs/tail?id=" + jobId + "&size=500"
+      ).then(res => {
+        //console.log(res.data)
+        if (0 === res.data.code) {
+          let lists = res.data.data.logs
+          this.status = res.data.data.status;
+          this.baseId = res.data.data.maxId;
+          this.logContent = lists.join("")
+          this.scrollMaxheight();
+          if (1 === res.data.data.status) {
+            this.timer = setInterval(() => {
+              this.timerRefreshLogs();
+            }, 1000);// 每隔1s定时刷新
+          }
+        } else {
+          if (res.data.message) {
+            alert("加载JOB执行日志失败," + res.data.message);
+          }
+        }
+      });
+    },
+    timerRefreshLogs: function () {
+      //console.log("time run ...");
+      this.$http.get(
+        "/dbswitch/admin/api/v1/ops/job/logs/next?id=" + this.jobId + "&baseId=" + this.baseId
+      ).then(res => {
+        if (0 === res.data.code) {
+          let lists = res.data.data.logs;
+          this.logContent = this.logContent + lists.join("");
+          this.baseId = res.data.data.maxId;
+          this.status = res.data.data.status;
+          this.scrollMaxheight();
+          if (1 !== res.data.data.status) {
+            // 如果不是运行中，则需要关闭定时器
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+        }
+      });
+    },
+    scrollMaxheight: function () {
+      this.$nextTick(() => {
+        setTimeout(() => {
+          const textarea = document.getElementById('log_textarea_id');
+          textarea.scrollTop = textarea.scrollHeight;
+        }, 13)
+      })
+    },
+    handleCloseLogDialog: function () {
+      this.dialogShowLogVisible = false;
+      clearInterval(this.timer);
+      this.timer = null;
     }
   },
   created () {
     this.loadPageTaskAssignments();
-  }
+  },
+  beforeDestroy () {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  },
 };
 </script>
 
@@ -287,4 +391,10 @@ export default {
   width: calc(100% - 250px);
 }
 
+.log_textarea_style .el-textarea__inner {
+  padding: 5px 15px;
+  width: 100%;
+  color: #505664 !important;
+  background-color: #1d1b1f !important;
+}
 </style>

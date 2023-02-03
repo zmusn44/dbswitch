@@ -195,6 +195,7 @@ public class MigrationHandler implements Supplier<Long> {
       throw new RuntimeException("字段映射配置有误，禁止将多个字段映射到一个同名字段!");
     }
     if (interrupted) {
+      log.info("task job is interrupted!");
       throw new RuntimeException("task is interrupted");
     }
     IDatabaseWriter writer = DatabaseWriterFactory.createDatabaseWriter(
@@ -241,6 +242,7 @@ public class MigrationHandler implements Supplier<Long> {
       }
 
       if (interrupted) {
+        log.info("task job is interrupted!");
         throw new RuntimeException("task is interrupted");
       }
 
@@ -253,6 +255,7 @@ public class MigrationHandler implements Supplier<Long> {
       }
 
       if (interrupted) {
+        log.info("task job is interrupted!");
         throw new RuntimeException("task is interrupted");
       }
 
@@ -277,6 +280,7 @@ public class MigrationHandler implements Supplier<Long> {
         }
 
         if (interrupted) {
+          log.info("task job is interrupted!");
           throw new RuntimeException("task is interrupted");
         }
 
@@ -352,6 +356,7 @@ public class MigrationHandler implements Supplier<Long> {
     try (ResultSet rs = srs.getResultset()) {
       while (rs.next()) {
         if (interrupted) {
+          log.info("task job is interrupted!");
           throw new RuntimeException("task is interrupted");
         }
         Object[] record = new Object[sourceFields.size()];
@@ -482,6 +487,7 @@ public class MigrationHandler implements Supplier<Long> {
        */
       private void checkFull(List<String> fields) {
         if (interrupted) {
+          log.info("task job is interrupted!");
           throw new RuntimeException("task is interrupted");
         }
         if (cacheInsert.size() >= BATCH_SIZE || cacheUpdate.size() >= BATCH_SIZE

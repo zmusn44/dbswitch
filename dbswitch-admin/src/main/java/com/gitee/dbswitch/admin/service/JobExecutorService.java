@@ -16,8 +16,10 @@ import com.gitee.dbswitch.admin.dao.AssignmentTaskDAO;
 import com.gitee.dbswitch.admin.entity.AssignmentConfigEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentJobEntity;
 import com.gitee.dbswitch.admin.entity.AssignmentTaskEntity;
+import com.gitee.dbswitch.admin.logback.LogbackAppenderRegister;
+import com.gitee.dbswitch.common.entity.MdcKeyValue;
 import com.gitee.dbswitch.admin.type.JobStatusEnum;
-import com.gitee.dbswitch.admin.util.JsonUtils;
+import com.gitee.dbswitch.data.util.JsonUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
 import com.gitee.dbswitch.data.service.MigrationService;
 import com.google.common.cache.Cache;
@@ -55,6 +57,8 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
   public final static String GROUP = "dbswitch";
   public final static String TASK_ID = "taskId";
   public final static String SCHEDULE = "schedule";
+
+  private final static String MDC_KEY = LogbackAppenderRegister.LOG_MDC_KEY_NAME;
 
   // 相同taskId的任务限制并发执行的粒度锁缓存对象
   private static Cache<String, ReentrantLock> mutexes = CacheBuilder.newBuilder()
@@ -129,6 +133,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
     Integer schedule = jobDataMap.getIntValue(SCHEDULE);
     AssignmentJobEntity assignmentJobEntity = assignmentJobDAO
         .newAssignmentJob(taskId, schedule, key.getName());
+    MdcKeyValue mdcKeyValue = new MdcKeyValue(MDC_KEY, assignmentJobEntity.getId().toString());
 
     try {
       ReentrantLock lock = mutexes.get(taskId.toString(), ReentrantLock::new);
@@ -174,6 +179,7 @@ public class JobExecutorService extends QuartzJobBean implements InterruptableJo
           }
 
           // 实际执行JOB
+          migrationService.setMdcKeyValue(mdcKeyValue);
           migrationService.run();
 
           if (assignmentConfigEntity.getFirstFlag()) {

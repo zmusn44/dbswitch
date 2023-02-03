@@ -28,7 +28,7 @@ import com.gitee.dbswitch.admin.model.response.AssignmentDetailResponse;
 import com.gitee.dbswitch.admin.model.response.AssignmentInfoResponse;
 import com.gitee.dbswitch.admin.type.ScheduleModeEnum;
 import com.gitee.dbswitch.admin.type.SupportDbTypeEnum;
-import com.gitee.dbswitch.admin.util.JsonUtils;
+import com.gitee.dbswitch.data.util.JsonUtils;
 import com.gitee.dbswitch.admin.util.PageUtils;
 import com.gitee.dbswitch.data.config.DbswichProperties;
 import com.gitee.dbswitch.data.entity.SourceDataSourceProperties;
@@ -41,11 +41,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.quartz.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.quartz.CronExpression;
 
 @Service
 public class AssignmentService {

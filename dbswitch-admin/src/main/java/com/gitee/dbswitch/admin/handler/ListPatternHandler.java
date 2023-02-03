@@ -1,6 +1,6 @@
 package com.gitee.dbswitch.admin.handler;
 
-import com.gitee.dbswitch.admin.util.JsonUtils;
+import com.gitee.dbswitch.data.util.JsonUtils;
 import com.gitee.dbswitch.common.entity.PatternMapper;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;

@@ -115,7 +115,7 @@ public class ScheduleService {
     if (Objects.nonNull(assignmentJobEntity)) {
       String jobKeyName = assignmentJobEntity.getJobKey();
       cancelByJobKey(jobKeyName);
-      assignmentJobEntity.setStatus(JobStatusEnum.FAIL.getValue());
+      assignmentJobEntity.setStatus(JobStatusEnum.CANCEL.getValue());
       assignmentJobEntity.setFinishTime(new Timestamp(System.currentTimeMillis()));
       assignmentJobEntity.setErrorLog("Job was canceled!!!!");
       assignmentJobDAO.updateSelective(assignmentJobEntity);
