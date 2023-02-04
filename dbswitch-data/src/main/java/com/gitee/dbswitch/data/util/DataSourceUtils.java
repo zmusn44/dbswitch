@@ -44,6 +44,8 @@ public final class DataSourceUtils {
       ds.setConnectionTestQuery("SELECT 'Hello' from DUAL");
       // https://blog.csdn.net/qq_20960159/article/details/78593936
       System.getProperties().setProperty("oracle.jdbc.J2EE13Compliant", "true");
+      // Oracle在通过jdbc连接的时候需要添加一个参数来设置是否获取注释
+      ds.addDataSourceProperty("remarksReporting", "true");
     } else if (properties.getDriverClassName().contains("db2")) {
       ds.setConnectionTestQuery("SELECT 1 FROM SYSIBM.SYSDUMMY1");
     } else {
