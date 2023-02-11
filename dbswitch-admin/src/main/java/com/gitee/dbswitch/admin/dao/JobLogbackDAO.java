@@ -13,7 +13,7 @@ import com.gitee.dbswitch.admin.entity.JobLogbackEntity;
 import com.gitee.dbswitch.admin.mapper.JobLogbackMapper;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.entity.Example;
@@ -46,6 +46,12 @@ public class JobLogbackDAO {
         .andWhere(Sqls.custom().andGreaterThan("id", baseId).andEqualTo("uuid", uuid))
         .build();
     return jobLogbackMapper.selectByExample(example);
+  }
+
+  public void deleteOldest(Integer days) {
+    if (Objects.nonNull(days)) {
+      jobLogbackMapper.deleteByDays(days);
+    }
   }
 
 }

@@ -16,9 +16,15 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+@Slf4j
 @Service
 public class JobLogbackService {
 
@@ -26,6 +32,27 @@ public class JobLogbackService {
   private AssignmentJobDAO assignmentJobDAO;
   @Resource
   private JobLogbackDAO jobLogbackDAO;
+  @Value("${job.log.clean.days:30}")
+  private Integer cleanJobLogDays;
+
+  @EventListener(ApplicationReadyEvent.class)
+  public void cleanOnceAfterRestart() {
+    doCleanHistoryLog();
+  }
+
+  @Scheduled(cron = "0 0 0 * * ? ")
+  public void cleanSchedule() {
+    doCleanHistoryLog();
+  }
+
+  private void doCleanHistoryLog() {
+    try {
+      jobLogbackDAO.deleteOldest(cleanJobLogDays);
+      log.error("Success to clean history job log for {} days", cleanJobLogDays);
+    } catch (Throwable t) {
+      log.error("Failed to clean history job log,", t);
+    }
+  }
 
   public Result<TaskJobLogbackResponse> tailLog(Long jobId, Integer size) {
     TaskJobLogbackResponse response = new TaskJobLogbackResponse();

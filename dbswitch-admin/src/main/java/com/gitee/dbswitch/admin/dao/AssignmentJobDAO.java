@@ -14,13 +14,12 @@ import com.gitee.dbswitch.admin.mapper.AssignmentJobMapper;
 import com.gitee.dbswitch.admin.model.ops.OpsTaskJobTrend;
 import com.gitee.dbswitch.admin.type.JobStatusEnum;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.Sqls;
 
 @Repository
 public class AssignmentJobDAO {
@@ -72,12 +71,23 @@ public class AssignmentJobDAO {
   }
 
   public int getTotalCount() {
-    return Optional.ofNullable(assignmentJobMapper.selectAll())
-        .orElseGet(ArrayList::new).size();
+    return assignmentJobMapper.selectCountByExample(null);
   }
 
   public List<OpsTaskJobTrend> queryTaskJobTrend(Integer days) {
     return assignmentJobMapper.queryTaskJobTrend(days);
+  }
+
+  public void updateStatus(JobStatusEnum originalStatus, JobStatusEnum targetStatus, String errorLog) {
+    AssignmentJobEntity updateSet = new AssignmentJobEntity();
+    updateSet.setStatus(targetStatus.getValue());
+    if (JobStatusEnum.FAIL.equals(targetStatus)) {
+      updateSet.setErrorLog(errorLog);
+    }
+    Example condition = Example.builder(AssignmentJobEntity.class)
+        .where(Sqls.custom().andEqualTo("status", originalStatus.getValue()))
+        .build();
+    assignmentJobMapper.updateByExampleSelective(updateSet, condition);
   }
 
 }

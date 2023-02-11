@@ -23,8 +23,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class JobManagerService {
 
@@ -32,6 +36,17 @@ public class JobManagerService {
   private AssignmentJobDAO assignmentJobDAO;
   @Resource
   private ScheduleService scheduleService;
+
+  @EventListener(ApplicationReadyEvent.class)
+  public void initAfterRestart() {
+    String errorLog = "Job was canceled by restart dbswitch program! ";
+    try {
+      assignmentJobDAO.updateStatus(JobStatusEnum.RUNNING, JobStatusEnum.FAIL, errorLog);
+      log.info("Success to revise job status");
+    } catch (Throwable t) {
+      log.error("Error when revise job status from running to failed:", t);
+    }
+  }
 
   public PageResult<TaskJobDetailResponse> listJobs(Long assignmentId, Integer page, Integer size) {
     Supplier<List<TaskJobDetailResponse>> method = () -> {
